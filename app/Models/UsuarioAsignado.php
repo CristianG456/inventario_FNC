@@ -27,6 +27,8 @@ class UsuarioAsignado extends Model
         'cargo',
         'area',
         'piso',
+        'distrito',
+        'seccional',
     ];
 
     public function equipo(): BelongsTo

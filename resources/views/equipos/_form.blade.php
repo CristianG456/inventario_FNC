@@ -26,12 +26,23 @@
             </div>
 
             <div class="col-md-4">
-                <label class="form-label fw-medium">Serial <span class="text-danger">*</span></label>
+                <label class="form-label fw-medium">Serial</label>
                 <input type="text" name="serial"
                        class="form-control @error('serial') is-invalid @enderror"
                        value="{{ old('serial', $equipo->serial ?? '') }}"
-                       required maxlength="100">
+                       maxlength="100">
                 @error('serial')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-medium">Activo Fijo</label>
+                <input type="text" name="activo_fijo"
+                       class="form-control @error('activo_fijo') is-invalid @enderror"
+                       value="{{ old('activo_fijo', $equipo->activo_fijo ?? '') }}"
+                       placeholder="Ej: FNC-001234" maxlength="100">
+                @error('activo_fijo')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
@@ -283,6 +294,22 @@
                        value="{{ old('usuario_piso', $equipo->usuarioAsignado->piso ?? '') }}"
                        maxlength="20">
                 @error('usuario_piso') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium">Distrito</label>
+                <input type="text" name="usuario_distrito"
+                       class="form-control @error('usuario_distrito') is-invalid @enderror"
+                       value="{{ old('usuario_distrito', $equipo->usuarioAsignado->distrito ?? '') }}"
+                       maxlength="150">
+                @error('usuario_distrito') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium">Seccional</label>
+                <input type="text" name="usuario_seccional"
+                       class="form-control @error('usuario_seccional') is-invalid @enderror"
+                       value="{{ old('usuario_seccional', $equipo->usuarioAsignado->seccional ?? '') }}"
+                       maxlength="150">
+                @error('usuario_seccional') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
         </div>
     </div>

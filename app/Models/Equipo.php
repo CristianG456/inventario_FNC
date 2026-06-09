@@ -18,6 +18,7 @@ class Equipo extends Model
     protected $fillable = [
         'tipo_recurso_id',
         'serial',
+        'activo_fijo',
         'placa',
         'marca',
         'modelo',
@@ -56,6 +57,29 @@ class Equipo extends Model
     public function checklists(): HasMany
     {
         return $this->hasMany(Checklist::class);
+    }
+
+    public function asignaciones(): HasMany
+    {
+        return $this->hasMany(Asignacion::class)->orderByDesc('fecha_accion');
+    }
+
+    public function historialTecnico(): HasMany
+    {
+        return $this->hasMany(HistorialTecnico::class)->orderByDesc('fecha_evento');
+    }
+
+    public function historialAdministrativo(): HasMany
+    {
+        return $this->hasMany(HistorialAdministrativo::class)->orderByDesc('created_at');
+    }
+
+    /**
+     * Indica si el equipo tiene un usuario asignado actualmente.
+     */
+    public function estaAsignado(): bool
+    {
+        return $this->usuarioAsignado()->exists();
     }
 
     /**

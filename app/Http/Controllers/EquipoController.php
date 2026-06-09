@@ -6,7 +6,10 @@ use App\Exports\EquiposExport;
 use App\Http\Requests\EquipoRequest;
 use App\Imports\EquiposImport;
 use App\Models\Equipo;
+use App\Models\Funcionario;
 use App\Models\TipoRecurso;
+use App\Services\HistorialService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,6 +17,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EquipoController extends Controller
 {
+    public function __construct(
+        private readonly HistorialService $historialService
+    ) {}
+
     /**
      * Listado de equipos con búsqueda y filtros.
      */
@@ -25,11 +32,13 @@ class EquipoController extends Controller
                     $sub->where('serial', 'like', '%' . $request->buscar . '%')
                         ->orWhere('nombre_equipo', 'like', '%' . $request->buscar . '%')
                         ->orWhere('marca', 'like', '%' . $request->buscar . '%')
+                        ->orWhere('activo_fijo', 'like', '%' . $request->buscar . '%')
                         ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $request->buscar . '%'));
                 });
             })
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
             ->when($request->filled('estado'), fn($q) => $q->where('estado_operativo', $request->estado))
+            ->when($request->filled('activo_fijo'), fn($q) => $q->where('activo_fijo', 'like', '%' . $request->activo_fijo . '%'))
             ->latest();
 
         $equipos      = $query->paginate(15)->withQueryString();
@@ -53,36 +62,48 @@ class EquipoController extends Controller
     public function store(EquipoRequest $request): RedirectResponse
     {
         $equipo = Equipo::create($request->only([
-            'tipo_recurso_id', 'serial', 'placa', 'marca', 'modelo',
+            'tipo_recurso_id', 'serial', 'activo_fijo', 'placa', 'marca', 'modelo',
             'nombre_equipo', 'estado_operativo', 'razon_estado',
             'procesador', 'ram', 'disco', 'sistema_operativo',
             'fecha_compra', 'fin_garantia', 'tiempo_uso',
         ]));
 
-        // Crear usuario asignado
         $equipo->usuarioAsignado()->create([
-            'nombre'       => $request->usuario_nombre,
-            'cedula'       => $request->usuario_cedula,
-            'empresa_propietaria' => $request->usuario_empresa_propietaria,
-            'dependencia' => $request->usuario_dependencia,
-            'fuente_recurso' => $request->usuario_fuente_recurso,
-            'empresa_funcionario' => $request->usuario_empresa_funcionario,
-            'tipo_vinculacion' => $request->usuario_tipo_vinculacion,
-            'shortname' => $request->usuario_shortname,
-            'departamento' => $request->usuario_departamento,
-            'ciudad'       => $request->usuario_ciudad,
-            'cargo'        => $request->usuario_cargo,
-            'area'         => $request->usuario_area,
-            'piso'         => $request->usuario_piso,
+            'nombre'               => $request->usuario_nombre,
+            'cedula'               => $request->usuario_cedula,
+            'empresa_propietaria'  => $request->usuario_empresa_propietaria,
+            'dependencia'          => $request->usuario_dependencia,
+            'fuente_recurso'       => $request->usuario_fuente_recurso,
+            'empresa_funcionario'  => $request->usuario_empresa_funcionario,
+            'tipo_vinculacion'     => $request->usuario_tipo_vinculacion,
+            'shortname'            => $request->usuario_shortname,
+            'departamento'         => $request->usuario_departamento,
+            'ciudad'               => $request->usuario_ciudad,
+            'cargo'                => $request->usuario_cargo,
+            'area'                 => $request->usuario_area,
+            'piso'                 => $request->usuario_piso,
+            'distrito'             => $request->usuario_distrito,
+            'seccional'            => $request->usuario_seccional,
         ]);
 
-        // Crear periféricos
         $equipo->periferico()->create([
             'telefono' => $request->periferico_telefono,
             'teclado'  => $request->periferico_teclado,
             'mouse'    => $request->periferico_mouse,
             'camara'   => $request->periferico_camara,
         ]);
+
+        // Sincronizar funcionario en la tabla de funcionarios
+        $this->sincronizarFuncionario($request);
+
+        $this->historialService->registrarCambio(
+            $equipo,
+            'creacion',
+            null,
+            $equipo->serial,
+            "Equipo '{$equipo->nombre_equipo}' registrado en el sistema.",
+            auth()->user()
+        );
 
         return redirect()->route('equipos.index')
             ->with('success', 'Equipo registrado correctamente.');
@@ -93,7 +114,14 @@ class EquipoController extends Controller
      */
     public function show(Equipo $equipo): View
     {
-        $equipo->load(['tipoRecurso', 'usuarioAsignado', 'periferico', 'checklists']);
+        $equipo->load([
+            'tipoRecurso',
+            'usuarioAsignado',
+            'periferico',
+            'checklists',
+            'asignaciones' => fn($q) => $q->latest('fecha_accion')->limit(5),
+            'historialTecnico' => fn($q) => $q->latest('fecha_evento')->limit(5),
+        ]);
         return view('equipos.show', compact('equipo'));
     }
 
@@ -108,38 +136,51 @@ class EquipoController extends Controller
     }
 
     /**
-     * Actualizar equipo existente.
+     * Actualizar equipo existente con registro de historial de cambios.
      */
     public function update(EquipoRequest $request, Equipo $equipo): RedirectResponse
     {
+        $camposAnteriores = $equipo->only([
+            'serial', 'activo_fijo', 'estado_operativo', 'marca', 'modelo',
+            'nombre_equipo', 'procesador', 'ram', 'disco', 'sistema_operativo',
+        ]);
+
         $equipo->update($request->only([
-            'tipo_recurso_id', 'serial', 'placa', 'marca', 'modelo',
+            'tipo_recurso_id', 'serial', 'activo_fijo', 'placa', 'marca', 'modelo',
             'nombre_equipo', 'estado_operativo', 'razon_estado',
             'procesador', 'ram', 'disco', 'sistema_operativo',
             'fecha_compra', 'fin_garantia', 'tiempo_uso',
         ]));
 
-        // Actualizar o crear usuario asignado
+        $camposNuevos = $equipo->fresh()->only(array_keys($camposAnteriores));
+        $this->historialService->registrarCambiosCampos(
+            $equipo,
+            $camposAnteriores,
+            $camposNuevos,
+            auth()->user()
+        );
+
         $equipo->usuarioAsignado()->updateOrCreate(
             ['equipo_id' => $equipo->id],
             [
-                'nombre'       => $request->usuario_nombre,
-                'cedula'       => $request->usuario_cedula,
-                'empresa_propietaria' => $request->usuario_empresa_propietaria,
-                'dependencia' => $request->usuario_dependencia,
-                'fuente_recurso' => $request->usuario_fuente_recurso,
-                'empresa_funcionario' => $request->usuario_empresa_funcionario,
-                'tipo_vinculacion' => $request->usuario_tipo_vinculacion,
-                'shortname' => $request->usuario_shortname,
-                'departamento' => $request->usuario_departamento,
-                'ciudad'       => $request->usuario_ciudad,
-                'cargo'        => $request->usuario_cargo,
-                'area'         => $request->usuario_area,
-                'piso'         => $request->usuario_piso,
+                'nombre'               => $request->usuario_nombre,
+                'cedula'               => $request->usuario_cedula,
+                'empresa_propietaria'  => $request->usuario_empresa_propietaria,
+                'dependencia'          => $request->usuario_dependencia,
+                'fuente_recurso'       => $request->usuario_fuente_recurso,
+                'empresa_funcionario'  => $request->usuario_empresa_funcionario,
+                'tipo_vinculacion'     => $request->usuario_tipo_vinculacion,
+                'shortname'            => $request->usuario_shortname,
+                'departamento'         => $request->usuario_departamento,
+                'ciudad'               => $request->usuario_ciudad,
+                'cargo'                => $request->usuario_cargo,
+                'area'                 => $request->usuario_area,
+                'piso'                 => $request->usuario_piso,
+                'distrito'             => $request->usuario_distrito,
+                'seccional'            => $request->usuario_seccional,
             ]
         );
 
-        // Actualizar o crear periféricos
         $equipo->periferico()->updateOrCreate(
             ['equipo_id' => $equipo->id],
             [
@@ -150,15 +191,27 @@ class EquipoController extends Controller
             ]
         );
 
+        // Sincronizar funcionario en la tabla de funcionarios
+        $this->sincronizarFuncionario($request);
+
         return redirect()->route('equipos.index')
             ->with('success', 'Equipo actualizado correctamente.');
     }
 
     /**
-     * Eliminar equipo (soft delete).
+     * Eliminar equipo (soft delete) con registro en historial.
      */
     public function destroy(Equipo $equipo): RedirectResponse
     {
+        $this->historialService->registrarCambio(
+            $equipo,
+            'eliminacion',
+            'activo',
+            'eliminado',
+            "Equipo '{$equipo->nombre_equipo}' eliminado del sistema.",
+            auth()->user()
+        );
+
         $equipo->delete();
 
         return redirect()->route('equipos.index')
@@ -166,7 +219,7 @@ class EquipoController extends Controller
     }
 
     /**
-     * Exportar equipos a Excel (sin periféricos).
+     * Exportar equipos a Excel.
      */
     public function exportar(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
@@ -186,8 +239,6 @@ class EquipoController extends Controller
      */
     public function importar(Request $request): RedirectResponse
     {
-        // PhpSpreadsheet carga el XLSX completo en RAM antes de procesar.
-        // Se libera el límite solo para esta solicitud.
         ini_set('memory_limit', '-1');
         set_time_limit(300);
 
@@ -201,15 +252,13 @@ class EquipoController extends Controller
         ]);
 
         $import = new EquiposImport();
-
         Excel::import($import, $request->file('archivo'));
 
-        $rowFailures  = $import->getRowFailures();    // errores de validación manual
-        $phpErrors    = $import->errors();             // excepciones PHP capturadas
-        $insertados   = $import->getInsertados();
-        $omitidos     = $import->getOmitidos();
+        $rowFailures = $import->getRowFailures();
+        $phpErrors   = $import->errors();
+        $insertados  = $import->getInsertados();
+        $omitidos    = $import->getOmitidos();
 
-        // $rowFailures ya tiene formato ['fila' => N, 'errores' => [...]]
         $errorsData = collect($phpErrors)->map(fn($e) => [
             'mensaje' => class_basename(get_class($e)) . ': ' . $e->getMessage(),
         ])->toArray();
@@ -219,5 +268,67 @@ class EquipoController extends Controller
             ->with('import_omitidos', $omitidos)
             ->with('import_failures', $rowFailures)
             ->with('import_errors', $errorsData);
+    }
+
+    /**
+     * Vista de historial de vida del equipo (timeline combinado).
+     */
+    public function historialVida(Equipo $equipo, HistorialService $historialService): View
+    {
+        $eventos = $historialService->obtenerLineaDeTiempo($equipo);
+        return view('equipos.historial_vida', compact('equipo', 'eventos'));
+    }
+
+    /**
+     * Generar Acta de Entrega PDF
+     */
+    public function descargarActa(Equipo $equipo, \App\Services\PdfService $pdfService)
+    {
+        $equipo->load(['tipoRecurso', 'usuarioAsignado']);
+        
+        if (!$equipo->usuarioAsignado) {
+            return back()->with('error', 'El equipo no tiene un funcionario asignado actualmente.');
+        }
+
+        return $pdfService->generarActaDesdeEquipo($equipo);
+    }
+
+    /**
+     * Sincroniza el usuario asignado del equipo con la tabla de funcionarios.
+     * Busca por cédula; si existe actualiza, si no crea un nuevo registro.
+     */
+    private function sincronizarFuncionario(Request $request): void
+    {
+        $cedula = $request->usuario_cedula;
+
+        if (empty($cedula)) {
+            return;
+        }
+
+        // Separar nombre completo en nombres y apellidos (por el primer espacio)
+        $nombreCompleto = trim($request->usuario_nombre ?? '');
+        $partes         = explode(' ', $nombreCompleto, 2);
+        $nombres        = $partes[0] ?? $nombreCompleto;
+        $apellidos      = $partes[1] ?? null;
+
+        $funcionario = Funcionario::withTrashed()->updateOrCreate(
+            ['identificacion' => $cedula],
+            [
+                'nombres'             => $nombres,
+                'apellidos'           => $apellidos,
+                'cargo'               => $request->usuario_cargo,
+                'area'                => $request->usuario_area,
+                'departamento'        => $request->usuario_departamento,
+                'ciudad'              => $request->usuario_ciudad,
+                'empresa_funcionario' => $request->usuario_empresa_funcionario,
+                'tipo_vinculacion'    => $request->usuario_tipo_vinculacion,
+                'estado'              => 'Activo',
+            ]
+        );
+        
+        // Si el funcionario estaba eliminado, lo restauramos
+        if ($funcionario->trashed()) {
+            $funcionario->restore();
+        }
     }
 }

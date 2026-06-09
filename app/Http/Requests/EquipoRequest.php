@@ -19,7 +19,8 @@ class EquipoRequest extends FormRequest
         return [
             // --- Datos del equipo ---
             'tipo_recurso_id'  => ['required', 'exists:tipo_recursos,id'],
-            'serial'           => ['required', 'string', 'max:100', Rule::unique('equipos', 'serial')->ignore($equipoId)->whereNull('deleted_at')],
+            'serial'           => ['nullable', 'string', 'max:100', Rule::unique('equipos', 'serial')->ignore($equipoId)->whereNull('deleted_at')],
+            'activo_fijo'      => ['nullable', 'string', 'max:100'],
             'placa'            => ['nullable', 'string', 'max:100'],
             'marca'            => ['required', 'string', 'max:100'],
             'modelo'           => ['required', 'string', 'max:100'],
@@ -48,6 +49,8 @@ class EquipoRequest extends FormRequest
             'usuario_cargo'        => ['nullable', 'string', 'max:100'],
             'usuario_area'         => ['nullable', 'string', 'max:100'],
             'usuario_piso'         => ['nullable', 'string', 'max:20'],
+            'usuario_distrito'     => ['nullable', 'string', 'max:150'],
+            'usuario_seccional'    => ['nullable', 'string', 'max:150'],
 
             // --- Periféricos ---
             'periferico_telefono' => ['nullable', 'string', 'max:100'],

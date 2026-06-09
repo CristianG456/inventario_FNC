@@ -8,7 +8,16 @@
         <i class="bi bi-info-circle me-2 text-info"></i>{{ $equipo->nombre_equipo }}
         <span class="badge bg-{{ $equipo->estado_badge }} ms-2 fs-6">{{ $equipo->estado_label }}</span>
     </h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ route('equipos.historial-vida', $equipo) }}" class="btn btn-outline-primary">
+            <i class="bi bi-clock-history me-1"></i>Historial de Vida
+        </a>
+        <a href="{{ route('historial-tecnico.por-equipo', $equipo) }}" class="btn btn-outline-warning">
+            <i class="bi bi-tools me-1"></i>Historial Técnico
+        </a>
+        <a href="{{ route('asignaciones.por-equipo', $equipo) }}" class="btn btn-outline-success">
+            <i class="bi bi-person-fill-gear me-1"></i>Asignaciones
+        </a>
         <a href="{{ route('equipos.edit', $equipo) }}" class="btn btn-warning text-white">
             <i class="bi bi-pencil me-1"></i>Editar
         </a>
@@ -21,7 +30,7 @@
 <div class="row g-4">
     {{-- Datos del equipo --}}
     <div class="col-lg-6">
-        <div class="card h-100">
+        <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-primary bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-laptop me-2 text-primary"></i>Datos del Equipo
             </div>
@@ -31,6 +40,8 @@
                     <dd class="col-sm-7">{{ $equipo->tipoRecurso?->nombre ?? '—' }}</dd>
                     <dt class="col-sm-5 text-muted">Serial</dt>
                     <dd class="col-sm-7 font-monospace">{{ $equipo->serial }}</dd>
+                    <dt class="col-sm-5 text-muted">Activo Fijo</dt>
+                    <dd class="col-sm-7 font-monospace fw-bold text-dark">{{ $equipo->activo_fijo ?? '—' }}</dd>
                     <dt class="col-sm-5 text-muted">Placa</dt>
                     <dd class="col-sm-7">{{ $equipo->placa ?? '—' }}</dd>
                     <dt class="col-sm-5 text-muted">Marca</dt>
@@ -62,13 +73,22 @@
 
     {{-- Usuario asignado --}}
     <div class="col-lg-6">
-        <div class="card mb-4">
-            <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3">
-                <i class="bi bi-person me-2 text-success"></i>Usuario Asignado
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person me-2 text-success"></i>Usuario Asignado</span>
+                @if($equipo->usuarioAsignado)
+                    <span class="badge bg-success">Asignado</span>
+                @else
+                    <span class="badge bg-secondary">Sin asignar</span>
+                @endif
             </div>
             <div class="card-body">
                 @if($equipo->usuarioAsignado)
                     <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">Nombre</dt>
+                        <dd class="col-sm-7 fw-bold">{{ $equipo->usuarioAsignado->nombre }}</dd>
+                        <dt class="col-sm-5 text-muted">Cédula</dt>
+                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->cedula }}</dd>
                         <dt class="col-sm-5 text-muted">Empresa Propietaria</dt>
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->empresa_propietaria ?? '—' }}</dd>
                         <dt class="col-sm-5 text-muted">Dependencia</dt>
@@ -77,14 +97,10 @@
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->fuente_recurso ?? '—' }}</dd>
                         <dt class="col-sm-5 text-muted">Empresa Funcionario</dt>
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->empresa_funcionario ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Empleado o Contratista</dt>
+                        <dt class="col-sm-5 text-muted">Emp. o Contratista</dt>
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->tipo_vinculacion ?? '—' }}</dd>
                         <dt class="col-sm-5 text-muted">Shortname</dt>
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->shortname ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Nombre</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->nombre }}</dd>
-                        <dt class="col-sm-5 text-muted">Cédula</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->cedula }}</dd>
                         <dt class="col-sm-5 text-muted">Departamento</dt>
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->departamento ?? '—' }}</dd>
                         <dt class="col-sm-5 text-muted">Ciudad</dt>
@@ -95,6 +111,10 @@
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->area ?? '—' }}</dd>
                         <dt class="col-sm-5 text-muted">Piso</dt>
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->piso ?? '—' }}</dd>
+                        <dt class="col-sm-5 text-muted">Distrito</dt>
+                        <dd class="col-sm-7 fw-bold">{{ $equipo->usuarioAsignado->distrito ?? '—' }}</dd>
+                        <dt class="col-sm-5 text-muted">Seccional</dt>
+                        <dd class="col-sm-7 fw-bold">{{ $equipo->usuarioAsignado->seccional ?? '—' }}</dd>
                     </dl>
                 @else
                     <p class="text-muted mb-0">Sin usuario asignado.</p>
@@ -103,7 +123,7 @@
         </div>
 
         {{-- Periféricos --}}
-        <div class="card">
+        <div class="card border-0 shadow-sm">
             <div class="card-header bg-warning bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-usb-plug me-2 text-warning"></i>Periféricos
             </div>
@@ -126,9 +146,87 @@
         </div>
     </div>
 
+    {{-- Últimas asignaciones --}}
+    @if($equipo->asignaciones->isNotEmpty())
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person-fill-gear me-2 text-success"></i>Últimas Asignaciones</span>
+                <a href="{{ route('asignaciones.por-equipo', $equipo) }}"
+                   class="btn btn-sm btn-outline-success">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Usuario</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($equipo->asignaciones as $asig)
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{{ $asig->tipo_accion_color }}">
+                                        {{ $asig->tipo_accion_label }}
+                                    </span>
+                                </td>
+                                <td class="small">{{ $asig->usuario_nombre ?? '—' }}</td>
+                                <td class="small">{{ $asig->fecha_accion?->format('d/m/Y') }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Últimos eventos técnicos --}}
+    @if($equipo->historialTecnico->isNotEmpty())
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-tools me-2 text-warning"></i>Últimos Eventos Técnicos</span>
+                <a href="{{ route('historial-tecnico.por-equipo', $equipo) }}"
+                   class="btn btn-sm btn-outline-warning">Ver todos</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($equipo->historialTecnico as $ht)
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{{ $ht->tipo_evento_color }}">
+                                        <i class="bi {{ $ht->tipo_evento_icono }}"></i>
+                                    </span>
+                                </td>
+                                <td class="small">{{ Str::limit($ht->descripcion, 50) }}</td>
+                                <td class="small">{{ $ht->fecha_evento?->format('d/m/Y') }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Checklists --}}
     <div class="col-12">
-        <div class="card">
+        <div class="card border-0 shadow-sm">
             <div class="card-header bg-secondary bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-clipboard-check me-2 text-secondary"></i>Checklists Técnicos</span>
                 <a href="{{ route('checklists.create') }}?equipo_id={{ $equipo->id }}"
