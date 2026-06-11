@@ -14,7 +14,7 @@
     <div class="col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: #e0f2fe; color: #0284c7;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-info">
                     <i class="bi bi-file-earmark-plus fs-4"></i>
                 </div>
                 <div class="fw-bold text-muted small text-uppercase">Creados</div>
@@ -26,7 +26,7 @@
     <div class="col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: #f3e8ff; color: #9333ea;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-purple">
                     <i class="bi bi-gear fs-4"></i>
                 </div>
                 <div class="fw-bold text-muted small text-uppercase">En Proceso</div>
@@ -38,7 +38,7 @@
     <div class="col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: #e0e7ff; color: #4f46e5;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-indigo">
                     <i class="bi bi-pause-circle fs-4"></i>
                 </div>
                 <div class="fw-bold text-muted small text-uppercase">Suspendidos</div>
@@ -50,7 +50,7 @@
     <div class="col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: #dcfce7; color: #16a34a;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-success">
                     <i class="bi bi-check-circle fs-4"></i>
                 </div>
                 <div class="fw-bold text-muted small text-uppercase">Finalizados</div>
@@ -63,7 +63,7 @@
 <div class="card p-0">
     <div class="p-4 border-bottom border-light">
         <form action="{{ route('historial-tecnico.index') }}" method="GET" class="d-flex gap-3 align-items-center">
-            <div class="search-bar flex-grow-1" style="max-width: 500px;">
+            <div class="search-bar flex-grow-1 maint-search-bar">
                 <i class="bi bi-search text-muted"></i>
                 <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por placa, descripción o caso...">
             </div>
@@ -100,7 +100,7 @@
                             ($reg->estado == 'Suspendido' ? 'badge-danger' : 'badge-info')) 
                         }}">{{ $reg->estado }}</span>
                     </td>
-                    <td class="text-muted" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <td class="text-muted maint-truncate-td">
                         {{ $reg->descripcion }}
                     </td>
                     <td>{{ $reg->usuario_responsable }}</td>

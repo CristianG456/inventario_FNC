@@ -3,6 +3,26 @@
 @section('title', 'Dashboard')
 
 @section('content')
+
+{{-- Alertas de Licencias --}}
+@if(isset($alertasRojas) && $alertasRojas->count() > 0)
+<div class="alert alert-danger d-flex align-items-center mb-4 licencia-alerta" role="alert">
+    <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
+    <div>
+        <strong>¡Atención!</strong> Hay {{ $alertasRojas->count() }} licencia(s) vencida(s). <a href="{{ route('licencias.index', ['estado' => 'Vencida']) }}" class="alert-link">Ver licencias</a>.
+    </div>
+</div>
+@endif
+
+@if(isset($alertasAmarillas) && $alertasAmarillas->count() > 0)
+<div class="alert alert-warning d-flex align-items-center mb-4 licencia-alerta" role="alert">
+    <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+    <div>
+        <strong>Aviso:</strong> Hay {{ $alertasAmarillas->count() }} licencia(s) por vencer en los próximos 30 días. <a href="{{ route('licencias.index') }}" class="alert-link">Revisar licencias</a>.
+    </div>
+</div>
+@endif
+
 <div class="row g-4 mb-4">
     {{-- Tarjeta: Total --}}
     <div class="col-sm-6 col-xl-3">
@@ -48,7 +68,7 @@
                             <span class="fw-medium">{{ $tipo->nombre }}</span>
                             <span class="badge bg-primary rounded-pill">{{ $tipo->equipos_count }}</span>
                         </div>
-                        <div class="progress" style="height:8px;">
+                        <div class="progress dashboard-progress-bar">
                             <div class="progress-bar"
                                  style="width: {{ $totalEquipos > 0 ? ($tipo->equipos_count / $totalEquipos * 100) : 0 }}%">
                             </div>
@@ -107,4 +127,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    setTimeout(function() {
+        const alertas = document.querySelectorAll('.licencia-alerta');
+        alertas.forEach(alerta => {
+            alerta.style.transition = "opacity 0.5s ease";
+            alerta.style.opacity = "0";
+            setTimeout(() => alerta.remove(), 500);
+        });
+    }, 40000);
+</script>
+@endpush
 

@@ -27,4 +27,14 @@ class Funcionario extends Model
     {
         return trim("{$this->nombres} {$this->apellidos}");
     }
+
+    public function licenciaAsignaciones()
+    {
+        return $this->hasMany(LicenciaAsignacion::class, 'funcionario_id');
+    }
+
+    public function equiposAsignados()
+    {
+        return $this->hasMany(UsuarioAsignado::class, 'cedula', 'identificacion');
+    }
 }

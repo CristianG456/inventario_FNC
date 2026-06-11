@@ -236,6 +236,7 @@ class EquipoController extends Controller
 
     /**
      * Procesar el archivo Excel subido.
+     * Detección automática del formato (CMDB / propio).
      */
     public function importar(Request $request): RedirectResponse
     {
@@ -250,14 +251,15 @@ class EquipoController extends Controller
             'archivo.mimes'    => 'Solo se permiten archivos .xlsx o .xls.',
             'archivo.max'      => 'El archivo no puede superar 10 MB.',
         ]);
-
-        $import = new EquiposImport();
+        $filePath = $request->file('archivo')->getRealPath();
+        $import = new EquiposImport($filePath);
         Excel::import($import, $request->file('archivo'));
 
-        $rowFailures = $import->getRowFailures();
-        $phpErrors   = $import->errors();
-        $insertados  = $import->getInsertados();
-        $omitidos    = $import->getOmitidos();
+        $rowFailures  = $import->getRowFailures();
+        $phpErrors    = $import->errors();
+        $insertados   = $import->getInsertados();
+        $omitidos     = $import->getOmitidos();
+        $columnReport = $import->getMapper()->getColumnReport();
 
         $errorsData = collect($phpErrors)->map(fn($e) => [
             'mensaje' => class_basename(get_class($e)) . ': ' . $e->getMessage(),
@@ -267,7 +269,8 @@ class EquipoController extends Controller
             ->with('import_insertados', $insertados)
             ->with('import_omitidos', $omitidos)
             ->with('import_failures', $rowFailures)
-            ->with('import_errors', $errorsData);
+            ->with('import_errors', $errorsData)
+            ->with('import_column_report', $columnReport);
     }
 
     /**

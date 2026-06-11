@@ -22,7 +22,7 @@
             @csrf
 
             <!-- DETALLES DEL REQUERIMIENTO -->
-            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2 ticket-section-title">
                 <i class="bi bi-info-circle text-primary"></i> DETALLES DEL REQUERIMIENTO
             </h6>
 
@@ -58,7 +58,7 @@
 
 
             <!-- ASOCIACIÓN -->
-            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2 ticket-section-title">
                 <i class="bi bi-link-45deg text-dark"></i> ASOCIACIÓN
             </h6>
 
@@ -77,19 +77,19 @@
                     <select name="equipo_id" class="form-select px-3 py-2 border-light-subtle rounded-3 bg-light text-muted" disabled>
                         <option value="">Selecciona un funcionario primero...</option>
                     </select>
-                    <div class="form-text mt-2" style="font-size: 0.75rem;"><i class="bi bi-tag text-primary"></i> Asocia un funcionario para ver sus equipos.</div>
+                    <div class="form-text mt-2 ticket-hint"><i class="bi bi-tag text-primary"></i> Asocia un funcionario para ver sus equipos.</div>
                 </div>
             </div>
 
 
             <!-- EVIDENCIAS -->
-            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2 ticket-section-title">
                 <i class="bi bi-paperclip text-primary"></i> EVIDENCIAS ADJUNTAS (OPCIONAL)
             </h6>
 
             <div class="mb-5">
-                <div class="border border-2 border-dashed rounded-4 p-5 text-center bg-light" style="border-color: #e2e8f0 !important; cursor: pointer;">
-                    <i class="bi bi-paperclip text-muted mb-2" style="font-size: 2rem;"></i>
+                <div class="border border-2 border-dashed rounded-4 p-5 text-center bg-light ticket-file-dropzone">
+                    <i class="bi bi-paperclip text-muted mb-2 ticket-file-icon"></i>
                     <h6 class="fw-semibold text-dark mb-1">Arrastra archivos o haz clic para adjuntar</h6>
                     <p class="text-muted small mb-0">Imágenes, PDF, Word — máx. 5 MB por archivo</p>
                     <input type="file" name="archivos[]" class="d-none" multiple>
@@ -99,7 +99,7 @@
             <!-- BUTTONS -->
             <div class="d-flex justify-content-end gap-3 pt-3 border-top">
                 <a href="{{ route('tickets.index') }}" class="btn btn-light border px-4 rounded-pill">Cancelar</a>
-                <button type="submit" class="btn btn-primary px-4 rounded-pill" style="background-color: #0d6efd; border-color: #0d6efd;">
+                <button type="submit" class="btn btn-primary px-4 rounded-pill ticket-btn-blue">
                     <i class="bi bi-check2 me-1"></i> Crear Caso
                 </button>
             </div>
@@ -108,7 +108,4 @@
     </div>
 </div>
 
-<style>
-    .border-dashed { border-style: dashed !important; }
-</style>
 @endsection

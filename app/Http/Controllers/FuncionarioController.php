@@ -9,7 +9,7 @@ class FuncionarioController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Funcionario::query();
+        $query = Funcionario::withCount('equiposAsignados');
 
         if ($request->filled('buscar')) {
             $buscar = $request->buscar;

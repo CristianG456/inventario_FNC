@@ -90,16 +90,35 @@
                                 <br><small class="text-muted font-monospace">{{ $equipo->serial }}</small>
                             </td>
                             <td>
-                                @if($equipo->activo_fijo)
+                                @if($equipo->placa || $equipo->activo_fijo)
                                     <span class="badge bg-secondary bg-opacity-50 font-monospace">
-                                        {{ $equipo->activo_fijo }}
+                                        {{ $equipo->placa ?? $equipo->activo_fijo }}
                                     </span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
                             </td>
                             <td>
-                                <span class="badge bg-secondary bg-opacity-75">
+                                @php
+                                    $tipoName = strtolower($equipo->tipoRecurso?->nombre ?? '');
+                                    $bgClass = 'bg-secondary bg-opacity-75';
+                                    if (str_contains($tipoName, 'portatil') || str_contains($tipoName, 'laptop')) {
+                                        $bgClass = 'bg-primary';
+                                    } elseif (str_contains($tipoName, 'escritorio') || str_contains($tipoName, 'desktop')) {
+                                        $bgClass = 'bg-success';
+                                    } elseif (str_contains($tipoName, 'impresora') || str_contains($tipoName, 'escaner')) {
+                                        $bgClass = 'bg-info text-dark';
+                                    } elseif (str_contains($tipoName, 'microfono') || str_contains($tipoName, 'camara')) {
+                                        $bgClass = 'bg-warning text-dark';
+                                    } elseif (str_contains($tipoName, 'servidor') || str_contains($tipoName, 'switch') || str_contains($tipoName, 'router')) {
+                                        $bgClass = 'bg-danger';
+                                    } elseif (str_contains($tipoName, 'telefono') || str_contains($tipoName, 'movil') || str_contains($tipoName, 'tablet')) {
+                                        $bgClass = 'bg-dark';
+                                    } elseif ($tipoName) {
+                                        $bgClass = 'bg-secondary';
+                                    }
+                                @endphp
+                                <span class="badge {{ $bgClass }}">
                                     {{ $equipo->tipoRecurso?->nombre ?? '—' }}
                                 </span>
                             </td>
@@ -109,10 +128,24 @@
                             </td>
                             <td>
                                 @if($equipo->usuarioAsignado)
-                                    {{ $equipo->usuarioAsignado->nombre }}
-                                    <br><small class="text-muted">CC: {{ $equipo->usuarioAsignado->cedula }}</small>
+                                    @php
+                                        $nombreMostrar = $equipo->usuarioAsignado->nombre;
+                                        $cedulaAsignada = $equipo->usuarioAsignado->cedula;
+                                        if ($nombreMostrar === 'Sin Asignar' && $cedulaAsignada && $cedulaAsignada !== 'Sin Asignar') {
+                                            $func = \App\Models\Funcionario::where('identificacion', $cedulaAsignada)->first();
+                                            if ($func && $func->nombres !== 'Sin Nombre Registrado') {
+                                                $nombreMostrar = trim($func->nombres . ' ' . $func->apellidos);
+                                            }
+                                        }
+                                    @endphp
+                                    @if($nombreMostrar !== 'Sin Asignar')
+                                        <span class="fw-medium">{{ $nombreMostrar }}</span>
+                                    @else
+                                        <span class="text-muted fst-italic">Sin nombre registrado</span>
+                                    @endif
+                                    <br><small class="text-muted">CC: {{ $cedulaAsignada }}</small>
                                 @else
-                                    <span class="text-muted">Sin asignar</span>
+                                    <span class="text-muted fst-italic">Sin asignar</span>
                                 @endif
                             </td>
                             <td>
@@ -234,7 +267,7 @@
                 <input type="hidden" name="equipo_id" id="asig_equipo_id">
                 <input type="hidden" name="tipo_accion" id="asig_tipo_accion">
 
-                <div class="modal-header" style="background: var(--sidebar-bg); color: #fff;">
+                <div class="modal-header equipo-modal-header">
                     <h5 class="modal-title" id="modalAsignacionTitulo">Asignar Equipo</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -325,7 +358,7 @@
                 <input type="hidden" name="equipo_id" id="simple_equipo_id">
                 <input type="hidden" name="tipo_accion" id="simple_tipo_accion">
 
-                <div class="modal-header" style="background: var(--sidebar-bg); color: #fff;">
+                <div class="modal-header equipo-modal-header">
                     <h5 class="modal-title" id="modalSimpleTitulo">Acción</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>

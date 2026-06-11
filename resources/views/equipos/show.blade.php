@@ -224,6 +224,53 @@
     </div>
     @endif
 
+    {{-- Licencias Asignadas --}}
+    @if($equipo->licenciaAsignaciones && $equipo->licenciaAsignaciones->isNotEmpty())
+    <div class="col-lg-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-key me-2 text-info"></i>Licencias Asignadas</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Licencia</th>
+                                <th>Tipo</th>
+                                <th>Fecha Asignación</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($equipo->licenciaAsignaciones as $la)
+                            <tr>
+                                <td>
+                                    @if($la->licencia)
+                                        <a href="{{ route('licencias.show', $la->licencia) }}" class="text-decoration-none fw-medium">
+                                            {{ $la->licencia->nombre }}
+                                        </a>
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                                <td>{{ $la->licencia ? $la->licencia->tipo_licencia : 'N/A' }}</td>
+                                <td class="small">{{ $la->fecha_asignacion?->format('d/m/Y') }}</td>
+                                <td>
+                                    <span class="badge bg-{{ $la->estado === 'Activa' ? 'success' : 'secondary' }}">
+                                        {{ $la->estado }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Checklists --}}
     <div class="col-12">
         <div class="card border-0 shadow-sm">

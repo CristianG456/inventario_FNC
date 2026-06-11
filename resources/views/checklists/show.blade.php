@@ -17,7 +17,7 @@
     </div>
 </div>
 
-<div class="card" style="max-width: 700px;">
+<div class="card config-card-medium">
     <div class="card-body">
         <dl class="row mb-0">
             <dt class="col-sm-4 text-muted">Equipo</dt>

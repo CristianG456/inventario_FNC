@@ -12,7 +12,7 @@
     </a>
 </div>
 
-<div class="card" style="max-width: 480px;">
+<div class="card config-card-narrow">
     <div class="card-body">
         <form method="POST" action="{{ route('tipo-recursos.store') }}" novalidate>
             @csrf

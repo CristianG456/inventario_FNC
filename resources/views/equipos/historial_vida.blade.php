@@ -23,7 +23,7 @@
     <div class="col-md-4">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-success bg-opacity-15 d-flex align-items-center justify-content-center" style="width:46px;height:46px;">
+                <div class="rounded-circle bg-success bg-opacity-15 d-flex align-items-center justify-content-center equipo-historial-icon">
                     <i class="bi bi-person-fill text-success fs-5"></i>
                 </div>
                 <div>
@@ -36,7 +36,7 @@
     <div class="col-md-4">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-warning bg-opacity-15 d-flex align-items-center justify-content-center" style="width:46px;height:46px;">
+                <div class="rounded-circle bg-warning bg-opacity-15 d-flex align-items-center justify-content-center equipo-historial-icon">
                     <i class="bi bi-tools text-warning fs-5"></i>
                 </div>
                 <div>
@@ -49,7 +49,7 @@
     <div class="col-md-4">
         <div class="card border-0 shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-info bg-opacity-15 d-flex align-items-center justify-content-center" style="width:46px;height:46px;">
+                <div class="rounded-circle bg-info bg-opacity-15 d-flex align-items-center justify-content-center equipo-historial-icon">
                     <i class="bi bi-shield-check text-info fs-5"></i>
                 </div>
                 <div>
@@ -75,7 +75,7 @@
                 No hay eventos registrados para este equipo.
             </div>
         @else
-        <div class="timeline-container" style="padding-left: 20px;">
+        <div class="timeline-container">
             @foreach($eventos as $index => $evento)
             @php
                 $fecha = is_string($evento['fecha']) ? \Carbon\Carbon::parse($evento['fecha']) : $evento['fecha'];
@@ -83,13 +83,12 @@
             <div class="timeline-item d-flex gap-3 mb-4 position-relative">
                 {{-- Línea vertical --}}
                 @if(!$loop->last)
-                <div style="position:absolute; left:19px; top:38px; bottom:-16px; width:2px; background:#e0e0e0; z-index:0;"></div>
+                <div class="timeline-line"></div>
                 @endif
 
                 {{-- Icono --}}
                 <div class="flex-shrink-0 position-relative z-1">
-                    <div class="rounded-circle bg-{{ $evento['color'] }} bg-opacity-15 border border-{{ $evento['color'] }} d-flex align-items-center justify-content-center shadow-sm"
-                         style="width:40px; height:40px;">
+                    <div class="rounded-circle bg-{{ $evento['color'] }} bg-opacity-15 border border-{{ $evento['color'] }} d-flex align-items-center justify-content-center shadow-sm timeline-icon-box">
                         <i class="bi {{ $evento['icono'] }} text-{{ $evento['color'] }}"></i>
                     </div>
                 </div>

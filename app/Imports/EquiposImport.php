@@ -5,7 +5,7 @@ namespace App\Imports;
 use App\Models\Equipo;
 use App\Models\TipoRecurso;
 use App\Models\UsuarioAsignado;
-use Carbon\Carbon;
+use App\Services\Importadores\CMDBMapperService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -13,68 +13,150 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\BeforeSheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
+/**
+ * EquiposImport — Importador de equipos desde Excel.
+ *
+ * Delega toda la lógica de mapeo de columnas al CMDBMapperService.
+ * Soporta automáticamente el formato propio del sistema y el CMDB corporativo.
+ *
+ * Cada fila del Excel se convierte en:
+ *   1 Equipo  +  1 UsuarioAsignado
+ *
+ * Transacciones DB por fila. Errores individuales NO detienen la importación.
+ */
 class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsOnError
 {
     use SkipsErrors;
 
     // ── Tipos que se ignoran silenciosamente ──────────────────────────────────
-    private const TIPOS_PERIFERICO = ['telefono', 'teclado', 'mouse', 'camara'];
+    private const TIPOS_PERIFERICO = ['telefono', 'teclado', 'mouse', 'mause', 'camara'];
 
-    // ── Mapa de alias: campo_interno => [posibles encabezados en el Excel] ────
-    // WithHeadingRow normaliza los encabezados a snake_case minúsculo.
-    // Aquí también se incluyen las versiones ya normalizadas.
-    private const COLUMN_MAP = [
-        // Equipo
-        'tipo_recurso'        => ['tipo_recurso', 'tipo_de_recurso', 'tipo', 'device_type', 'tipo_equipo', 'category', 'categoria'],
-        'serial'              => ['serial', 'serial_number', 'nro_serial', 'numero_serial', 'nro._serial', 'asset_serial'],
-        'placa'               => ['placa', 'asset_tag', 'activo_fijo', 'placa_inventario', 'tag'],
-        'marca'               => ['marca', 'brand', 'fabricante', 'manufacturer'],
-        'modelo'              => ['modelo', 'model', 'model_number'],
-        'nombre_equipo'       => ['nombre_equipo', 'hostname', 'nombre', 'equipo', 'computer_name', 'device_name', 'nombre_host'],
-        'estado_operativo'    => ['estado_operativo', 'estado', 'status', 'state', 'operational_status'],
-        'razon_estado'        => ['razon_estado', 'razon', 'reason', 'observacion_estado', 'motivo'],
-        'procesador'          => ['procesador', 'processor', 'cpu', 'procesador_cpu'],
-        'ram'                 => ['ram', 'memoria_ram', 'memory', 'memoria', 'ram_gb'],
-        'disco'               => ['disco', 'disk', 'storage', 'almacenamiento', 'hdd', 'ssd', 'disco_duro'],
-        'sistema_operativo'   => ['sistema_operativo', 'so', 'os', 'operating_system', 'sistema', 'version_so'],
-        'fecha_compra'        => ['fecha_compra', 'purchase_date', 'fecha_adquisicion', 'fecha_de_compra'],
-        'fin_garantia'        => ['fin_garantia', 'warranty_end', 'garantia', 'fecha_garantia', 'warranty_expiry'],
-        'tiempo_uso'          => ['tiempo_uso', 'age', 'antiguedad', 'anos_uso'],
-        // Usuario asignado
-        'nombre_usuario'      => ['nombre_usuario', 'usuario', 'empleado', 'funcionario', 'full_name', 'nombre_completo', 'nombre_funcionario'],
-        'cedula'              => ['cedula', 'documento', 'identificacion', 'id_number', 'cedula_ciudadania', 'cc'],
-        'empresa_propietaria' => ['empresa_propietaria', 'propietario', 'owner_company', 'empresa_duena'],
-        'dependencia'         => ['dependencia', 'dependency', 'area_funcional', 'gerencia'],
-        'fuente_recurso'      => ['fuente_recurso', 'fuente', 'funding_source', 'fuente_de_recurso'],
-        'empresa_funcionario' => ['empresa_funcionario', 'empresa_empleado', 'employer', 'empresa_contratante'],
-        'tipo_vinculacion'    => ['tipo_vinculacion', 'vinculacion', 'empleado_o_contratista', 'employment_type', 'tipo_contrato'],
-        'shortname'           => ['shortname', 'short_name', 'usuario_red', 'login', 'network_user', 'username'],
-        'departamento'        => ['departamento', 'department', 'depto', 'dpto'],
-        'ciudad'              => ['ciudad', 'city', 'municipio', 'location'],
-        'cargo'               => ['cargo', 'position', 'job_title', 'titulo', 'puesto'],
-        'area'                => ['area', 'area_trabajo', 'work_area'],
-        'piso'                => ['piso', 'floor', 'ubicacion', 'nivel'],
-    ];
+    // ── Estado interno ───────────────────────────────────────────────────────
 
+    private CMDBMapperService $mapper;
     private int   $insertados  = 0;
     private int   $omitidos    = 0;
-    private int   $currentRow  = 1;   // fila 1 = encabezados; datos desde fila 2
+    private int   $currentRow  = 1;
     private array $rowFailures = [];
+    private array $rawHeaders  = [];
+    private int   $detectedHeadingRow = 1;
 
-    // ── Procesamiento principal ───────────────────────────────────────────────
+    // ── Constructor ──────────────────────────────────────────────────────────
+
+    public function __construct(string $filePath)
+    {
+        $this->mapper = new CMDBMapperService();
+        $this->detectHeadingRow($filePath);
+    }
+    
+    public function __destruct()
+    {
+        Log::info("AUDITORIA IMPORTACIÓN - 4. Cantidad total de filas procesadas: " . ($this->currentRow - 1));
+    }
+
+    /**
+     * Detección dinámica de la fila de encabezados.
+     * Lee las primeras 5 filas del Excel y busca las palabras clave.
+     */
+    private function detectHeadingRow(string $filePath): void
+    {
+        try {
+            $reader = IOFactory::createReaderForFile($filePath);
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($filePath);
+            $sheet = $spreadsheet->getActiveSheet();
+            
+            for ($row = 1; $row <= 5; $row++) {
+                $cellIterator = $sheet->getRowIterator($row, $row)->current()->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(false);
+                $score = 0;
+                $tempRaw = [];
+                
+                foreach ($cellIterator as $cell) {
+                    $valRaw = $cell->getValue();
+                    $val = strtolower(trim((string) $valRaw));
+                    if ($valRaw !== null && $valRaw !== '') {
+                        $tempRaw[] = $valRaw;
+                    }
+                    if ($val) {
+                        // Puntaje si contiene palabras clave del CMDB o del sistema
+                        if (in_array($val, ['serial', 'marca', 'modelo', 'tipo de recurso', 'estado operativo', 'nombres y apellidos', 'procesador', 'memoria ram'])) {
+                            $score++;
+                        }
+                    }
+                }
+                
+                // Si encontramos al menos 3 encabezados clave, esta es nuestra fila
+                if ($score >= 3) {
+                    $this->detectedHeadingRow = $row;
+                    $this->currentRow = $row;
+                    $this->rawHeaders = $tempRaw;
+                    Log::info("IMPORT: Fila de encabezados detectada dinámicamente en la fila {$row}");
+                    return;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("IMPORT: Error al detectar fila de encabezados: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Devuelve la fila dinámica detectada.
+     */
+    public function headingRow(): int
+    {
+        return $this->detectedHeadingRow;
+    }
+
+    /**
+     * Tamaño de chunk para lectura eficiente en memoria.
+     */
+    public function chunkSize(): int
+    {
+        return 100;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    //  PROCESAMIENTO PRINCIPAL
+    // ══════════════════════════════════════════════════════════════════════════
 
     public function model(array $row): ?Equipo
     {
         $this->currentRow++;
+
+        // Inicializar el mapper con la primera fila de datos (una sola vez)
+        if (!$this->mapper->isInitialized()) {
+            Log::info("=========================================================================");
+            Log::info("AUDITORIA IMPORTACIÓN - INICIO DE DIAGNÓSTICO");
+            Log::info("=========================================================================");
+            Log::info("1. Fila utilizada como encabezado: " . $this->headingRow());
+            Log::info("2. Lista completa de columnas detectadas (normalizadas): " . json_encode(array_keys($row), JSON_UNESCAPED_UNICODE));
+            Log::info("3. Nombre exacto de cada encabezado (sin normalizar): " . json_encode($this->rawHeaders, JSON_UNESCAPED_UNICODE));
+            Log::info("5. Primera fila de datos leída: " . json_encode($row, JSON_UNESCAPED_UNICODE));
+            
+            $this->mapper->initialize($row);
+            
+            Log::info("6. Valores extraídos de la primera fila:");
+            Log::info("   - nombre: " . $this->mapper->getOrDefault($row, 'nombre_usuario'));
+            Log::info("   - cedula: " . $this->mapper->getOrDefault($row, 'cedula'));
+            Log::info("   - serial: " . $this->mapper->get($row, 'serial'));
+            Log::info("   - marca: " . $this->mapper->getOrDefault($row, 'marca'));
+            Log::info("   - modelo: " . $this->mapper->getOrDefault($row, 'modelo'));
+            Log::info("   - nombre_equipo: " . $this->mapper->getOrDefault($row, 'nombre_equipo'));
+            Log::info("=========================================================================");
+        }
 
         // Ignorar filas completamente vacías
         if ($this->filaVacia($row)) {
             return null;
         }
 
-        $tipoNombre = $this->get($row, 'tipo_recurso');
-        $serial     = $this->get($row, 'serial');
+        $tipoNombre = $this->mapper->get($row, 'tipo_recurso');
+        $serial     = $this->mapper->get($row, 'serial');
 
         // Periféricos → omitir sin error
         if ($tipoNombre !== null && $this->esPeriferico($tipoNombre)) {
@@ -82,56 +164,76 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
             return null;
         }
 
-        // Validación manual por fila
-        $errores = $this->validarFila($tipoNombre, $serial);
-        if (!empty($errores)) {
-            $this->rowFailures[] = ['fila' => $this->currentRow, 'errores' => $errores];
-            Log::warning("Import fila {$this->currentRow} rechazada", $errores);
-            return null;
-        }
-
         try {
             $equipo = DB::transaction(function () use ($row, $tipoNombre, $serial) {
 
-                // 1. Buscar o crear tipo_recurso
-                $tipo = TipoRecurso::firstOrCreate(['nombre' => $tipoNombre]);
+                // 1. Resolver tipo_recurso
+                $tipoId = $this->resolverTipoRecurso($tipoNombre);
 
-                // 2. Crear equipo
-                $equipo = Equipo::create([
-                    'tipo_recurso_id'   => $tipo->id,
-                    'serial'            => $serial,
-                    'placa'             => $this->get($row, 'placa'),
-                    'marca'             => $this->get($row, 'marca'),
-                    'modelo'            => $this->get($row, 'modelo'),
-                    'nombre_equipo'     => $this->get($row, 'nombre_equipo'),
-                    'estado_operativo'  => $this->get($row, 'estado_operativo') ?? 'Activo',
-                    'razon_estado'      => $this->get($row, 'razon_estado'),
-                    'procesador'        => $this->get($row, 'procesador'),
-                    'ram'               => $this->get($row, 'ram'),
-                    'disco'             => $this->get($row, 'disco'),
-                    'sistema_operativo' => $this->get($row, 'sistema_operativo'),
-                    'fecha_compra'      => $this->parseDate($this->get($row, 'fecha_compra')),
-                    'fin_garantia'      => $this->parseDate($this->get($row, 'fin_garantia')),
-                    'tiempo_uso'        => $this->get($row, 'tiempo_uso'),
-                ]);
+                // 2. Resolver serial (autogenerar si no existe)
+                $serialFinal = $this->resolverSerial($serial);
 
-                // 3. Crear usuario asignado
-                UsuarioAsignado::create([
-                    'equipo_id'           => $equipo->id,
-                    'nombre'              => $this->get($row, 'nombre_usuario'),
-                    'cedula'              => $this->get($row, 'cedula'),
-                    'empresa_propietaria' => $this->get($row, 'empresa_propietaria'),
-                    'dependencia'         => $this->get($row, 'dependencia'),
-                    'fuente_recurso'      => $this->get($row, 'fuente_recurso'),
-                    'empresa_funcionario' => $this->get($row, 'empresa_funcionario'),
-                    'tipo_vinculacion'    => $this->get($row, 'tipo_vinculacion'),
-                    'shortname'           => $this->get($row, 'shortname'),
-                    'departamento'        => $this->get($row, 'departamento'),
-                    'ciudad'              => $this->get($row, 'ciudad'),
-                    'cargo'               => $this->get($row, 'cargo'),
-                    'area'                => $this->get($row, 'area'),
-                    'piso'                => $this->get($row, 'piso'),
-                ]);
+                // 3. Crear o actualizar equipo
+                $equipo = Equipo::updateOrCreate(
+                    ['serial' => $serialFinal],
+                    [
+                        'tipo_recurso_id'   => $tipoId,
+                        'placa'             => $this->mapper->get($row, 'placa'),
+                        'marca'             => $this->mapper->getOrDefault($row, 'marca'),
+                        'modelo'            => $this->mapper->getOrDefault($row, 'modelo'),
+                        'nombre_equipo'     => $this->mapper->getOrDefault($row, 'nombre_equipo'),
+                        'estado_operativo'  => $this->mapearEstadoOperativo($this->mapper->get($row, 'estado_operativo')),
+                        'razon_estado'      => $this->mapper->get($row, 'razon_estado'),
+                        'procesador'        => $this->mapper->get($row, 'procesador'),
+                        'ram'               => $this->mapper->get($row, 'ram'),
+                        'disco'             => $this->mapper->get($row, 'disco'),
+                        'sistema_operativo' => $this->mapper->get($row, 'sistema_operativo'),
+                        'fecha_compra'      => $this->mapper->getDate($row, 'fecha_compra'),
+                        'fin_garantia'      => $this->mapper->getDate($row, 'fin_garantia'),
+                        'tiempo_uso'        => $this->mapper->get($row, 'tiempo_uso'),
+                    ]
+                );
+
+                // 4. Crear o actualizar usuario asignado (misma fila = mismo equipo)
+                $cedula = $this->mapper->getOrDefault($row, 'cedula');
+                $nombre = $this->mapper->getOrDefault($row, 'nombre_usuario');
+                
+                UsuarioAsignado::updateOrCreate(
+                    ['equipo_id' => $equipo->id],
+                    [
+                        'nombre'              => $nombre,
+                        'cedula'              => $cedula,
+                        'empresa_propietaria' => $this->mapper->get($row, 'empresa_propietaria'),
+                        'dependencia'         => $this->mapper->get($row, 'dependencia'),
+                        'fuente_recurso'      => $this->mapper->get($row, 'fuente_recurso'),
+                        'empresa_funcionario' => $this->mapper->get($row, 'empresa_funcionario'),
+                        'tipo_vinculacion'    => $this->mapper->get($row, 'tipo_vinculacion'),
+                        'shortname'           => $this->mapper->get($row, 'shortname'),
+                        'departamento'        => $this->mapper->get($row, 'departamento'),
+                        'ciudad'              => $this->mapper->get($row, 'ciudad'),
+                        'cargo'               => $this->mapper->get($row, 'cargo'),
+                        'area'                => $this->mapper->get($row, 'area'),
+                        'piso'                => $this->mapper->get($row, 'piso'),
+                    ]
+                );
+
+                // 5. Sincronizar automáticamente con el módulo de Funcionarios
+                if ($cedula && $cedula !== 'Sin Asignar' && $nombre && $nombre !== 'Sin Asignar') {
+                    \App\Models\Funcionario::updateOrCreate(
+                        ['identificacion' => $cedula],
+                        [
+                            'nombres' => $nombre,
+                            'apellidos' => '',
+                            'cargo' => $this->mapper->get($row, 'cargo'),
+                            'area' => $this->mapper->get($row, 'area'),
+                            'departamento' => $this->mapper->get($row, 'departamento'),
+                            'ciudad' => $this->mapper->get($row, 'ciudad'),
+                            'empresa_funcionario' => $this->mapper->get($row, 'empresa_funcionario'),
+                            'tipo_vinculacion' => $this->mapper->get($row, 'tipo_vinculacion'),
+                            'estado' => 'Activo'
+                        ]
+                    );
+                }
 
                 return $equipo;
             });
@@ -141,7 +243,7 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
 
         } catch (\Exception $e) {
             $this->rowFailures[] = [
-                'fila'   => $this->currentRow,
+                'fila'    => $this->currentRow,
                 'errores' => ['Error interno: ' . $e->getMessage()],
             ];
             Log::error("Import excepción fila {$this->currentRow}", ['msg' => $e->getMessage()]);
@@ -149,93 +251,53 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
         }
     }
 
-    // ── Getters para el controlador ───────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    //  GETTERS PARA EL CONTROLADOR
+    // ══════════════════════════════════════════════════════════════════════════
 
-    public function getInsertados(): int    { return $this->insertados; }
-    public function getOmitidos(): int      { return $this->omitidos; }
-    public function getRowFailures(): array { return $this->rowFailures; }
-    public function chunkSize(): int        { return 100; }
+    public function getInsertados(): int           { return $this->insertados; }
+    public function getOmitidos(): int             { return $this->omitidos; }
+    public function getRowFailures(): array        { return $this->rowFailures; }
+    public function getMapper(): CMDBMapperService { return $this->mapper; }
 
-    // ── Resolución de columnas con mapeo de alias ─────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    //  HELPERS INTERNOS
+    // ══════════════════════════════════════════════════════════════════════════
 
     /**
-     * Busca un campo interno usando todos sus alias posibles.
-     * WithHeadingRow ya convierte los encabezados a minúsculas con guiones bajos;
-     * aquí también normalizamos los alias para igualar ese formato.
+     * Buscar o crear el tipo de recurso por nombre.
+     * Si no se proporcionó, usa un default genérico.
      */
-    private function get(array $row, string $campo): ?string
+    private function resolverTipoRecurso(?string $nombre): int
     {
-        $aliases = self::COLUMN_MAP[$campo] ?? [$campo];
-
-        foreach ($aliases as $alias) {
-            // Normalizar alias al mismo formato que usa WithHeadingRow
-            $key = strtolower(trim(preg_replace('/[\s\-]+/', '_', $alias)));
-            if (array_key_exists($key, $row)) {
-                return $this->limpiar($row[$key]);
-            }
+        if ($nombre) {
+            return TipoRecurso::firstOrCreate(['nombre' => $nombre])->id;
         }
 
-        return null;
+        // Buscar o crear un tipo por defecto
+        return TipoRecurso::firstOrCreate(['nombre' => 'SIN CLASIFICAR'])->id;
     }
 
-    // ── Validación manual ─────────────────────────────────────────────────────
-
-    private function validarFila(?string $tipo, ?string $serial): array
+    /**
+     * Resuelve el serial: si es vacío, N/A, PENDIENTE, etc. → autogenerar.
+     */
+    private function resolverSerial(?string $serial): string
     {
-        $errores = [];
+        $s = trim((string) $serial);
+        $sUpper = strtoupper($s);
 
-        if (empty($tipo)) {
-            $errores[] = 'Campo "tipo_recurso" (o equivalente) obligatorio.';
+        $invalidos = ['', 'NO TIENE', 'PENDIENTE', 'SIN ASIGNAR', 'N/A', 'NA', 'SIN SERIAL', 'SIN REGISTRO'];
+
+        if (in_array($sUpper, $invalidos, true)) {
+            return 'SIN_SERIAL_' . strtoupper(uniqid());
         }
 
-        if (empty($serial)) {
-            $errores[] = 'Campo "serial" obligatorio.';
-        } else {
-            $existe = Equipo::where('serial', $serial)->whereNull('deleted_at')->exists();
-            if ($existe) {
-                $errores[] = "Serial \"{$serial}\" ya registrado — omitido.";
-            }
-        }
-
-        return $errores;
+        return $s;
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-
-    /** Elimina espacios extra y devuelve null si queda vacío. */
-    private function limpiar(mixed $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-        $v = trim(preg_replace('/\s+/', ' ', (string) $value));
-        return $v === '' ? null : $v;
-    }
-
-    /** Convierte fechas numéricas de Excel o strings a Y-m-d. */
-    private function parseDate(mixed $value): ?string
-    {
-        if ($value === null || trim((string) $value) === '') {
-            return null;
-        }
-
-        if (is_numeric($value)) {
-            try {
-                return \PhpOffice\PhpSpreadsheet\Shared\Date
-                    ::excelToDateTimeObject((float) $value)->format('Y-m-d');
-            } catch (\Exception) {
-                return null;
-            }
-        }
-
-        try {
-            return Carbon::parse((string) $value)->format('Y-m-d');
-        } catch (\Exception) {
-            return null;
-        }
-    }
-
-    /** Detecta si el tipo corresponde a un periférico. */
+    /**
+     * Detecta si el tipo corresponde a un periférico que se debe omitir.
+     */
     private function esPeriferico(string $tipo): bool
     {
         $n = strtolower($tipo);
@@ -247,7 +309,9 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
         return false;
     }
 
-    /** Verifica si una fila está completamente vacía. */
+    /**
+     * Verifica si una fila está completamente vacía.
+     */
     private function filaVacia(array $row): bool
     {
         foreach ($row as $v) {
@@ -256,5 +320,29 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
             }
         }
         return true;
+    }
+
+    /**
+     * Mapea los estados operativos del Excel a los valores ENUM de la BD.
+     */
+    private function mapearEstadoOperativo(?string $estado): string
+    {
+        if (!$estado) {
+            return 'activo';
+        }
+
+        $e = strtolower(trim($estado));
+
+        if (str_contains($e, 'operaci') || str_contains($e, 'activo') || str_contains($e, 'asignado')) {
+            return 'activo';
+        }
+        if (str_contains($e, 'baja') || str_contains($e, 'desechado') || str_contains($e, 'obsoleto')) {
+            return 'baja';
+        }
+        if (str_contains($e, 'almacenado') || str_contains($e, 'pendiente') || str_contains($e, 'mantenimiento') || str_contains($e, 'alistamiento')) {
+            return 'mantenimiento';
+        }
+
+        return 'activo';
     }
 }

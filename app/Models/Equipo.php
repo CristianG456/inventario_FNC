@@ -74,6 +74,11 @@ class Equipo extends Model
         return $this->hasMany(HistorialAdministrativo::class)->orderByDesc('created_at');
     }
 
+    public function licenciaAsignaciones(): HasMany
+    {
+        return $this->hasMany(LicenciaAsignacion::class, 'equipo_id');
+    }
+
     /**
      * Indica si el equipo tiene un usuario asignado actualmente.
      */

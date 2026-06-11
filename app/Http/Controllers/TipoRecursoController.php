@@ -11,7 +11,7 @@ class TipoRecursoController extends Controller
 {
     public function index(): View
     {
-        $tipoRecursos = TipoRecurso::withCount('equipos')->orderBy('nombre')->paginate(20);
+        $tipoRecursos = TipoRecurso::withCount('equipos')->orderBy('id', 'asc')->paginate(20);
         return view('tipo_recursos.index', compact('tipoRecursos'));
     }
 

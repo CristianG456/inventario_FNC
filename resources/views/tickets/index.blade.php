@@ -16,12 +16,12 @@
 <div class="card p-0">
     <div class="p-4 border-bottom border-light">
         <form action="{{ route('tickets.index') }}" method="GET" class="d-flex gap-3 align-items-center">
-            <div class="search-bar flex-grow-1" style="max-width: 400px;">
+            <div class="search-bar flex-grow-1 ticket-search-bar">
                 <i class="bi bi-search text-muted"></i>
                 <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por título, funcionario o ID...">
             </div>
             
-            <div class="search-bar" style="min-width: 200px;">
+            <div class="search-bar ticket-status-filter">
                 <select name="estado" class="form-select border-0 bg-transparent text-muted" onchange="this.form.submit()">
                     <option value="">Cualquier Estado</option>
                     <option value="Abierto" {{ request('estado') == 'Abierto' ? 'selected' : '' }}>Abierto</option>
@@ -71,7 +71,7 @@
                 @empty
                 <tr>
                     <td colspan="6" class="text-center py-5 text-muted">
-                        <div class="my-4 text-uppercase fw-semibold" style="letter-spacing: 1px;">
+                        <div class="my-4 text-uppercase fw-semibold ticket-empty-state">
                             NO SE ENCONTRARON TICKETS REGISTRADOS
                         </div>
                     </td>

@@ -16,7 +16,7 @@
 <div class="card p-0">
     <div class="p-4 border-bottom border-light">
         <form action="{{ route('funcionarios.index') }}" method="GET" class="d-flex gap-3 align-items-center">
-            <div class="search-bar flex-grow-1" style="max-width: 500px;">
+            <div class="search-bar flex-grow-1 funcionario-search-bar">
                 <i class="bi bi-search text-muted"></i>
                 <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por nombre, cédula, cargo...">
             </div>
@@ -53,8 +53,8 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge bg-light text-dark border">
-                            <i class="bi bi-laptop me-1"></i> 0
+                        <span class="badge {{ $func->equipos_asignados_count > 0 ? 'bg-primary' : 'bg-light text-dark border' }}">
+                            <i class="bi bi-laptop me-1"></i> {{ $func->equipos_asignados_count }}
                         </span>
                     </td>
                     <td class="text-end pe-4">

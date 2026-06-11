@@ -37,17 +37,16 @@
         <span class="badge bg-warning text-dark">{{ $registros->count() }} eventos</span>
     </div>
     <div class="card-body py-4">
-        <div style="padding-left: 20px;">
+        <div class="timeline-container">
             @foreach($registros as $registro)
             <div class="d-flex gap-3 mb-4 position-relative">
                 @if(!$loop->last)
-                <div style="position:absolute; left:19px; top:40px; bottom:-16px; width:2px; background:#e0e0e0;"></div>
+                <div class="timeline-line"></div>
                 @endif
 
                 {{-- Ícono --}}
                 <div class="flex-shrink-0">
-                    <div class="rounded-circle bg-{{ $registro->tipo_evento_color }} bg-opacity-15 border border-{{ $registro->tipo_evento_color }} d-flex align-items-center justify-content-center shadow-sm"
-                         style="width:40px; height:40px; position:relative; z-index:1;">
+                    <div class="rounded-circle bg-{{ $registro->tipo_evento_color }} bg-opacity-15 border border-{{ $registro->tipo_evento_color }} d-flex align-items-center justify-content-center shadow-sm timeline-icon-box">
                         <i class="bi {{ $registro->tipo_evento_icono }} text-{{ $registro->tipo_evento_color }}"></i>
                     </div>
                 </div>

@@ -27,7 +27,7 @@
                 @endif
             </div>
             <div class="card-body">
-                <pre class="bg-light p-3 rounded small" style="white-space: pre-wrap; max-height: 500px; overflow-y: auto;">{{ $plantillasPdf->contenido }}</pre>
+                <pre class="bg-light p-3 rounded small config-pre-wrap config-scrollable-500">{{ $plantillasPdf->contenido }}</pre>
             </div>
         </div>
     </div>
@@ -37,7 +37,7 @@
                 <i class="bi bi-braces me-2 text-info"></i>Variables Reconocidas
             </div>
             <div class="card-body p-0">
-                <div style="max-height: 400px; overflow-y: auto;">
+                <div class="config-scrollable-400">
                     <table class="table table-sm mb-0">
                         <tbody>
                             @foreach($variables as $var => $desc)

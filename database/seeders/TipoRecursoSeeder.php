@@ -10,16 +10,25 @@ class TipoRecursoSeeder extends Seeder
     public function run(): void
     {
         $tipos = [
-            'Laptop',
-            'PC Escritorio',
-            'Tablet',
-            'Servidor',
-            'Monitor',
+            'Equipo Escritorio',
+            'Equipo Portatil',
+            'Equipo Todo En Uno',
+            'Escaner',
             'Impresora',
-            'Teléfono IP',
+            'Microfono',
+            'Mezclador',
+            'Componente Microfono',
+            'Planta',
+            'Tv',
+            'Tableta',
+            'Telefono',
+            'Servidor',
             'Switch',
             'Router',
-            'UPS',
+            'Cajón',
+            'Plataforma Vb',
+            'Vb',
+            'Sin Clasificar',
         ];
 
         foreach ($tipos as $nombre) {

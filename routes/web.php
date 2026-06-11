@@ -12,6 +12,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\LicenciaController;
+use App\Http\Controllers\LicenciaAsignacionController;
+use App\Http\Controllers\LicenciaHistorialController;
 use Illuminate\Support\Facades\Route;
 
 // Ruta raíz redirige al dashboard (o al login si no está autenticado)
@@ -20,7 +23,7 @@ Route::get('/', function () {
 });
 
 // === Rutas protegidas por autenticación ===
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -98,6 +101,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reportes/mantenimientos', [ReporteController::class, 'mantenimientos'])->name('reportes.mantenimientos');
     Route::get('/reportes/garantias', [ReporteController::class, 'garantias'])->name('reportes.garantias');
     Route::get('/reportes/estadisticas-pdf', [ReporteController::class, 'estadisticasPdf'])->name('reportes.estadisticas-pdf');
+
+    // ── Licencias ─────────────────────────────────────────────────────────────
+    Route::get('/licencias/reportes', [LicenciaController::class, 'reportes'])->name('licencias.reportes');
+    Route::get('/licencias/exportar', [LicenciaController::class, 'exportar'])->name('licencias.exportar');
+    Route::get('/licencias/historial', [LicenciaHistorialController::class, 'index'])->name('licencias.historial');
+    Route::resource('licencias', LicenciaController::class);
+    Route::resource('licencia-asignaciones', LicenciaAsignacionController::class);
 });
 
 require __DIR__ . '/auth.php';

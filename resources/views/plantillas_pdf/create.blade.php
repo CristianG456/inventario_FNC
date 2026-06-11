@@ -97,12 +97,12 @@
 
     {{-- Variables disponibles --}}
     <div class="col-lg-4">
-        <div class="card border-0 shadow-sm sticky-top" style="top: 80px;">
+        <div class="card border-0 shadow-sm sticky-top config-sticky-card">
             <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-braces me-2 text-info"></i>Variables Disponibles
             </div>
             <div class="card-body p-0">
-                <div style="max-height: 500px; overflow-y: auto;">
+                <div class="config-scrollable-500">
                     <table class="table table-sm table-hover mb-0">
                         <thead>
                             <tr>
@@ -114,7 +114,7 @@
                             @foreach($variables as $var => $desc)
                             <tr>
                                 <td>
-                                    <code class="small" style="cursor: pointer; color: #9e052b;"
+                                    <code class="small config-code-clickable"
                                           onclick="insertar('{{ $var }}')"
                                           title="Click para insertar">{{ $var }}</code>
                                 </td>

@@ -5,7 +5,7 @@
 @section('content')
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h2 class="mb-0 fw-bold"><i class="bi bi-file-earmark-arrow-up me-2" style="color:#9e052b;"></i>Importar Equipos desde Excel</h2>
+        <h2 class="mb-0 fw-bold"><i class="bi bi-file-earmark-arrow-up me-2 equipo-text-primary"></i>Importar Equipos desde Excel</h2>
         <p class="text-muted mb-0 mt-1">Sube un archivo <strong>.xlsx</strong> o <strong>.xls</strong> para registrar equipos en masa.</p>
     </div>
     <a href="{{ route('equipos.index') }}" class="btn btn-outline-secondary">
@@ -16,13 +16,31 @@
 {{-- ░░ RESUMEN RESULTADO ░░ --}}
 @if (session()->has('import_insertados'))
     @php
-        $insertados = session('import_insertados');
-        $omitidos   = session('import_omitidos', 0);
+        $insertados    = session('import_insertados');
+        $omitidos      = session('import_omitidos', 0);
         $failures      = session('import_failures', []);
         $importErrors  = session('import_errors', []);
+        $columnReport  = session('import_column_report', []);
         $fallidas      = count($failures) + count($importErrors);
-        $total      = $insertados + $fallidas + $omitidos;
+        $total         = $insertados + $fallidas + $omitidos;
     @endphp
+
+    {{-- Formato detectado --}}
+    @if (!empty($columnReport['formato']))
+        <div class="alert {{ $columnReport['formato'] === 'cmdb' ? 'alert-info' : ($columnReport['formato'] === 'propio' ? 'alert-success' : 'alert-warning') }} d-flex align-items-center mb-3">
+            <i class="bi bi-magic me-2 fs-5"></i>
+            <div>
+                <strong>Formato detectado:</strong>
+                @if ($columnReport['formato'] === 'cmdb')
+                    <span class="badge bg-info text-dark">CMDB Corporativo</span>
+                @elseif ($columnReport['formato'] === 'propio')
+                    <span class="badge bg-success">Formato Propio del Sistema</span>
+                @else
+                    <span class="badge bg-warning text-dark">Formato Desconocido</span>
+                @endif
+            </div>
+        </div>
+    @endif
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
@@ -51,6 +69,88 @@
         </div>
     </div>
 
+    {{-- ░░ REPORTE DE COLUMNAS ░░ --}}
+    @if (!empty($columnReport))
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white fw-semibold border-bottom py-3">
+                <i class="bi bi-layout-three-columns me-2 equipo-text-primary"></i>Reporte de Columnas
+                <button class="btn btn-sm btn-outline-secondary float-end" type="button" data-bs-toggle="collapse" data-bs-target="#colReporte">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+            </div>
+            <div class="collapse" id="colReporte">
+                <div class="card-body">
+                    <div class="row g-3">
+                        {{-- Columnas reconocidas --}}
+                        <div class="col-md-4">
+                            <h6 class="text-success fw-bold mb-2">
+                                <i class="bi bi-check-circle-fill me-1"></i>
+                                Reconocidas ({{ count($columnReport['reconocidas'] ?? []) }})
+                            </h6>
+                            @if (!empty($columnReport['reconocidas']))
+                                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                                    <table class="table table-sm table-borderless mb-0 small">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Campo</th>
+                                                <th>Columna Excel</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($columnReport['reconocidas'] as $col)
+                                                <tr>
+                                                    <td><code>{{ $col['campo_interno'] }}</code></td>
+                                                    <td class="text-muted">{{ $col['columna_excel'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-muted small">Ninguna</p>
+                            @endif
+                        </div>
+
+                        {{-- Columnas ignoradas --}}
+                        <div class="col-md-4">
+                            <h6 class="text-secondary fw-bold mb-2">
+                                <i class="bi bi-dash-circle me-1"></i>
+                                Ignoradas ({{ count($columnReport['ignoradas'] ?? []) }})
+                            </h6>
+                            @if (!empty($columnReport['ignoradas']))
+                                <div style="max-height: 250px; overflow-y: auto;">
+                                    @foreach ($columnReport['ignoradas'] as $col)
+                                        <span class="badge bg-light text-dark border me-1 mb-1">{{ $col }}</span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-muted small">Ninguna</p>
+                            @endif
+                        </div>
+
+                        {{-- Campos faltantes --}}
+                        <div class="col-md-4">
+                            <h6 class="text-warning fw-bold mb-2">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Faltantes ({{ count($columnReport['faltantes'] ?? []) }})
+                            </h6>
+                            @if (!empty($columnReport['faltantes']))
+                                <div style="max-height: 250px; overflow-y: auto;">
+                                    @foreach ($columnReport['faltantes'] as $campo)
+                                        <span class="badge bg-warning-subtle text-warning-emphasis me-1 mb-1">{{ $campo }}</span>
+                                    @endforeach
+                                </div>
+                                <p class="text-muted small mt-2">Se usarán valores por defecto para estos campos.</p>
+                            @else
+                                <p class="text-success small"><i class="bi bi-check me-1"></i>Todos los campos fueron encontrados.</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Detalles de filas con fallo de validación --}}
     @if (count($failures) > 0)
         <div class="card border-danger mb-4 shadow-sm">
@@ -62,7 +162,7 @@
                     <table class="table table-sm table-striped mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:90px;">Fila #</th>
+                                <th class="equipo-import-col-fila">Fila #</th>
                                 <th>Motivo</th>
                             </tr>
                         </thead>
@@ -102,7 +202,7 @@
 {{-- ░░ FORMULARIO ░░ --}}
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white fw-semibold border-bottom py-3">
-        <i class="bi bi-upload me-2" style="color:#9e052b;"></i>Seleccionar archivo Excel
+        <i class="bi bi-upload me-2 equipo-text-primary"></i>Seleccionar archivo Excel
     </div>
     <div class="card-body">
         <form action="{{ route('equipos.importar') }}" method="POST" enctype="multipart/form-data" id="formImportar">
@@ -122,50 +222,49 @@
                 <div class="form-text text-muted">Formatos admitidos: <strong>.xlsx</strong>, <strong>.xls</strong>. Tamaño máximo: 10 MB.</div>
             </div>
 
-            {{-- Indicaciones de columnas esperadas --}}
             <div class="alert alert-light border mb-4">
-                <p class="fw-semibold mb-2" style="color:#9e052b;">
-                    <i class="bi bi-info-circle-fill me-1"></i>
-                    El sistema detecta los encabezados automáticamente. Se aceptan múltiples nombres por columna.
+                <p class="fw-semibold mb-2 equipo-text-primary">
+                    <i class="bi bi-magic me-1"></i>
+                    El sistema detecta automáticamente el formato del archivo (CMDB corporativo o formato propio).
                 </p>
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <p class="fw-semibold mb-1 small" style="color:#9e052b;"><i class="bi bi-laptop-fill me-1"></i>Equipo <span class="text-danger">(*)</span></p>
+                        <p class="fw-semibold mb-1 small equipo-text-primary"><i class="bi bi-laptop-fill me-1"></i>Equipo</p>
                         <table class="table table-sm table-borderless mb-0 small">
                             <tbody>
-                                <tr><td class="text-danger fw-bold">*</td><td><code>tipo_recurso</code></td><td class="text-muted">tipo, device_type, categoria</td></tr>
-                                <tr><td class="text-danger fw-bold">*</td><td><code>serial</code></td><td class="text-muted">serial_number, nro_serial</td></tr>
-                                <tr><td></td><td><code>placa</code></td><td class="text-muted">asset_tag, activo_fijo</td></tr>
-                                <tr><td></td><td><code>marca</code></td><td class="text-muted">brand, fabricante</td></tr>
-                                <tr><td></td><td><code>modelo</code></td><td class="text-muted">model</td></tr>
-                                <tr><td></td><td><code>nombre_equipo</code></td><td class="text-muted">hostname, computer_name</td></tr>
-                                <tr><td></td><td><code>estado_operativo</code></td><td class="text-muted">estado, status</td></tr>
-                                <tr><td></td><td><code>procesador</code></td><td class="text-muted">processor, cpu</td></tr>
-                                <tr><td></td><td><code>ram</code></td><td class="text-muted">memory, memoria</td></tr>
-                                <tr><td></td><td><code>disco</code></td><td class="text-muted">disk, storage, hdd, ssd</td></tr>
-                                <tr><td></td><td><code>sistema_operativo</code></td><td class="text-muted">so, os, operating_system</td></tr>
-                                <tr><td></td><td><code>fecha_compra</code></td><td class="text-muted">purchase_date</td></tr>
-                                <tr><td></td><td><code>fin_garantia</code></td><td class="text-muted">warranty_end, garantia</td></tr>
+                                <tr><td><code>tipo_recurso</code></td><td class="text-muted">TIPO DE RECURSO</td></tr>
+                                <tr><td><code>serial</code></td><td class="text-muted">SERIAL</td></tr>
+                                <tr><td><code>placa</code></td><td class="text-muted">PLACA</td></tr>
+                                <tr><td><code>marca</code></td><td class="text-muted">MARCA, MARCA EQUIPO</td></tr>
+                                <tr><td><code>modelo</code></td><td class="text-muted">MODELO</td></tr>
+                                <tr><td><code>nombre_equipo</code></td><td class="text-muted">NOMBRE DE EQUIPO</td></tr>
+                                <tr><td><code>estado_operativo</code></td><td class="text-muted">ESTADO OPERATIVO</td></tr>
+                                <tr><td><code>procesador</code></td><td class="text-muted">PROCESADOR</td></tr>
+                                <tr><td><code>ram</code></td><td class="text-muted">MEMORIA RAM</td></tr>
+                                <tr><td><code>disco</code></td><td class="text-muted">TAMAÑO DISCO DURO</td></tr>
+                                <tr><td><code>sistema_operativo</code></td><td class="text-muted">SISTEMA OPERATIVO</td></tr>
+                                <tr><td><code>fecha_compra</code></td><td class="text-muted">FECHA DE COMPRA</td></tr>
+                                <tr><td><code>fin_garantia</code></td><td class="text-muted">FIN DE GARANTÍA</td></tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="col-md-4">
-                        <p class="fw-semibold mb-1 small" style="color:#9e052b;"><i class="bi bi-person-fill me-1"></i>Usuario asignado</p>
+                        <p class="fw-semibold mb-1 small equipo-text-primary"><i class="bi bi-person-fill me-1"></i>Usuario asignado</p>
                         <table class="table table-sm table-borderless mb-0 small">
                             <tbody>
-                                <tr><td><code>nombre_usuario</code></td><td class="text-muted">usuario, empleado, full_name</td></tr>
-                                <tr><td><code>cedula</code></td><td class="text-muted">documento, id_number, cc</td></tr>
-                                <tr><td><code>empresa_propietaria</code></td><td class="text-muted">propietario, owner_company</td></tr>
-                                <tr><td><code>dependencia</code></td><td class="text-muted">dependency, gerencia</td></tr>
-                                <tr><td><code>fuente_recurso</code></td><td class="text-muted">fuente, funding_source</td></tr>
-                                <tr><td><code>empresa_funcionario</code></td><td class="text-muted">employer</td></tr>
-                                <tr><td><code>tipo_vinculacion</code></td><td class="text-muted">vinculacion, employment_type</td></tr>
-                                <tr><td><code>shortname</code></td><td class="text-muted">login, username, usuario_red</td></tr>
-                                <tr><td><code>departamento</code></td><td class="text-muted">department, depto</td></tr>
-                                <tr><td><code>ciudad</code></td><td class="text-muted">city, municipio</td></tr>
-                                <tr><td><code>cargo</code></td><td class="text-muted">position, job_title</td></tr>
-                                <tr><td><code>area</code></td><td class="text-muted">area_trabajo</td></tr>
-                                <tr><td><code>piso</code></td><td class="text-muted">floor, ubicacion</td></tr>
+                                <tr><td><code>nombre</code></td><td class="text-muted">NOMBRES Y APELLIDOS</td></tr>
+                                <tr><td><code>cedula</code></td><td class="text-muted">CÉDULA DEL FUNCIONARIO</td></tr>
+                                <tr><td><code>empresa_propietaria</code></td><td class="text-muted">EMPRESA PROPIETARIO</td></tr>
+                                <tr><td><code>dependencia</code></td><td class="text-muted">Departamento</td></tr>
+                                <tr><td><code>fuente_recurso</code></td><td class="text-muted">FUENTE DE RECURSO</td></tr>
+                                <tr><td><code>empresa_funcionario</code></td><td class="text-muted">EMPRESA FUNCIONARIO</td></tr>
+                                <tr><td><code>tipo_vinculacion</code></td><td class="text-muted">EMPLEADO O CONTRATISTA</td></tr>
+                                <tr><td><code>shortname</code></td><td class="text-muted">SHORTNAME</td></tr>
+                                <tr><td><code>departamento</code></td><td class="text-muted">DEPARTAMENTO</td></tr>
+                                <tr><td><code>ciudad</code></td><td class="text-muted">Ciudad</td></tr>
+                                <tr><td><code>cargo</code></td><td class="text-muted">CARGO</td></tr>
+                                <tr><td><code>area</code></td><td class="text-muted">Área</td></tr>
+                                <tr><td><code>piso</code></td><td class="text-muted">UBICACIÓN Y PISO</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -178,20 +277,21 @@
                             <li class="ms-2">• <em>mouse</em></li>
                             <li class="ms-2">• <em>camara</em></li>
                             <li class="mt-1">Filas completamente vacías</li>
-                            <li>Seriales duplicados</li>
+                            <li>Seriales duplicados (se actualizan)</li>
                         </ul>
                         <p class="fw-semibold mb-1 small text-success-emphasis"><i class="bi bi-check2-circle me-1"></i>Normalización automática</p>
                         <ul class="list-unstyled small text-muted mb-0">
-                            <li>"<em>Serial Number</em>" → <code>serial_number</code></li>
-                            <li>"<em>Tipo de Recurso</em>" → <code>tipo_de_recurso</code></li>
                             <li>Mayúsculas, acentos, espacios → sin problema</li>
+                            <li>Serial vacío → <code>SIN_SERIAL_xxx</code></li>
+                            <li>Marca vacía → <code>Sin Marca</code></li>
+                            <li>Nombre vacío → <code>Sin Asignar</code></li>
                         </ul>
                     </div>
                 </div>
             </div>
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-lg text-white" style="background:#9e052b;" id="btnImportar">
+                <button type="submit" class="btn btn-lg text-white equipo-bg-primary" id="btnImportar">
                     <i class="bi bi-cloud-upload me-2"></i>Importar Excel
                 </button>
                 <a href="{{ route('equipos.index') }}" class="btn btn-lg btn-outline-secondary">

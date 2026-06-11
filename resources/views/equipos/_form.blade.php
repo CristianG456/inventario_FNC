@@ -105,8 +105,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-8" id="razonEstadoWrap"
-                 style="{{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'activo'), ['mantenimiento','baja']) ? '' : 'display:none' }}">
+            <div class="col-md-8 {{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'activo'), ['mantenimiento','baja']) ? '' : 'd-none' }}" id="razonEstadoWrap">
                 <label class="form-label fw-medium">Razón del Estado</label>
                 <textarea name="razon_estado"
                           class="form-control @error('razon_estado') is-invalid @enderror"

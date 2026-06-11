@@ -21,7 +21,7 @@
         <form action="{{ route('funcionarios.store') }}" method="POST" class="card border-0 shadow-sm p-4">
             @csrf
 
-            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2 funcionario-section-title">
                 <i class="bi bi-person text-primary"></i> DATOS PERSONALES
             </h6>
 
@@ -43,7 +43,7 @@
                 </div>
             </div>
 
-            <h6 class="text-uppercase fw-bold text-dark mb-4 mt-5 pb-2 border-bottom d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+            <h6 class="text-uppercase fw-bold text-dark mb-4 mt-5 pb-2 border-bottom d-flex align-items-center gap-2 funcionario-section-title">
                 <i class="bi bi-briefcase text-dark"></i> DATOS DE VINCULACIÓN
             </h6>
 

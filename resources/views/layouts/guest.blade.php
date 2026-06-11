@@ -15,44 +15,6 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <style>
-            :root { --marca: #9e052b; }
-            .brand-bg { background-color: var(--marca); }
-            .brand-text { color: var(--marca); }
-            
-            .circles-bg {
-                position: relative;
-                overflow: hidden;
-            }
-            .circles-bg::before, .circles-bg::after {
-                content: '';
-                position: absolute;
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.04);
-            }
-            .circles-bg::before {
-                width: 800px;
-                height: 800px;
-                top: -200px;
-                left: -300px;
-            }
-            .circles-bg::after {
-                width: 600px;
-                height: 600px;
-                bottom: -150px;
-                right: -200px;
-            }
-            .circles-bg-3 {
-                position: absolute;
-                width: 500px;
-                height: 500px;
-                top: 30%;
-                left: 10%;
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.03);
-                z-index: 0;
-            }
-        </style>
     </head>
     <body class="font-sans text-gray-900 antialiased bg-white">
         <div class="min-h-screen flex flex-col md:flex-row">

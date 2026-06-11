@@ -65,11 +65,9 @@
                     · {{ $plantilla->created_at?->format('d/m/Y') }}
                 </p>
 
-                <div class="bg-light rounded p-2 small text-muted font-monospace"
-                     style="max-height: 60px; overflow: hidden; position: relative;">
-                    {{ Str::limit(strip_tags($plantilla->contenido), 150) }}
-                    <div style="position:absolute; bottom:0; left:0; right:0; height:20px;
-                                background: linear-gradient(transparent, #f8f9fa);"></div>
+                <div class="p-3 bg-light config-preview-box">
+                    <small class="text-muted d-block text-truncate">{{ Str::limit(strip_tags($plantilla->contenido), 150) }}</small>
+                    <div class="config-preview-fade"></div>
                 </div>
 
                 <div class="mt-3 d-flex gap-2">

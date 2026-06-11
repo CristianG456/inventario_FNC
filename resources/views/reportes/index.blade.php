@@ -14,7 +14,7 @@
     <!-- Card 1 -->
     <div class="col-md-4">
         <div class="card p-4 h-100 text-center shadow-sm border-0 transition-hover">
-            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; color: var(--primary-color);">
+            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-laptop fs-3"></i>
             </div>
             <h5 class="fw-bold">Inventario General</h5>
@@ -28,7 +28,7 @@
     <!-- Card 2 -->
     <div class="col-md-4">
         <div class="card p-4 h-100 text-center shadow-sm border-0">
-            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; color: var(--primary-color);">
+            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-person-badge fs-3"></i>
             </div>
             <h5 class="fw-bold">Activos por Funcionario</h5>
@@ -42,7 +42,7 @@
     <!-- Card 3 -->
     <div class="col-md-4">
         <div class="card p-4 h-100 text-center shadow-sm border-0">
-            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; color: var(--primary-color);">
+            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-person-gear fs-3"></i>
             </div>
             <h5 class="fw-bold">Asignaciones / Movimientos</h5>
@@ -56,7 +56,7 @@
     <!-- Card 4 -->
     <div class="col-md-4">
         <div class="card p-4 h-100 text-center shadow-sm border-0">
-            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; color: var(--primary-color);">
+            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-tools fs-3"></i>
             </div>
             <h5 class="fw-bold">Mantenimientos</h5>
@@ -70,7 +70,7 @@
     <!-- Card 5 -->
     <div class="col-md-4">
         <div class="card p-4 h-100 text-center shadow-sm border-0">
-            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; color: var(--primary-color);">
+            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-shield-check fs-3"></i>
             </div>
             <h5 class="fw-bold">Garantías</h5>
@@ -84,7 +84,7 @@
     <!-- Card 6 -->
     <div class="col-md-4">
         <div class="card p-4 h-100 text-center shadow-sm border-0">
-            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; color: var(--primary-color);">
+            <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-pie-chart fs-3"></i>
             </div>
             <h5 class="fw-bold">Estadísticas</h5>
