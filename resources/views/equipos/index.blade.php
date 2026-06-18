@@ -171,16 +171,16 @@
                                         @if($equipo->estado_operativo === 'activo')
                                         <button type="button"
                                                 class="btn btn-sm btn-success"
-                                                title="Asignar equipo"
+                                                title="Asignar Funcionario"
                                                 onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')">
-                                            <i class="bi bi-person-plus me-1"></i>Asignar Funcionario
+                                            <i class="bi bi-person-plus"></i>
                                         </button>
                                         @else
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-success"
                                                 title="Restaurar a Activo"
                                                 onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')">
-                                            <i class="bi bi-arrow-repeat"></i> Restaurar
+                                            <i class="bi bi-arrow-repeat"></i>
                                         </button>
                                         @endif
                                     @else
@@ -188,13 +188,13 @@
                                         @if($equipo->estado_operativo === 'activo')
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-primary"
-                                                title="Reemplazar usuario"
+                                                title="Reasignar Funcionario"
                                                 onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')">
-                                            <i class="bi bi-arrow-left-right"></i> Reasignar
+                                            <i class="bi bi-arrow-left-right"></i>
                                         </button>
                                         
                                         <a href="{{ route('equipos.acta', $equipo->id) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Generar Acta de Entrega PDF">
-                                            <i class="bi bi-file-earmark-pdf"></i> Generar Acta
+                                            <i class="bi bi-file-earmark-pdf"></i>
                                         </a>
 
                                         <button type="button"
@@ -208,7 +208,7 @@
                                                 class="btn btn-sm btn-outline-success"
                                                 title="Restaurar a Activo"
                                                 onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')">
-                                            <i class="bi bi-arrow-repeat"></i> Restaurar
+                                            <i class="bi bi-arrow-repeat"></i>
                                         </button>
                                         @endif
                                         

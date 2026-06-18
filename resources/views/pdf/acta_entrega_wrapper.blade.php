@@ -9,8 +9,8 @@
             font-size: 14px;
             color: #333;
             line-height: 1.6;
-            padding: 40px;
-            white-space: pre-wrap; /* Respeta los saltos de línea del texto plano */
+            padding: 0;
+            margin: 0;
         }
     </style>
 </head>

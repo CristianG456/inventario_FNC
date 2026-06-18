@@ -70,6 +70,7 @@ class PlantillaPdf extends Model
         // Sistema
         '{{fecha_generacion}}'    => 'Fecha de generación del documento',
         '{{usuario_sistema}}'     => 'Usuario del sistema que genera el PDF',
+        '{{logo_fnc}}'            => 'Logo de la FNC (Imagen)',
     ];
 
     // ── Relaciones ────────────────────────────────────────────────────────────

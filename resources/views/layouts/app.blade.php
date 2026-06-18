@@ -40,6 +40,11 @@
                 <i class="bi bi-clipboard-check"></i> Checklists
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('actas-firmadas.index') }}" class="nav-link {{ request()->routeIs('actas-firmadas.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-pdf"></i> Actas Firmadas
+            </a>
+        </li>
     </ul>
     <div class="app-sidebar-bottom">
         <form method="POST" action="{{ route('logout') }}">
