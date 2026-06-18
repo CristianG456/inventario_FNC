@@ -9,6 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string|null $responsable_cedula
+ * @property string|null $responsable_nombre
+ * @property string|null $responsable_cargo
+ * @property string|null $responsable_ciudad
+ * @property string|null $responsable_area
+ * @property string|null $responsable_tipo_recurso
+ * @property \Illuminate\Support\Carbon|null $fecha_inicio_responsable
+ * @property \Illuminate\Support\Carbon|null $fecha_fin_responsable
+ */
 class Equipo extends Model
 {
     use HasFactory, SoftDeletes;
@@ -32,11 +42,21 @@ class Equipo extends Model
         'fecha_compra',
         'fin_garantia',
         'tiempo_uso',
+        'responsable_cedula',
+        'responsable_nombre',
+        'responsable_cargo',
+        'responsable_ciudad',
+        'responsable_area',
+        'responsable_tipo_recurso',
+        'fecha_inicio_responsable',
+        'fecha_fin_responsable',
     ];
 
     protected $casts = [
         'fecha_compra' => 'date',
         'fin_garantia' => 'date',
+        'fecha_inicio_responsable' => 'date',
+        'fecha_fin_responsable' => 'date',
     ];
 
     public function tipoRecurso(): BelongsTo
@@ -85,6 +105,11 @@ class Equipo extends Model
     public function estaAsignado(): bool
     {
         return $this->usuarioAsignado()->exists();
+    }
+
+    public function camposPersonalizadosValores(): HasMany
+    {
+        return $this->hasMany(CampoPersonalizadoValor::class, 'entidad_id');
     }
 
     /**

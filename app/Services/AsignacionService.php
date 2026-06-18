@@ -54,6 +54,9 @@ class AsignacionService
                 $responsable
             );
 
+            // Cambiar estado a asignado
+            $equipo->update(['estado_operativo' => 'asignado', 'razon_estado' => null]);
+
             // Sincronizar con el catálogo global de funcionarios
             $this->sincronizarFuncionario($datos);
 
@@ -96,6 +99,9 @@ class AsignacionService
                 $responsable
             );
 
+            // Cambiar estado a asignado
+            $equipo->update(['estado_operativo' => 'asignado', 'razon_estado' => null]);
+
             // Sincronizar con el catálogo global de funcionarios
             $this->sincronizarFuncionario($datos);
 
@@ -137,6 +143,9 @@ class AsignacionService
                 "Retiro de asignación: {$nombreAnterior}. Motivo: {$motivo}",
                 $responsable
             );
+
+            // Cambiar estado a disponible
+            $equipo->update(['estado_operativo' => 'disponible', 'razon_estado' => null]);
 
             return $asignacion;
         });

@@ -37,6 +37,14 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // ====== CAMPOS PERSONALIZADOS ======
+    Route::resource('campos-personalizados', \App\Http\Controllers\CampoPersonalizadoController::class)
+        ->except(['show', 'create', 'edit'])
+        ->middleware('permission:campos_personalizados.ver');
+    Route::post('/campos-personalizados/reorder', [\App\Http\Controllers\CampoPersonalizadoController::class, 'reorder'])
+        ->name('campos-personalizados.reorder')
+        ->middleware('permission:campos_personalizados.editar');
+
     // Módulo Usuarios y Asignación de Roles (solo administradores o con permiso)
     Route::resource('usuarios', UserController::class)->middleware('permission:roles.ver');
     
@@ -81,6 +89,7 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::get('/actas-firmadas', [\App\Http\Controllers\ActaFirmadaController::class, 'index'])->name('actas-firmadas.index')->middleware('permission:equipos.ver');
     Route::post('/actas-firmadas', [\App\Http\Controllers\ActaFirmadaController::class, 'store'])->name('actas-firmadas.store')->middleware('permission:equipos.crear');
     Route::put('/actas-firmadas/{id}', [\App\Http\Controllers\ActaFirmadaController::class, 'update'])->name('actas-firmadas.update')->middleware('permission:equipos.crear');
+    Route::delete('/actas-firmadas/{id}', [\App\Http\Controllers\ActaFirmadaController::class, 'destroy'])->name('actas-firmadas.destroy')->middleware('permission:equipos.crear');
     Route::get('/actas-firmadas/{id}/download', [\App\Http\Controllers\ActaFirmadaController::class, 'download'])->name('actas-firmadas.download')->middleware('permission:equipos.ver');
     Route::get('/actas-firmadas/versions/{id}/download', [\App\Http\Controllers\ActaFirmadaController::class, 'downloadVersion'])->name('actas-firmadas.download-version')->middleware('permission:equipos.ver');
     Route::get('/actas-firmadas/{id}/history', [\App\Http\Controllers\ActaFirmadaController::class, 'history'])->name('actas-firmadas.history')->middleware('permission:equipos.ver');

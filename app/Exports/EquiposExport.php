@@ -3,6 +3,8 @@
 namespace App\Exports;
 
 use App\Models\Equipo;
+use App\Models\CampoPersonalizado;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -15,12 +17,45 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithTitle
 {
+    private array $columnasEstandar;
+    private array $columnasPersonalizadas;
+    private Collection $camposInfo;
+    private array $filtros;
+
+    public function __construct(array $columnasEstandar = [], array $columnasPersonalizadas = [], array $filtros = [])
+    {
+        $this->columnasEstandar = $columnasEstandar;
+        $this->columnasPersonalizadas = $columnasPersonalizadas;
+        $this->filtros = $filtros;
+
+        if (!empty($this->columnasPersonalizadas)) {
+            $this->camposInfo = CampoPersonalizado::whereIn('id', $this->columnasPersonalizadas)
+                                ->orderBy('orden')
+                                ->get();
+        } else {
+            $this->camposInfo = collect();
+        }
+    }
+
     /**
      * Carga los equipos con sus relaciones (sin periféricos).
      */
     public function query()
     {
-        return Equipo::with(['tipoRecurso', 'usuarioAsignado', 'checklists'])
+        return Equipo::with(['tipoRecurso', 'usuarioAsignado', 'camposPersonalizadosValores'])
+            ->when(!empty($this->filtros['buscar']), function ($q) {
+                $q->where(function ($sub) {
+                    $buscar = $this->filtros['buscar'];
+                    $sub->where('serial', 'like', '%' . $buscar . '%')
+                        ->orWhere('nombre_equipo', 'like', '%' . $buscar . '%')
+                        ->orWhere('marca', 'like', '%' . $buscar . '%')
+                        ->orWhere('activo_fijo', 'like', '%' . $buscar . '%')
+                        ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $buscar . '%'));
+                });
+            })
+            ->when(!empty($this->filtros['tipo']), fn($q) => $q->where('tipo_recurso_id', $this->filtros['tipo']))
+            ->when(!empty($this->filtros['estado']), fn($q) => $q->where('estado_operativo', $this->filtros['estado']))
+            ->when(!empty($this->filtros['activo_fijo']), fn($q) => $q->where('activo_fijo', 'like', '%' . $this->filtros['activo_fijo'] . '%'))
             ->orderBy('nombre_equipo');
     }
 
@@ -31,112 +66,96 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
 
     public function headings(): array
     {
-        return [
-            // Bloque usuario asignado
-            'EMPRESA PROPIETARIA DEL EQUIPO',
-            'Departamento',
-            'FUENTE DE RECURSO',
-            'EMPRESA FUNCIONARIO',
-            'EMPLEADO O CONTRATISTA',
-            'CÉDULA DEL FUNCIONARIO/CONTRATISTA',
-            'SHORTNAME',
-            'NOMBRES Y APELLIDOS',
-            'DEPARTAMENTO',
-            'Ciudad',
-            'CARGO',
-            'Área',
-            'UBICACIÓN Y PISO',
-            'TIPO DE RECURSO',
+        $headings = [];
 
-            // Bloque equipo
-            'TIPO',
-            'SERIAL',
-            'PLACA',
-            'MARCA',
-            'MODELO',
-            'NOMBRE DE EQUIPO',
-            'ESTADO OPERATIVO',
-            'RAZÓN DEL ESTADO',
-            'ADMINISTRADO/COMPRADO',
-            'PROCESADOR',
-            'MEMORIA RAM',
-            'TAMAÑO DISCO DURO',
-            'SISTEMA OPERATIVO',
-            'FECHA DE COMPRA',
-            'FIN DE GARANTÍA',
-            'TIEMPO USO (AÑO)',
-            'TIPO DE PROPIEDAD',
-
-            // Bloque checklist
-            'CHECKLIST (RESPONSABLE TI)',
-            'ORDEN DE REVISIÓN',
-            'OBSERVACIONES',
-            'CRUCE AV 23-12-2022',
-            'CRECE SHORTNAME',
-            'RESULTADO CRECE AV',
-            'TIPO APROBADO',
-            'FNC',
-            'VERSIÓN WINDOWS',
-            'MARCA EQUIPO',
+        $nombresEstandar = [
+            'id' => 'ID Interno',
+            'nombre_equipo' => 'Nombre del Equipo',
+            'serial' => 'Serial',
+            'activo_fijo' => 'Activo Fijo',
+            'placa' => 'Placa / Inventario',
+            'marca' => 'Marca',
+            'modelo' => 'Modelo',
+            'tipo' => 'Tipo de Equipo',
+            'estado' => 'Estado Operativo',
+            'usuario_asignado' => 'Usuario Asignado (Nombre)',
+            'cedula_asignado' => 'Usuario Asignado (Cédula)'
         ];
+
+        foreach ($this->columnasEstandar as $col) {
+            if (isset($nombresEstandar[$col])) {
+                $headings[] = mb_strtoupper($nombresEstandar[$col]);
+            }
+        }
+
+        foreach ($this->camposInfo as $campo) {
+            $headings[] = mb_strtoupper($campo->nombre);
+        }
+
+        return $headings;
     }
 
     /**
-     * Mapeo de cada fila — periféricos excluidos explícitamente.
+     * Mapeo de cada fila.
      */
     public function map($equipo): array
     {
-        $usuario = $equipo->usuarioAsignado;
-        $checklist = $equipo->checklists->sortByDesc('created_at')->first();
+        $row = [];
+        
+        foreach ($this->columnasEstandar as $col) {
+            switch ($col) {
+                case 'id': 
+                    $row[] = $equipo->id; 
+                    break;
+                case 'nombre_equipo': 
+                    $row[] = $equipo->nombre_equipo; 
+                    break;
+                case 'serial': 
+                    $row[] = $equipo->serial; 
+                    break;
+                case 'activo_fijo': 
+                    $row[] = $equipo->activo_fijo; 
+                    break;
+                case 'placa': 
+                    $row[] = $equipo->placa; 
+                    break;
+                case 'marca': 
+                    $row[] = $equipo->marca; 
+                    break;
+                case 'modelo': 
+                    $row[] = $equipo->modelo; 
+                    break;
+                case 'tipo': 
+                    $row[] = $equipo->tipoRecurso?->nombre ?? 'N/A'; 
+                    break;
+                case 'estado': 
+                    $row[] = ucfirst($equipo->estado_operativo); 
+                    break;
+                case 'usuario_asignado': 
+                    $row[] = $equipo->usuarioAsignado?->nombre ?? 'Sin asignar'; 
+                    break;
+                case 'cedula_asignado': 
+                    $row[] = $equipo->usuarioAsignado?->cedula ?? 'N/A'; 
+                    break;
+            }
+        }
 
-        return [
-            // Bloque usuario asignado
-            $usuario?->empresa_propietaria,
-            $usuario?->dependencia,
-            $usuario?->fuente_recurso,
-            $usuario?->empresa_funcionario,
-            $usuario?->tipo_vinculacion,
-            $usuario?->cedula,
-            $usuario?->shortname,
-            $usuario?->nombre,
-            $usuario?->departamento,
-            $usuario?->ciudad,
-            $usuario?->cargo,
-            $usuario?->area,
-            $usuario?->piso,
-            $equipo->tipoRecurso?->nombre ?? 'N/A',
+        foreach ($this->camposInfo as $campo) {
+            $valorRelacion = $equipo->camposPersonalizadosValores->where('campo_personalizado_id', $campo->id)->first();
+            $valor = $valorRelacion ? $valorRelacion->valor : '';
+            
+            if ($campo->tipo === 'multiselect' && !empty($valor)) {
+                $decodificado = is_string($valor) ? json_decode($valor, true) : $valor;
+                if (is_array($decodificado)) {
+                    $valor = implode(', ', $decodificado);
+                }
+            } else if ($campo->tipo === 'boolean' && $valor !== '') {
+                $valor = $valor == '1' ? 'Sí' : 'No';
+            }
+            $row[] = $valor;
+        }
 
-            // Bloque equipo
-            '',
-            $equipo->serial,
-            $equipo->placa,
-            $equipo->marca,
-            $equipo->modelo,
-            $equipo->nombre_equipo,
-            ucfirst($equipo->estado_operativo),
-            $equipo->razon_estado,
-            '',
-            $equipo->procesador,
-            $equipo->ram,
-            $equipo->disco,
-            $equipo->sistema_operativo,
-            $equipo->fecha_compra?->format('d/m/Y'),
-            $equipo->fin_garantia?->format('d/m/Y'),
-            $equipo->tiempo_uso,
-            '',
-
-            // Bloque checklist
-            $checklist?->responsable_ti,
-            $checklist?->orden_trabajo,
-            $checklist?->observaciones,
-            $checklist?->cruce_av,
-            $checklist?->crece_software,
-            $checklist?->resultado,
-            $checklist?->tipo_aprobado,
-            $checklist?->fnc,
-            $equipo->sistema_operativo,
-            $equipo->marca,
-        ];
+        return $row;
     }
 
     public function styles(Worksheet $sheet): array

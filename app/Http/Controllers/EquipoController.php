@@ -43,8 +43,11 @@ class EquipoController extends Controller
 
         $equipos      = $query->paginate(15)->withQueryString();
         $tipoRecursos = TipoRecurso::orderBy('nombre')->get();
+        $plantillasExportacion = \App\Models\PlantillaExportacion::where('modulo', 'equipos')
+                                    ->orderBy('nombre')
+                                    ->get();
 
-        return view('equipos.index', compact('equipos', 'tipoRecursos'));
+        return view('equipos.index', compact('equipos', 'tipoRecursos', 'plantillasExportacion'));
     }
 
     /**
@@ -53,7 +56,11 @@ class EquipoController extends Controller
     public function create(): View
     {
         $tipoRecursos = TipoRecurso::orderBy('nombre')->get();
-        return view('equipos.create', compact('tipoRecursos'));
+        $camposPersonalizados = \App\Models\CampoPersonalizado::with('opciones')
+                                ->where('modulo', 'equipos')
+                                ->where('activo', true)
+                                ->orderBy('orden')->get();
+        return view('equipos.create', compact('tipoRecursos', 'camposPersonalizados'));
     }
 
     /**
@@ -61,12 +68,21 @@ class EquipoController extends Controller
      */
     public function store(EquipoRequest $request): RedirectResponse
     {
-        $equipo = Equipo::create($request->only([
+        $datosEquipo = $request->only([
             'tipo_recurso_id', 'serial', 'activo_fijo', 'placa', 'marca', 'modelo',
             'nombre_equipo', 'estado_operativo', 'razon_estado',
             'procesador', 'ram', 'disco', 'sistema_operativo',
             'fecha_compra', 'fin_garantia', 'tiempo_uso',
-        ]));
+            'responsable_cedula', 'responsable_nombre', 'responsable_cargo',
+            'responsable_ciudad', 'responsable_area', 'responsable_tipo_recurso',
+            'fecha_inicio_responsable', 'fecha_fin_responsable'
+        ]);
+
+        if ($request->sin_serial_fisico && empty($datosEquipo['serial'])) {
+            $datosEquipo['serial'] = 'SIN_SERIAL_' . strtoupper(uniqid());
+        }
+
+        $equipo = Equipo::create($datosEquipo);
 
         $equipo->usuarioAsignado()->create([
             'nombre'               => $request->usuario_nombre,
@@ -92,6 +108,17 @@ class EquipoController extends Controller
             'mouse'    => $request->periferico_mouse,
             'camara'   => $request->periferico_camara,
         ]);
+
+        if ($request->has('campos_personalizados')) {
+            foreach ($request->campos_personalizados as $campo_id => $valor) {
+                // Si es un array (multiselect), lo guardamos como JSON
+                $valorGuardar = is_array($valor) ? json_encode($valor) : $valor;
+                $equipo->camposPersonalizadosValores()->create([
+                    'campo_personalizado_id' => $campo_id,
+                    'valor' => $valorGuardar
+                ]);
+            }
+        }
 
         // Sincronizar funcionario en la tabla de funcionarios
         $this->sincronizarFuncionario($request);
@@ -119,6 +146,7 @@ class EquipoController extends Controller
             'usuarioAsignado',
             'periferico',
             'checklists',
+            'camposPersonalizadosValores.campoPersonalizado',
             'asignaciones' => fn($q) => $q->latest('fecha_accion')->limit(5),
             'historialTecnico' => fn($q) => $q->latest('fecha_evento')->limit(5),
         ]);
@@ -130,9 +158,13 @@ class EquipoController extends Controller
      */
     public function edit(Equipo $equipo): View
     {
-        $equipo->load(['usuarioAsignado', 'periferico']);
+        $equipo->load(['usuarioAsignado', 'periferico', 'camposPersonalizadosValores']);
         $tipoRecursos = TipoRecurso::orderBy('nombre')->get();
-        return view('equipos.edit', compact('equipo', 'tipoRecursos'));
+        $camposPersonalizados = \App\Models\CampoPersonalizado::with('opciones')
+                                ->where('modulo', 'equipos')
+                                ->where('activo', true)
+                                ->orderBy('orden')->get();
+        return view('equipos.edit', compact('equipo', 'tipoRecursos', 'camposPersonalizados'));
     }
 
     /**
@@ -145,12 +177,21 @@ class EquipoController extends Controller
             'nombre_equipo', 'procesador', 'ram', 'disco', 'sistema_operativo',
         ]);
 
-        $equipo->update($request->only([
+        $datosEquipo = $request->only([
             'tipo_recurso_id', 'serial', 'activo_fijo', 'placa', 'marca', 'modelo',
             'nombre_equipo', 'estado_operativo', 'razon_estado',
             'procesador', 'ram', 'disco', 'sistema_operativo',
             'fecha_compra', 'fin_garantia', 'tiempo_uso',
-        ]));
+            'responsable_cedula', 'responsable_nombre', 'responsable_cargo',
+            'responsable_ciudad', 'responsable_area', 'responsable_tipo_recurso',
+            'fecha_inicio_responsable', 'fecha_fin_responsable'
+        ]);
+
+        if ($request->sin_serial_fisico && empty($datosEquipo['serial'])) {
+            $datosEquipo['serial'] = 'SIN_SERIAL_' . strtoupper(uniqid());
+        }
+
+        $equipo->update($datosEquipo);
 
         $camposNuevos = $equipo->fresh()->only(array_keys($camposAnteriores));
         $this->historialService->registrarCambiosCampos(
@@ -191,6 +232,16 @@ class EquipoController extends Controller
             ]
         );
 
+        if ($request->has('campos_personalizados')) {
+            foreach ($request->campos_personalizados as $campo_id => $valor) {
+                $valorGuardar = is_array($valor) ? json_encode($valor) : $valor;
+                $equipo->camposPersonalizadosValores()->updateOrCreate(
+                    ['campo_personalizado_id' => $campo_id],
+                    ['valor' => $valorGuardar]
+                );
+            }
+        }
+
         // Sincronizar funcionario en la tabla de funcionarios
         $this->sincronizarFuncionario($request);
 
@@ -221,9 +272,33 @@ class EquipoController extends Controller
     /**
      * Exportar equipos a Excel.
      */
-    public function exportar(): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportar(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        return Excel::download(new EquiposExport(), 'inventario_equipos.xlsx');
+        $columnasEstandar = $request->input('columnas_estandar', []);
+        $columnasPersonalizadas = $request->input('columnas_personalizadas', []);
+        
+        // Guardar plantilla si se solicita
+        if ($request->input('guardar_plantilla') && $request->filled('nombre_plantilla')) {
+            \App\Models\PlantillaExportacion::create([
+                'nombre' => $request->nombre_plantilla,
+                'modulo' => 'equipos',
+                'columnas_estandar' => $columnasEstandar,
+                'columnas_personalizadas' => $columnasPersonalizadas,
+            ]);
+        }
+
+        // Si no se selecciona nada (ej. llamada directa sin modal), exportar todo lo por defecto
+        if (empty($columnasEstandar) && empty($columnasPersonalizadas)) {
+            $columnasEstandar = [
+                'id', 'nombre_equipo', 'serial', 'activo_fijo', 'placa',
+                'marca', 'modelo', 'tipo', 'estado', 'usuario_asignado', 'cedula_asignado'
+            ];
+            $columnasPersonalizadas = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
+                                        ->where('exportar_por_defecto', true)
+                                        ->pluck('id')->toArray();
+        }
+
+        return Excel::download(new EquiposExport($columnasEstandar, $columnasPersonalizadas, $request->all()), 'inventario_equipos.xlsx');
     }
 
     /**

@@ -72,6 +72,13 @@
                                     <a href="{{ route('actas-firmadas.history', $acta->id) }}" class="btn btn-outline-info" title="Historial de Versiones">
                                         <i class="bi bi-clock-history"></i>
                                     </a>
+                                    <form action="{{ route('actas-firmadas.destroy', $acta->id) }}" method="POST" class="form-eliminar-acta" style="display: inline-block; m-0; p-0;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar Acta" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -182,5 +189,27 @@
         document.getElementById('replaceForm').action = '/actas-firmadas/' + id;
         new bootstrap.Modal(document.getElementById('replaceModal')).show();
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.form-eliminar-acta').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: '¿Eliminar Acta?',
+                    text: "Esta acción enviará el acta a la papelera. Podrás recuperarla si es necesario.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: '<i class="bi bi-trash"></i> Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
 </script>
 @endpush

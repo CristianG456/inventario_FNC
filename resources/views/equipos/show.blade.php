@@ -71,6 +71,46 @@
         </div>
     </div>
 
+    {{-- Campos Personalizados --}}
+    @if($equipo->camposPersonalizadosValores->isNotEmpty())
+    <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-dark bg-opacity-10 fw-semibold border-0 py-3">
+                <i class="bi bi-ui-checks-grid me-2 text-dark"></i>Información Adicional
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    @foreach($equipo->camposPersonalizadosValores as $cv)
+                        @if($cv->campoPersonalizado && $cv->campoPersonalizado->visible)
+                            <dt class="col-sm-5 text-muted">{{ $cv->campoPersonalizado->nombre }}</dt>
+                            <dd class="col-sm-7">
+                                @if($cv->campoPersonalizado->tipo === 'boolean')
+                                    <span class="badge bg-{{ $cv->valor == '1' ? 'success' : 'secondary' }}">
+                                        {{ $cv->valor == '1' ? 'Sí' : 'No' }}
+                                    </span>
+                                @elseif($cv->campoPersonalizado->tipo === 'url' && filter_var($cv->valor, FILTER_VALIDATE_URL))
+                                    <a href="{{ $cv->valor }}" target="_blank" class="text-break"><i class="bi bi-link-45deg"></i> Ver Enlace</a>
+                                @elseif($cv->campoPersonalizado->tipo === 'multiselect')
+                                    @php
+                                        $valores = is_string($cv->valor) ? json_decode($cv->valor, true) : $cv->valor;
+                                    @endphp
+                                    @if(is_array($valores))
+                                        {{ implode(', ', $valores) }}
+                                    @else
+                                        {{ $cv->valor ?: '—' }}
+                                    @endif
+                                @else
+                                    {{ $cv->valor ?: '—' }}
+                                @endif
+                            </dd>
+                        @endif
+                    @endforeach
+                </dl>
+            </div>
+        </div>
+    </div>
+    @endif
+    
     {{-- Usuario asignado --}}
     <div class="col-lg-6">
         <div class="card mb-4 border-0 shadow-sm">
@@ -121,6 +161,37 @@
                 @endif
             </div>
         </div>
+
+        {{-- Responsable Temporal --}}
+        @if($equipo->responsable_nombre)
+        <div class="card mb-4 border-0 shadow-sm mt-3">
+            <div class="card-header bg-secondary bg-opacity-10 fw-semibold border-0 py-3">
+                <i class="bi bi-person-badge me-2 text-secondary"></i>Responsable Temporal
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted">Nombre</dt>
+                    <dd class="col-sm-7 fw-bold">{{ $equipo->responsable_nombre }}</dd>
+                    <dt class="col-sm-5 text-muted">Cédula</dt>
+                    <dd class="col-sm-7">{{ $equipo->responsable_cedula ?? '—' }}</dd>
+                    <dt class="col-sm-5 text-muted">Cargo</dt>
+                    <dd class="col-sm-7">{{ $equipo->responsable_cargo ?? '—' }}</dd>
+                    <dt class="col-sm-5 text-muted">Ciudad</dt>
+                    <dd class="col-sm-7">{{ $equipo->responsable_ciudad ?? '—' }}</dd>
+                    <dt class="col-sm-5 text-muted">Área</dt>
+                    <dd class="col-sm-7">{{ $equipo->responsable_area ?? '—' }}</dd>
+                    <dt class="col-sm-5 text-muted">Tipo Recurso</dt>
+                    <dd class="col-sm-7">{{ $equipo->responsable_tipo_recurso ?? '—' }}</dd>
+                    <dt class="col-sm-5 text-muted">Fechas</dt>
+                    <dd class="col-sm-7">
+                        {{ $equipo->fecha_inicio_responsable?->format('d/m/Y') ?? '—' }}
+                        al
+                        {{ $equipo->fecha_fin_responsable?->format('d/m/Y') ?? '—' }}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        @endif
 
         {{-- Periféricos --}}
         <div class="card border-0 shadow-sm">

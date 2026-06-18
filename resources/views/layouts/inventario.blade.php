@@ -81,6 +81,14 @@
             </li>
             @endcan
             
+            @can('campos_personalizados.ver')
+            <li class="nav-item">
+                <a href="{{ route('campos-personalizados.index') }}" class="nav-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}">
+                    <i class="bi bi-ui-checks-grid"></i> Campos Personalizados
+                </a>
+            </li>
+            @endcan
+            
             @can('licencias.ver')
             <li class="nav-item">
                 <a href="{{ route('licencias.index') }}" class="nav-link {{ request()->routeIs('licencias.*') || request()->routeIs('licencia-asignaciones.*') ? 'active' : '' }}">

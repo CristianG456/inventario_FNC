@@ -191,10 +191,29 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
                         'fecha_compra'      => $this->mapper->getDate($row, 'fecha_compra'),
                         'fin_garantia'      => $this->mapper->getDate($row, 'fin_garantia'),
                         'tiempo_uso'        => $this->mapper->get($row, 'tiempo_uso'),
+                        'responsable_cedula'=> $this->mapper->get($row, 'responsable_cedula'),
+                        'responsable_nombre'=> $this->mapper->get($row, 'responsable_nombre'),
+                        'responsable_cargo' => $this->mapper->get($row, 'responsable_cargo'),
+                        'responsable_ciudad'=> $this->mapper->get($row, 'responsable_ciudad'),
+                        'responsable_area'  => $this->mapper->get($row, 'responsable_area'),
+                        'responsable_tipo_recurso'=> $this->mapper->get($row, 'responsable_tipo_recurso'),
+                        'fecha_inicio_responsable'=> $this->mapper->getDate($row, 'fecha_inicio_responsable'),
+                        'fecha_fin_responsable'   => $this->mapper->getDate($row, 'fecha_fin_responsable'),
                     ]
                 );
 
-                // 4. Crear o actualizar usuario asignado (misma fila = mismo equipo)
+                // 4. Guardar campos personalizados dinámicamente
+                $customFields = $this->mapper->getCustomFields($row);
+                foreach ($customFields as $campoId => $valor) {
+                    if ($valor !== null) {
+                        $equipo->camposPersonalizadosValores()->updateOrCreate(
+                            ['campo_personalizado_id' => $campoId],
+                            ['valor' => $valor]
+                        );
+                    }
+                }
+
+                // 5. Crear o actualizar usuario asignado (misma fila = mismo equipo)
                 $cedula = $this->mapper->getOrDefault($row, 'cedula');
                 $nombre = $this->mapper->getOrDefault($row, 'nombre_usuario');
                 
@@ -217,7 +236,7 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
                     ]
                 );
 
-                // 5. Sincronizar automáticamente con el módulo de Funcionarios
+                // 6. Sincronizar automáticamente con el módulo de Funcionarios
                 if ($cedula && $cedula !== 'Sin Asignar' && $nombre && $nombre !== 'Sin Asignar') {
                     \App\Models\Funcionario::updateOrCreate(
                         ['identificacion' => $cedula],

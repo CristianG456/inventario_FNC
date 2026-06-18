@@ -200,6 +200,48 @@ class CMDBMapperService
             'anos_uso',
         ],
 
+        // ─── Campos del responsable temporal ─────────────────────────────
+
+        'responsable_cedula' => [
+            'responsable_cedula',
+            'cedula_responsable',
+        ],
+
+        'responsable_nombre' => [
+            'responsable_nombre',
+            'nombre_responsable',
+        ],
+
+        'responsable_cargo' => [
+            'responsable_cargo',
+            'cargo_responsable',
+        ],
+
+        'responsable_ciudad' => [
+            'responsable_ciudad',
+            'ciudad_responsable',
+        ],
+
+        'responsable_area' => [
+            'responsable_area',
+            'area_responsable',
+        ],
+
+        'responsable_tipo_recurso' => [
+            'responsable_tipo_recurso',
+            'tipo_recurso_responsable',
+        ],
+
+        'fecha_inicio_responsable' => [
+            'fecha_inicio_responsable',
+            'inicio_responsable',
+        ],
+
+        'fecha_fin_responsable' => [
+            'fecha_fin_responsable',
+            'fin_responsable',
+        ],
+
         // ─── Campos del usuario asignado ─────────────────────────────────
 
         'nombre_usuario' => [
@@ -323,6 +365,7 @@ class CMDBMapperService
     // ── Estado interno ───────────────────────────────────────────────────────
 
     private ?array  $resolvedMap     = null;
+    private array   $resolvedCustomFields = [];
     private string  $detectedFormat  = self::FORMAT_UNKNOWN;
     private array   $recognizedCols  = [];
     private array   $ignoredCols     = [];
@@ -398,6 +441,19 @@ class CMDBMapperService
             return $this->parseDate($raw);
         }
         return null;
+    }
+
+    /**
+     * Obtiene todos los campos personalizados detectados en la fila.
+     * Retorna array: [campo_id => valor]
+     */
+    public function getCustomFields(array $row): array
+    {
+        $valores = [];
+        foreach ($this->resolvedCustomFields as $campoId => $key) {
+            $valores[$campoId] = $this->limpiar($row[$key] ?? null);
+        }
+        return $valores;
     }
 
     /**
@@ -512,6 +568,24 @@ class CMDBMapperService
             if (!$found) {
                 $this->missingFields[] = $campo;
                 Log::warning("IMPORT MAP: '{$campo}' → NO ENCONTRADO");
+            }
+        }
+
+        // Mapear campos personalizados (Dinámicos)
+        $camposPersonalizados = \App\Models\CampoPersonalizado::where('modulo', 'equipos')->get();
+        foreach ($camposPersonalizados as $campo) {
+            $key = $this->normalizeKey($campo->nombre);
+            
+            // Si la columna existe en el Excel
+            if (array_key_exists($key, $row)) {
+                $this->resolvedCustomFields[$campo->id] = $key;
+                $this->recognizedCols[] = [
+                    'campo_interno' => $campo->nombre . ' (Personalizado)',
+                    'columna_excel' => $key,
+                    'valor_ejemplo' => $this->truncate($row[$key]),
+                ];
+                $usedKeys[$key] = true;
+                Log::info("IMPORT MAP: Personalizado '{$campo->nombre}' → '{$key}' (ejemplo: " . json_encode($this->truncate($row[$key])) . ")");
             }
         }
 

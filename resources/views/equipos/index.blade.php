@@ -6,9 +6,9 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-laptop me-2 text-primary"></i>Inventario de Equipos</h4>
     <div class="d-flex gap-2">
-        <a href="{{ route('equipos.exportar') }}" class="btn btn-success">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalExportacion">
             <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
-        </a>
+        </button>
         <a href="{{ route('equipos.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nuevo Equipo
         </a>
@@ -388,6 +388,116 @@
     </div>
 </div>
 
+{{-- ═══ MODAL: Exportación Inteligente ════════════════ --}}
+<div class="modal fade" id="modalExportacion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="formExportacion" method="GET" action="{{ route('equipos.exportar') }}">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-excel me-2"></i>Exportación Avanzada</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Selecciona las columnas que deseas incluir en el archivo Excel. Puedes guardar esta selección como plantilla para futuras exportaciones.
+                    </p>
+                    
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-primary">Plantillas Guardadas</label>
+                            <select class="form-select form-select-sm" id="plantillaExportacionSelect">
+                                <option value="">-- Seleccionar Plantilla (Opcional) --</option>
+                                @if(isset($plantillasExportacion))
+                                    @foreach($plantillasExportacion as $plantilla)
+                                        <option value="{{ $plantilla->id }}" data-estandar="{{ json_encode($plantilla->columnas_estandar) }}" data-personalizadas="{{ json_encode($plantilla->columnas_personalizadas) }}">
+                                            {{ $plantilla->nombre }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3 border-secondary border-opacity-25">
+                        <div class="card-header bg-light fw-bold py-2">
+                            <i class="bi bi-list-check me-1"></i>Columnas Estándar del Sistema
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-2">
+                                @php
+                                    $columnasEstandar = [
+                                        'id' => 'ID Interno',
+                                        'nombre_equipo' => 'Nombre del Equipo',
+                                        'serial' => 'Serial',
+                                        'activo_fijo' => 'Activo Fijo',
+                                        'placa' => 'Placa / Inventario',
+                                        'marca' => 'Marca',
+                                        'modelo' => 'Modelo',
+                                        'tipo' => 'Tipo de Equipo',
+                                        'estado' => 'Estado Operativo',
+                                        'usuario_asignado' => 'Usuario Asignado (Nombre)',
+                                        'cedula_asignado' => 'Usuario Asignado (Cédula)'
+                                    ];
+                                @endphp
+                                @foreach($columnasEstandar as $key => $label)
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="columnas_estandar[]" value="{{ $key }}" id="col_est_{{ $key }}" checked>
+                                        <label class="form-check-label small" for="col_est_{{ $key }}">{{ $label }}</label>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-2 border-secondary border-opacity-25">
+                        <div class="card-header bg-light fw-bold py-2">
+                            <i class="bi bi-ui-checks-grid me-1"></i>Campos Personalizados (Dinámicos)
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-2" id="contenedorCamposExportables">
+                                @php
+                                    $camposExportables = \App\Models\CampoPersonalizado::where('modulo', 'equipos')->where('exportable', true)->orderBy('orden')->get();
+                                @endphp
+                                @if($camposExportables->isEmpty())
+                                    <div class="col-12 text-muted small fst-italic">No hay campos personalizados configurados como exportables.</div>
+                                @else
+                                    @foreach($camposExportables as $campo)
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="columnas_personalizadas[]" value="{{ $campo->id }}" id="col_pers_{{ $campo->id }}" {{ $campo->exportar_por_defecto ? 'checked' : '' }}>
+                                            <label class="form-check-label small text-primary" for="col_pers_{{ $campo->id }}">{{ $campo->nombre }}</label>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="guardar_plantilla" name="guardar_plantilla" value="1">
+                            <label class="form-check-label fw-bold text-success" for="guardar_plantilla">Guardar esta selección como nueva plantilla</label>
+                        </div>
+                        <div class="mt-2" id="div_nombre_plantilla" style="display: none;">
+                            <input type="text" class="form-control form-control-sm" name="nombre_plantilla" placeholder="Ej: Reporte Mensual Gerencia">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-download me-1"></i>Generar y Descargar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -441,5 +551,156 @@ function abrirModalSimple(equipoId, nombreEquipo, tipo) {
 
     new bootstrap.Modal(document.getElementById('modalSimple')).show();
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const formAsignacion = document.getElementById('formAsignacion');
+    if(formAsignacion) {
+        formAsignacion.addEventListener('submit', function(e) {
+            const tipoAccion = document.getElementById('asig_tipo_accion').value;
+            if (tipoAccion === 'reemplazo') {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Devolución requerida',
+                    text: "Este activo actualmente se encuentra asignado. ¿Ya fue recibida y validada el Acta de Devolución?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, registrar devolución',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const equipoId = document.getElementById('asig_equipo_id').value;
+                        const token = document.querySelector('input[name="_token"]').value;
+
+                        // Ejecutar silenciosamente el retiro
+                        fetch("{{ route('asignaciones.store') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': token,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                equipo_id: equipoId,
+                                tipo_accion: 'retiro',
+                                motivo: 'Acta de devolución validada',
+                                observaciones: 'Generado automáticamente antes de reasignar',
+                                fecha_accion: new Date().toISOString().split('T')[0]
+                            })
+                        }).then(response => {
+                            if(response.ok) {
+                                // Cambiar el tipo a asignacion para el nuevo flujo
+                                document.getElementById('asig_tipo_accion').value = 'asignacion';
+                                formAsignacion.submit();
+                            } else {
+                                Swal.fire('Error', 'No se pudo registrar la devolución.', 'error');
+                            }
+                        }).catch(error => {
+                            Swal.fire('Error', 'Ocurrió un error en la solicitud.', 'error');
+                        });
+                    } else {
+                        Swal.fire('Operación cancelada', 'Debe validar la devolución antes de asignar a un nuevo funcionario.', 'info');
+                    }
+                });
+            }
+        });
+    }
+
+    const formSimple = document.getElementById('formSimple');
+    if(formSimple) {
+        formSimple.addEventListener('submit', function(e) {
+            const tipoAccion = document.getElementById('simple_tipo_accion').value;
+            if (tipoAccion === 'retiro') {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Devolución requerida',
+                    text: "¿Ya fue recibida y validada el Acta de Devolución?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, la entregó',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Cambiamos a submit nativo para evitar ciclo infinito
+                        formSimple.submit();
+                    } else {
+                        Swal.fire('Operación cancelada', 'Debe validar el Acta de Devolución antes de registrar el retiro.', 'info');
+                    }
+                });
+            }
+        });
+    }
+
+    // Lógica para exportación: mostrar campo de nombre si se selecciona guardar
+    const checkGuardarPlantilla = document.getElementById('guardar_plantilla');
+    if (checkGuardarPlantilla) {
+        checkGuardarPlantilla.addEventListener('change', function() {
+            document.getElementById('div_nombre_plantilla').style.display = this.checked ? 'block' : 'none';
+            if(this.checked) {
+                document.querySelector('input[name="nombre_plantilla"]').setAttribute('required', 'required');
+            } else {
+                document.querySelector('input[name="nombre_plantilla"]').removeAttribute('required');
+            }
+        });
+    }
+
+    // Lógica para cargar plantilla guardada
+    const selectPlantilla = document.getElementById('plantillaExportacionSelect');
+    if(selectPlantilla) {
+        selectPlantilla.addEventListener('change', function() {
+            if(!this.value) return; // Si selecciona vacio, no hace nada (deja como está)
+            
+            const estandar = JSON.parse(this.options[this.selectedIndex].getAttribute('data-estandar') || '[]');
+            const personalizadas = JSON.parse(this.options[this.selectedIndex].getAttribute('data-personalizadas') || '[]');
+            
+            // Desmarcar todo primero
+            document.querySelectorAll('input[name="columnas_estandar[]"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="columnas_personalizadas[]"]').forEach(cb => cb.checked = false);
+            
+            // Marcar las estándar guardadas
+            estandar.forEach(val => {
+                const cb = document.getElementById('col_est_' + val);
+                if(cb) cb.checked = true;
+            });
+            
+            // Marcar las personalizadas guardadas
+            personalizadas.forEach(val => {
+                const cb = document.getElementById('col_pers_' + val);
+                if(cb) cb.checked = true;
+            });
+        });
+    }
+
+    // Copiar filtros actuales de búsqueda al formulario de exportación
+    const formExportacion = document.getElementById('formExportacion');
+    if(formExportacion) {
+        formExportacion.addEventListener('submit', function(e) {
+            // Añadir campos ocultos con los valores de búsqueda actuales
+            const searchParams = new URLSearchParams(window.location.search);
+            
+            // Eliminar inputs ocultos previos si existen
+            formExportacion.querySelectorAll('.dynamic-filter').forEach(el => el.remove());
+
+            for(const [key, value] of searchParams.entries()) {
+                if(value && key !== 'page') {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    input.className = 'dynamic-filter';
+                    formExportacion.appendChild(input);
+                }
+            }
+            
+            // Cerrar modal después de un breve retraso para permitir la descarga
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('modalExportacion')).hide();
+            }, 1000);
+        });
+    }
+});
 </script>
 @endpush

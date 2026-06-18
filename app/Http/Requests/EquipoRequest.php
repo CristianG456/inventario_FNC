@@ -19,13 +19,14 @@ class EquipoRequest extends FormRequest
         return [
             // --- Datos del equipo ---
             'tipo_recurso_id'  => ['required', 'exists:tipo_recursos,id'],
-            'serial'           => ['nullable', 'string', 'max:100', Rule::unique('equipos', 'serial')->ignore($equipoId)->whereNull('deleted_at')],
+            'sin_serial_fisico'=> ['nullable', 'boolean'],
+            'serial'           => ['required_unless:sin_serial_fisico,true', 'nullable', 'string', 'max:100', Rule::unique('equipos', 'serial')->ignore($equipoId)->whereNull('deleted_at')],
             'activo_fijo'      => ['nullable', 'string', 'max:100'],
             'placa'            => ['nullable', 'string', 'max:100'],
             'marca'            => ['required', 'string', 'max:100'],
             'modelo'           => ['required', 'string', 'max:100'],
             'nombre_equipo'    => ['required', 'string', 'max:150'],
-            'estado_operativo' => ['required', Rule::in(['activo', 'mantenimiento', 'baja'])],
+            'estado_operativo' => ['required', Rule::in(['activo', 'mantenimiento', 'baja', 'asignado', 'disponible'])],
             'razon_estado'     => ['nullable', 'string', 'max:500'],
             'procesador'       => ['nullable', 'string', 'max:150'],
             'ram'              => ['nullable', 'string', 'max:50'],
@@ -34,6 +35,16 @@ class EquipoRequest extends FormRequest
             'fecha_compra'     => ['nullable', 'date'],
             'fin_garantia'     => ['nullable', 'date', 'after_or_equal:fecha_compra'],
             'tiempo_uso'       => ['nullable', 'string', 'max:100'],
+
+            // --- Responsable Temporal ---
+            'responsable_cedula'       => ['nullable', 'string', 'max:20'],
+            'responsable_nombre'       => ['nullable', 'string', 'max:150'],
+            'responsable_cargo'        => ['nullable', 'string', 'max:100'],
+            'responsable_ciudad'       => ['nullable', 'string', 'max:100'],
+            'responsable_area'         => ['nullable', 'string', 'max:100'],
+            'responsable_tipo_recurso' => ['nullable', 'string', 'max:100'],
+            'fecha_inicio_responsable' => ['nullable', 'date'],
+            'fecha_fin_responsable'    => ['nullable', 'date', 'after_or_equal:fecha_inicio_responsable'],
 
             // --- Usuario asignado ---
             'usuario_nombre'       => ['required', 'string', 'max:150'],
@@ -65,7 +76,7 @@ class EquipoRequest extends FormRequest
         return [
             'tipo_recurso_id.required'  => 'El tipo de recurso es obligatorio.',
             'tipo_recurso_id.exists'    => 'El tipo de recurso seleccionado no existe.',
-            'serial.required'           => 'El número de serial es obligatorio.',
+            'serial.required_unless'    => 'Debe ingresar el serial del equipo si no marca la casilla correspondiente.',
             'serial.unique'             => 'Ya existe un equipo con este serial.',
             'marca.required'            => 'La marca es obligatoria.',
             'modelo.required'           => 'El modelo es obligatorio.',

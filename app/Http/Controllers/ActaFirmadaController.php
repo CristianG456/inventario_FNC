@@ -139,4 +139,21 @@ class ActaFirmadaController extends Controller
         $acta = ActaFirmada::with(['versions.user'])->findOrFail($id);
         return view('actas_firmadas.history', compact('acta'));
     }
+
+    public function destroy($id)
+    {
+        $acta = ActaFirmada::findOrFail($id);
+        $numero_acta = $acta->numero_acta;
+
+        $acta->delete();
+
+        AuditLog::create([
+            'user_id'   => Auth::id(),
+            'user_name' => Auth::user()->name,
+            'action'    => 'DELETE_ACTA_FIRMADA',
+            'details'   => json_encode(['numero_acta' => $numero_acta])
+        ]);
+
+        return redirect()->route('actas-firmadas.index')->with('success', 'Acta firmada eliminada exitosamente.');
+    }
 }

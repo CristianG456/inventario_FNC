@@ -27,10 +27,16 @@
 
             <div class="col-md-4">
                 <label class="form-label fw-medium">Serial</label>
-                <input type="text" name="serial"
+                <input type="text" name="serial" id="serialInput"
                        class="form-control @error('serial') is-invalid @enderror"
                        value="{{ old('serial', $equipo->serial ?? '') }}"
                        maxlength="100">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" name="sin_serial_fisico" id="sinSerialCheck" value="true" {{ old('sin_serial_fisico') ? 'checked' : '' }}>
+                    <label class="form-check-label text-muted small" for="sinSerialCheck">
+                        Este equipo no posee serial físico
+                    </label>
+                </div>
                 @error('serial')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -97,6 +103,8 @@
                         class="form-select @error('estado_operativo') is-invalid @enderror"
                         required id="estadoSelect">
                     <option value="activo" {{ old('estado_operativo', $equipo->estado_operativo ?? 'activo') === 'activo' ? 'selected' : '' }}>Activo</option>
+                    <option value="asignado" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'asignado' ? 'selected' : '' }}>Asignado</option>
+                    <option value="disponible" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'disponible' ? 'selected' : '' }}>Disponible</option>
                     <option value="mantenimiento" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
                     <option value="baja" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'baja' ? 'selected' : '' }}>Baja</option>
                 </select>
@@ -314,6 +322,79 @@
     </div>
 </div>
 
+{{-- === RESPONSABLE TEMPORAL === --}}
+<div class="card mb-4">
+    <div class="card-header bg-secondary bg-opacity-10 border-0 fw-semibold py-3">
+        <i class="bi bi-person-badge me-2 text-secondary"></i>Responsable Temporal del Activo
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Cédula</label>
+                <input type="text" name="responsable_cedula"
+                       class="form-control @error('responsable_cedula') is-invalid @enderror"
+                       value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}"
+                       maxlength="20">
+                @error('responsable_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-medium">Nombre</label>
+                <input type="text" name="responsable_nombre"
+                       class="form-control @error('responsable_nombre') is-invalid @enderror"
+                       value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}"
+                       maxlength="150">
+                @error('responsable_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium">Cargo</label>
+                <input type="text" name="responsable_cargo"
+                       class="form-control @error('responsable_cargo') is-invalid @enderror"
+                       value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}"
+                       maxlength="100">
+                @error('responsable_cargo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Ciudad</label>
+                <input type="text" name="responsable_ciudad"
+                       class="form-control @error('responsable_ciudad') is-invalid @enderror"
+                       value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}"
+                       maxlength="100">
+                @error('responsable_ciudad') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Área</label>
+                <input type="text" name="responsable_area"
+                       class="form-control @error('responsable_area') is-invalid @enderror"
+                       value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}"
+                       maxlength="100">
+                @error('responsable_area') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Tipo de Recurso</label>
+                <input type="text" name="responsable_tipo_recurso"
+                       class="form-control @error('responsable_tipo_recurso') is-invalid @enderror"
+                       value="{{ old('responsable_tipo_recurso', $equipo->responsable_tipo_recurso ?? '') }}"
+                       maxlength="100">
+                @error('responsable_tipo_recurso') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Fecha Inicio</label>
+                <input type="date" name="fecha_inicio_responsable"
+                       class="form-control @error('fecha_inicio_responsable') is-invalid @enderror"
+                       value="{{ old('fecha_inicio_responsable', isset($equipo->fecha_inicio_responsable) ? $equipo->fecha_inicio_responsable->format('Y-m-d') : '') }}">
+                @error('fecha_inicio_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-medium">Fecha Fin</label>
+                <input type="date" name="fecha_fin_responsable"
+                       class="form-control @error('fecha_fin_responsable') is-invalid @enderror"
+                       value="{{ old('fecha_fin_responsable', isset($equipo->fecha_fin_responsable) ? $equipo->fecha_fin_responsable->format('Y-m-d') : '') }}">
+                @error('fecha_fin_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- === PERIFÉRICOS === --}}
 <div class="card mb-4">
     <div class="card-header bg-warning bg-opacity-10 border-0 fw-semibold py-3">
@@ -357,12 +438,106 @@
     </div>
 </div>
 
+{{-- === CAMPOS PERSONALIZADOS (DINÁMICOS) === --}}
+@if(isset($camposPersonalizados) && $camposPersonalizados->count() > 0)
+<div class="card mb-4">
+    <div class="card-header bg-dark bg-opacity-10 border-0 fw-semibold py-3">
+        <i class="bi bi-ui-checks-grid me-2 text-dark"></i>Información Adicional (Personalizada)
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            @foreach($camposPersonalizados as $campo)
+                @php
+                    $valorActual = null;
+                    if (isset($equipo)) {
+                        $valorGuardado = $equipo->camposPersonalizadosValores->where('campo_personalizado_id', $campo->id)->first();
+                        $valorActual = $valorGuardado ? $valorGuardado->valor : null;
+                    }
+                    $valorOld = old("campos_personalizados.{$campo->id}", $valorActual);
+                @endphp
+                
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">{{ $campo->nombre }} {!! $campo->obligatorio ? '<span class="text-danger">*</span>' : '' !!}</label>
+                    
+                    @if($campo->tipo === 'texto')
+                        <input type="text" name="campos_personalizados[{{ $campo->id }}]" class="form-control" value="{{ $valorOld }}" {{ $campo->obligatorio ? 'required' : '' }}>
+                    
+                    @elseif($campo->tipo === 'textarea')
+                        <textarea name="campos_personalizados[{{ $campo->id }}]" class="form-control" rows="2" {{ $campo->obligatorio ? 'required' : '' }}>{{ $valorOld }}</textarea>
+                    
+                    @elseif($campo->tipo === 'numero')
+                        <input type="number" step="any" name="campos_personalizados[{{ $campo->id }}]" class="form-control" value="{{ $valorOld }}" {{ $campo->obligatorio ? 'required' : '' }}>
+                    
+                    @elseif($campo->tipo === 'fecha')
+                        <input type="date" name="campos_personalizados[{{ $campo->id }}]" class="form-control" value="{{ $valorOld }}" {{ $campo->obligatorio ? 'required' : '' }}>
+                    
+                    @elseif($campo->tipo === 'boolean')
+                        <select name="campos_personalizados[{{ $campo->id }}]" class="form-select" {{ $campo->obligatorio ? 'required' : '' }}>
+                            <option value="">Seleccione...</option>
+                            <option value="1" {{ $valorOld == '1' ? 'selected' : '' }}>Sí</option>
+                            <option value="0" {{ $valorOld == '0' ? 'selected' : '' }}>No</option>
+                        </select>
+                        
+                    @elseif($campo->tipo === 'select')
+                        <select name="campos_personalizados[{{ $campo->id }}]" class="form-select" {{ $campo->obligatorio ? 'required' : '' }}>
+                            <option value="">Seleccione...</option>
+                            @foreach($campo->opciones as $opcion)
+                                <option value="{{ $opcion->valor }}" {{ $valorOld == $opcion->valor ? 'selected' : '' }}>{{ $opcion->valor }}</option>
+                            @endforeach
+                        </select>
+                        
+                    @elseif($campo->tipo === 'multiselect')
+                        @php
+                            // Intentar decodificar si es JSON
+                            $valoresSeleccionados = is_string($valorOld) ? json_decode($valorOld, true) : $valorOld;
+                            if(!is_array($valoresSeleccionados)) $valoresSeleccionados = [];
+                        @endphp
+                        <select name="campos_personalizados[{{ $campo->id }}][]" class="form-select" multiple {{ $campo->obligatorio ? 'required' : '' }} size="3">
+                            @foreach($campo->opciones as $opcion)
+                                <option value="{{ $opcion->valor }}" {{ in_array($opcion->valor, $valoresSeleccionados) ? 'selected' : '' }}>{{ $opcion->valor }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Mantén presionado Ctrl (Windows) o Cmd (Mac) para seleccionar varios.</small>
+                    @else
+                        <input type="text" name="campos_personalizados[{{ $campo->id }}]" class="form-control" value="{{ $valorOld }}" {{ $campo->obligatorio ? 'required' : '' }}>
+                    @endif
+                    
+                    @if($campo->descripcion)
+                        <small class="text-muted fst-italic">{{ $campo->descripcion }}</small>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+@endif
+
 @push('scripts')
 <script>
     // Mostrar/ocultar razón de estado
     document.getElementById('estadoSelect').addEventListener('change', function () {
         const wrap = document.getElementById('razonEstadoWrap');
-        wrap.style.display = ['mantenimiento', 'baja'].includes(this.value) ? '' : 'none';
+        wrap.style.display = ['mantenimiento', 'baja'].includes(this.value) ? 'block' : 'none';
+    });
+
+    // Lógica para checkbox "sin serial"
+    document.addEventListener('DOMContentLoaded', function() {
+        const serialInput = document.getElementById('serialInput');
+        const sinSerialCheck = document.getElementById('sinSerialCheck');
+        
+        function toggleSerialInput() {
+            if (sinSerialCheck.checked) {
+                serialInput.value = '';
+                serialInput.disabled = true;
+            } else {
+                serialInput.disabled = false;
+            }
+        }
+        
+        if(sinSerialCheck && serialInput) {
+            sinSerialCheck.addEventListener('change', toggleSerialInput);
+            toggleSerialInput(); // init
+        }
     });
 </script>
 @endpush
