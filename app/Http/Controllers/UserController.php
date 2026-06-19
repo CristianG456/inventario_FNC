@@ -21,7 +21,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = Role::all();
+        $roles = Role::select('id', 'name')->get();
         return view('usuarios.form', compact('roles'));
     }
 
@@ -61,7 +61,7 @@ class UserController extends Controller
 
     public function edit(User $usuario)
     {
-        $roles = Role::all();
+        $roles = Role::select('id', 'name')->get();
         return view('usuarios.form', ['user' => $usuario, 'roles' => $roles]);
     }
 

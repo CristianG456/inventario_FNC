@@ -20,7 +20,7 @@ class RoleController extends Controller
     public function create()
     {
         // Agrupar permisos por prefijo (ej: equipos, usuarios, etc)
-        $permissions = Permission::all()->groupBy(function($data) {
+        $permissions = Permission::select('id', 'name')->get()->groupBy(function($data) {
             return explode('.', $data->name)[0];
         });
         return view('roles.create', compact('permissions'));
@@ -60,7 +60,7 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        $permissions = Permission::all()->groupBy(function($data) {
+        $permissions = Permission::select('id', 'name')->get()->groupBy(function($data) {
             return explode('.', $data->name)[0];
         });
         $rolePermissions = $role->permissions->pluck('name')->toArray();

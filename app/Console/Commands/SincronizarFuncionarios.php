@@ -63,4 +63,3 @@ class SincronizarFuncionarios extends Command
         return Command::SUCCESS;
     }
 }
-}
