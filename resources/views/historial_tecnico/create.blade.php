@@ -26,7 +26,7 @@
                     <select name="equipo_id" id="equipo_id"
                             class="form-select @error('equipo_id') is-invalid @enderror" required>
                         <option value="">Seleccione un equipo...</option>
-                        @foreach(\App\Models\Equipo::orderBy('nombre_equipo')->get() as $eq)
+                        @foreach($equipos as $eq)
                             <option value="{{ $eq->id }}"
                                 {{ (old('equipo_id', $equipo?->id) == $eq->id) ? 'selected' : '' }}>
                                 {{ $eq->nombre_equipo }} ({{ $eq->serial }})

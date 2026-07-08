@@ -83,7 +83,7 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
         ];
 
         foreach ($this->columnasEstandar as $col) {
-            if (isset($nombresEstandar[$col])) {
+               if (isset($nombresEstandar[$col])) {
                 $headings[] = mb_strtoupper($nombresEstandar[$col]);
             }
         }

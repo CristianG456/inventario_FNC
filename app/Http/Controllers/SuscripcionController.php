@@ -11,7 +11,11 @@ class SuscripcionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Suscripcion::query();
+        $query = Suscripcion::withCount([
+            'asignaciones as cantidad_asignada_count' => function ($q) {
+                $q->where('estado', 'Activa');
+            },
+        ]);
         if ($request->has('search')) {
             $query->where('nombre', 'like', '%' . $request->search . '%')
                   ->orWhere('fabricante', 'like', '%' . $request->search . '%');

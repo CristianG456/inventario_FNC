@@ -22,20 +22,20 @@
 </div>
 
 {{-- Alertas --}}
-@if($alertasRojas->count() > 0)
+@if($alertasRojas > 0)
 <div class="alert alert-danger d-flex align-items-center licencia-alerta" role="alert">
     <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
     <div>
-        <strong>¡Atención!</strong> Hay {{ $alertasRojas->count() }} licencia(s) vencida(s).
+        <strong>¡Atención!</strong> Hay {{ $alertasRojas }} licencia(s) vencida(s).
     </div>
 </div>
 @endif
 
-@if($alertasAmarillas->count() > 0)
+@if($alertasAmarillas > 0)
 <div class="alert alert-warning d-flex align-items-center licencia-alerta" role="alert">
     <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
     <div>
-        <strong>Aviso:</strong> Hay {{ $alertasAmarillas->count() }} licencia(s) por vencer en los próximos 30 días.
+        <strong>Aviso:</strong> Hay {{ $alertasAmarillas }} licencia(s) por vencer en los próximos 30 días.
     </div>
 </div>
 @endif

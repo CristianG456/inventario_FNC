@@ -45,6 +45,10 @@ class Licencia extends Model
      */
     public function getCuposAsignadosAttribute(): int
     {
+        if (array_key_exists('cupos_asignados_count', $this->attributes)) {
+            return (int) $this->attributes['cupos_asignados_count'];
+        }
+
         return $this->asignaciones()->where('estado', 'Activa')->count();
     }
 

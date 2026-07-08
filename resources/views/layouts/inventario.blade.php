@@ -220,23 +220,6 @@
             @json($errors->all())
         );
     });
-
-    // Auto-capitalizar la primera letra en todos los inputs de texto y textareas
-    document.addEventListener('input', function(e) {
-        if (e.target.matches('input[type="text"], input[type="search"], textarea')) {
-            let val = e.target.value;
-            if (val.length > 0 && val[0].match(/[a-z]/)) {
-                // Guardar la posición del cursor para no interrumpir la escritura
-                let start = e.target.selectionStart;
-                let end = e.target.selectionEnd;
-                
-                e.target.value = val.charAt(0).toUpperCase() + val.slice(1);
-                
-                // Restaurar la posición del cursor
-                e.target.setSelectionRange(start, end);
-            }
-        }
-    });
 </script>
 @stack('scripts')
 </body>

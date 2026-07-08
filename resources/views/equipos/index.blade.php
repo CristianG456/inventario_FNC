@@ -132,7 +132,7 @@
                                         $nombreMostrar = $equipo->usuarioAsignado->nombre;
                                         $cedulaAsignada = $equipo->usuarioAsignado->cedula;
                                         if ($nombreMostrar === 'Sin Asignar' && $cedulaAsignada && $cedulaAsignada !== 'Sin Asignar') {
-                                            $func = \App\Models\Funcionario::where('identificacion', $cedulaAsignada)->first();
+                                            $func = $funcionariosPorCedula[$cedulaAsignada] ?? null;
                                             if ($func && $func->nombres !== 'Sin Nombre Registrado') {
                                                 $nombreMostrar = trim($func->nombres . ' ' . $func->apellidos);
                                             }
@@ -457,9 +457,6 @@
                         </div>
                         <div class="card-body p-3">
                             <div class="row g-2" id="contenedorCamposExportables">
-                                @php
-                                    $camposExportables = \App\Models\CampoPersonalizado::where('modulo', 'equipos')->where('exportable', true)->orderBy('orden')->get();
-                                @endphp
                                 @if($camposExportables->isEmpty())
                                     <div class="col-12 text-muted small fst-italic">No hay campos personalizados configurados como exportables.</div>
                                 @else

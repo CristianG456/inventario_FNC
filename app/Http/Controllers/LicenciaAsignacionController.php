@@ -29,13 +29,14 @@ class LicenciaAsignacionController extends Controller
 
     public function create()
     {
-        $licencias = Licencia::where('estado', 'Activa')->get();
+        $licencias = Licencia::where('estado', 'Activa')
+            ->withCount([
+                'asignaciones as cupos_asignados_count' => function ($q) {
+                    $q->where('estado', 'Activa');
+                },
+            ])
+            ->get();
         $equipos = Equipo::select('id', 'nombre_equipo', 'activo_fijo', 'serial')->get();
-        $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion')->get();
-        // Nota: En la vista se usa $funcionario->cedula, pero el modelo usa identificacion.
-        // Eloquent devolverá null para cedula, así que para no romper la vista inyectamos el alias o simplemente
-        // dejamos que devuelva los datos requeridos.
-        // Mejor añadir el alias a la consulta o iterar, pero select('id', 'nombres', 'apellidos', 'identificacion as cedula') no siempre funciona si la bd no lo permite fácil, sin embargo SQL lo soporta.
         $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion', 'identificacion as cedula')->get();
         
         return view('licencias_asignaciones.create', compact('licencias', 'equipos', 'funcionarios'));
@@ -73,7 +74,13 @@ class LicenciaAsignacionController extends Controller
 
     public function edit(LicenciaAsignacion $licencia_asignacion)
     {
-        $licencias = Licencia::where('estado', 'Activa')->get();
+        $licencias = Licencia::where('estado', 'Activa')
+            ->withCount([
+                'asignaciones as cupos_asignados_count' => function ($q) {
+                    $q->where('estado', 'Activa');
+                },
+            ])
+            ->get();
         $equipos = Equipo::select('id', 'nombre_equipo', 'activo_fijo', 'serial')->get();
         $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion', 'identificacion as cedula')->get();
 

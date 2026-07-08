@@ -26,28 +26,63 @@ class EquipoController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Equipo::with(['tipoRecurso', 'usuarioAsignado'])
-            ->when($request->filled('buscar'), function ($q) use ($request) {
-                $q->where(function ($sub) use ($request) {
-                    $sub->where('serial', 'like', '%' . $request->buscar . '%')
-                        ->orWhere('nombre_equipo', 'like', '%' . $request->buscar . '%')
-                        ->orWhere('marca', 'like', '%' . $request->buscar . '%')
-                        ->orWhere('activo_fijo', 'like', '%' . $request->buscar . '%')
-                        ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $request->buscar . '%'));
+        $buscar = trim((string) $request->input('buscar', ''));
+        $filtroActivoFijo = trim((string) $request->input('activo_fijo', ''));
+
+        $query = Equipo::select([
+                'id',
+                'tipo_recurso_id',
+                'serial',
+                'activo_fijo',
+                'placa',
+                'marca',
+                'modelo',
+                'nombre_equipo',
+                'estado_operativo',
+                'created_at',
+            ])
+            ->with([
+                'tipoRecurso:id,nombre',
+                'usuarioAsignado:id,equipo_id,nombre,cedula',
+            ])
+            ->when($buscar !== '', function ($q) use ($buscar) {
+                $termino = '%' . $buscar . '%';
+                $q->where(function ($sub) use ($termino) {
+                    $sub->where('serial', 'like', $termino)
+                        ->orWhere('nombre_equipo', 'like', $termino)
+                        ->orWhere('marca', 'like', $termino)
+                        ->orWhere('activo_fijo', 'like', $termino)
+                        ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino));
                 });
             })
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
             ->when($request->filled('estado'), fn($q) => $q->where('estado_operativo', $request->estado))
-            ->when($request->filled('activo_fijo'), fn($q) => $q->where('activo_fijo', 'like', '%' . $request->activo_fijo . '%'))
+            ->when($filtroActivoFijo !== '', fn($q) => $q->where('activo_fijo', 'like', '%' . $filtroActivoFijo . '%'))
             ->latest();
 
         $equipos      = $query->paginate(15)->withQueryString();
-        $tipoRecursos = TipoRecurso::orderBy('nombre')->get();
+        $cedulasAsignadas = $equipos->getCollection()
+            ->pluck('usuarioAsignado.cedula')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $funcionariosPorCedula = Funcionario::whereIn('identificacion', $cedulasAsignadas)
+            ->get(['identificacion', 'nombres', 'apellidos'])
+            ->keyBy('identificacion');
+
+        $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
+        $camposExportables = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
+            ->where('exportable', true)
+            ->select('id', 'nombre', 'exportar_por_defecto')
+            ->orderBy('orden')
+            ->get();
         $plantillasExportacion = \App\Models\PlantillaExportacion::where('modulo', 'equipos')
+                                    ->select('id', 'nombre', 'columnas_estandar', 'columnas_personalizadas')
                                     ->orderBy('nombre')
                                     ->get();
 
-        return view('equipos.index', compact('equipos', 'tipoRecursos', 'plantillasExportacion'));
+        return view('equipos.index', compact('equipos', 'tipoRecursos', 'plantillasExportacion', 'funcionariosPorCedula', 'camposExportables'));
     }
 
     /**
@@ -55,8 +90,16 @@ class EquipoController extends Controller
      */
     public function create(): View
     {
-        $tipoRecursos = TipoRecurso::orderBy('nombre')->get();
-        $camposPersonalizados = \App\Models\CampoPersonalizado::with('opciones')
+        $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
+        $camposPersonalizados = \App\Models\CampoPersonalizado::select([
+                                    'id',
+                                    'nombre',
+                                    'descripcion',
+                                    'tipo',
+                                    'obligatorio',
+                                    'orden',
+                                ])
+                                ->with(['opciones:id,campo_personalizado_id,valor,orden'])
                                 ->where('modulo', 'equipos')
                                 ->where('activo', true)
                                 ->orderBy('orden')->get();
@@ -146,6 +189,7 @@ class EquipoController extends Controller
             'usuarioAsignado',
             'periferico',
             'checklists',
+            'licenciaAsignaciones.licencia',
             'camposPersonalizadosValores.campoPersonalizado',
             'asignaciones' => fn($q) => $q->latest('fecha_accion')->limit(5),
             'historialTecnico' => fn($q) => $q->latest('fecha_evento')->limit(5),
@@ -158,9 +202,21 @@ class EquipoController extends Controller
      */
     public function edit(Equipo $equipo): View
     {
-        $equipo->load(['usuarioAsignado', 'periferico', 'camposPersonalizadosValores']);
-        $tipoRecursos = TipoRecurso::orderBy('nombre')->get();
-        $camposPersonalizados = \App\Models\CampoPersonalizado::with('opciones')
+        $equipo->load([
+            'usuarioAsignado:id,equipo_id,nombre,cedula,empresa_propietaria,dependencia,fuente_recurso,empresa_funcionario,tipo_vinculacion,shortname,departamento,ciudad,cargo,area,piso,distrito,seccional',
+            'periferico:id,equipo_id,telefono,teclado,mouse,camara',
+            'camposPersonalizadosValores:id,entidad_id,campo_personalizado_id,valor',
+        ]);
+        $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
+        $camposPersonalizados = \App\Models\CampoPersonalizado::select([
+                                    'id',
+                                    'nombre',
+                                    'descripcion',
+                                    'tipo',
+                                    'obligatorio',
+                                    'orden',
+                                ])
+                                ->with(['opciones:id,campo_personalizado_id,valor,orden'])
                                 ->where('modulo', 'equipos')
                                 ->where('activo', true)
                                 ->orderBy('orden')->get();

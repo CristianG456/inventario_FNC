@@ -33,6 +33,10 @@ class Suscripcion extends Model
 
     public function getCantidadAsignadaAttribute()
     {
+        if (array_key_exists('cantidad_asignada_count', $this->attributes)) {
+            return (int) $this->attributes['cantidad_asignada_count'];
+        }
+
         return $this->asignaciones()->where('estado', 'Activa')->count();
     }
 

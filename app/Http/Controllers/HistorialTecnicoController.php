@@ -45,10 +45,14 @@ class HistorialTecnicoController extends Controller
         $registros    = $query->paginate(15)->withQueryString();
         $tiposEvento  = HistorialTecnico::TIPOS_EVENTO;
 
-        $conteoCreados = HistorialTecnico::where('estado', 'Creado')->count();
-        $conteoProceso = HistorialTecnico::where('estado', 'En proceso')->count();
-        $conteosSuspendidos = HistorialTecnico::where('estado', 'Suspendido')->count();
-        $conteoFinalizados = HistorialTecnico::where('estado', 'Finalizado')->count();
+        $conteosPorEstado = HistorialTecnico::selectRaw('estado, COUNT(*) as total')
+            ->groupBy('estado')
+            ->pluck('total', 'estado');
+
+        $conteoCreados = (int) ($conteosPorEstado['Creado'] ?? 0);
+        $conteoProceso = (int) ($conteosPorEstado['En proceso'] ?? 0);
+        $conteosSuspendidos = (int) ($conteosPorEstado['Suspendido'] ?? 0);
+        $conteoFinalizados = (int) ($conteosPorEstado['Finalizado'] ?? 0);
 
         return view('historial_tecnico.index', compact(
             'registros', 
@@ -79,8 +83,9 @@ class HistorialTecnicoController extends Controller
         $tiposEvento = HistorialTecnico::TIPOS_EVENTO;
         $equipoId    = $request->equipo_id;
         $equipo      = $equipoId ? Equipo::find($equipoId) : null;
+        $equipos     = Equipo::orderBy('nombre_equipo')->get();
 
-        return view('historial_tecnico.create', compact('tiposEvento', 'equipo'));
+        return view('historial_tecnico.create', compact('tiposEvento', 'equipo', 'equipos'));
     }
 
     /**

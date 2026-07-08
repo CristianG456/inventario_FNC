@@ -34,7 +34,9 @@ class TicketController extends Controller
 
     public function create()
     {
-        $funcionarios = Funcionario::orderBy('nombres')->get();
+        $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion')
+            ->orderBy('nombres')
+            ->get();
         return view('tickets.create', compact('funcionarios'));
     }
 

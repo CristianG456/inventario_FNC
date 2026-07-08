@@ -5,20 +5,20 @@
 @section('content')
 
 {{-- Alertas de Licencias --}}
-@if(isset($alertasRojas) && $alertasRojas->count() > 0)
+@if(isset($alertasRojas) && $alertasRojas > 0)
 <div class="alert alert-danger d-flex align-items-center mb-4 licencia-alerta" role="alert">
     <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
     <div>
-        <strong>¡Atención!</strong> Hay {{ $alertasRojas->count() }} licencia(s) vencida(s). <a href="{{ route('licencias.index', ['estado' => 'Vencida']) }}" class="alert-link">Ver licencias</a>.
+        <strong>¡Atención!</strong> Hay {{ $alertasRojas }} licencia(s) vencida(s). <a href="{{ route('licencias.index', ['estado' => 'Vencida']) }}" class="alert-link">Ver licencias</a>.
     </div>
 </div>
 @endif
 
-@if(isset($alertasAmarillas) && $alertasAmarillas->count() > 0)
+@if(isset($alertasAmarillas) && $alertasAmarillas > 0)
 <div class="alert alert-warning d-flex align-items-center mb-4 licencia-alerta" role="alert">
     <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
     <div>
-        <strong>Aviso:</strong> Hay {{ $alertasAmarillas->count() }} licencia(s) por vencer en los próximos 30 días. <a href="{{ route('licencias.index') }}" class="alert-link">Revisar licencias</a>.
+        <strong>Aviso:</strong> Hay {{ $alertasAmarillas }} licencia(s) por vencer en los próximos 30 días. <a href="{{ route('licencias.index') }}" class="alert-link">Revisar licencias</a>.
     </div>
 </div>
 @endif

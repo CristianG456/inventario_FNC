@@ -106,7 +106,6 @@
                                 <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                                 No hay registros de asignaciones.
                             </td>
-                        </tr>
                     @endforelse
                 </tbody>
             </table>

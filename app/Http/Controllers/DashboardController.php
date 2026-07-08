@@ -27,12 +27,12 @@ class DashboardController extends Controller
         $hoy = now();
         $alertasRojas = \App\Models\Licencia::where('estado', 'Vencida')
             ->orWhere('fecha_vencimiento', '<', $hoy->toDateString())
-            ->get();
+            ->count();
             
         $alertasAmarillas = \App\Models\Licencia::where('fecha_vencimiento', '>=', $hoy->toDateString())
             ->where('fecha_vencimiento', '<=', $hoy->copy()->addDays(30)->toDateString())
             ->where('estado', 'Activa')
-            ->get();
+            ->count();
 
         return view('dashboard', compact(
             'totalEquipos',

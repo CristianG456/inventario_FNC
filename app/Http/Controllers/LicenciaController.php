@@ -13,7 +13,11 @@ class LicenciaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Licencia::query();
+        $query = Licencia::withCount([
+            'asignaciones as cupos_asignados_count' => function ($q) {
+                $q->where('estado', 'Activa');
+            },
+        ]);
 
         if ($request->has('buscar') && $request->buscar != '') {
             $buscar = $request->buscar;
@@ -32,12 +36,12 @@ class LicenciaController extends Controller
         $hoy = now();
         $alertasRojas = Licencia::where('estado', 'Vencida')
             ->orWhere('fecha_vencimiento', '<', $hoy->toDateString())
-            ->get();
+            ->count();
             
         $alertasAmarillas = Licencia::where('fecha_vencimiento', '>=', $hoy->toDateString())
             ->where('fecha_vencimiento', '<=', $hoy->copy()->addDays(30)->toDateString())
             ->where('estado', 'Activa')
-            ->get();
+            ->count();
 
         return view('licencias.index', compact('licencias', 'alertasRojas', 'alertasAmarillas'));
     }
@@ -65,6 +69,11 @@ class LicenciaController extends Controller
 
     public function show(Licencia $licencia)
     {
+        $licencia->loadCount([
+            'asignaciones as cupos_asignados_count' => function ($q) {
+                $q->where('estado', 'Activa');
+            },
+        ]);
         $licencia->load(['asignaciones.funcionario', 'asignaciones.equipo']);
         $historial = LicenciaHistorial::where('licencia_nombre', $licencia->nombre)->orderBy('fecha', 'desc')->get();
 

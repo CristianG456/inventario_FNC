@@ -11,7 +11,9 @@ class VitaliciaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Vitalicia::query();
+        $query = Vitalicia::withCount([
+            'asignaciones as cantidad_asignada_count',
+        ]);
         if ($request->has('search')) {
             $query->where('nombre', 'like', '%' . $request->search . '%')
                   ->orWhere('fabricante', 'like', '%' . $request->search . '%');
