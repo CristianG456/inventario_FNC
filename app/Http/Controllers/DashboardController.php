@@ -19,7 +19,11 @@ class DashboardController extends Controller
             ->orderByDesc('equipos_count')
             ->get();
 
-        $ultimosEquipos   = Equipo::with(['tipoRecurso', 'usuarioAsignado'])
+        $ultimosEquipos   = Equipo::select(['id', 'tipo_recurso_id', 'nombre_equipo', 'serial', 'marca', 'modelo', 'estado_operativo', 'created_at'])
+            ->with([
+                'tipoRecurso:id,nombre',
+                'usuarioAsignado:id,equipo_id,nombre,cedula'
+            ])
             ->latest()
             ->limit(5)
             ->get();

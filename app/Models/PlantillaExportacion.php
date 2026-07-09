@@ -23,6 +23,16 @@ class PlantillaExportacion extends Model
         'configuracion_json' => 'array',
     ];
 
+    public function getColumnasEstandarAttribute(): array
+    {
+        return (array) data_get($this->configuracion_json, 'columnas_estandar', []);
+    }
+
+    public function getColumnasPersonalizadasAttribute(): array
+    {
+        return (array) data_get($this->configuracion_json, 'columnas_personalizadas', []);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

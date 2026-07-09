@@ -7,6 +7,10 @@ services:
     working_dir: /var/www
     volumes:
       - .:/var/www
+      - vendor_data:/var/www/vendor
+      - bootstrap_cache_data:/var/www/bootstrap/cache
+      - framework_cache_data:/var/www/storage/framework/cache/data
+      - framework_views_data:/var/www/storage/framework/views
       - actas_firmadas_data:/var/www/storage/app/actas_firmadas
     networks:
       - laravel
@@ -42,6 +46,10 @@ networks:
   laravel:
 
 volumes:
+  vendor_data:
+  bootstrap_cache_data:
+  framework_cache_data:
+  framework_views_data:
   actas_firmadas_data:
   mysql_data:
     # Preparación para futuros Backups Cloudflare R2:

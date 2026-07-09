@@ -83,7 +83,10 @@ class HistorialTecnicoController extends Controller
         $tiposEvento = HistorialTecnico::TIPOS_EVENTO;
         $equipoId    = $request->equipo_id;
         $equipo      = $equipoId ? Equipo::find($equipoId) : null;
-        $equipos     = Equipo::orderBy('nombre_equipo')->get();
+        $equipos     = Equipo::select('id', 'nombre_equipo', 'serial')
+            ->orderBy('nombre_equipo')
+            ->limit(500)
+            ->get();
 
         return view('historial_tecnico.create', compact('tiposEvento', 'equipo', 'equipos'));
     }

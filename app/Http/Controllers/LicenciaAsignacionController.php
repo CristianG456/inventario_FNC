@@ -36,8 +36,16 @@ class LicenciaAsignacionController extends Controller
                 },
             ])
             ->get();
-        $equipos = Equipo::select('id', 'nombre_equipo', 'activo_fijo', 'serial')->get();
-        $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion', 'identificacion as cedula')->get();
+        $equipos = Equipo::select('id', 'nombre_equipo', 'activo_fijo', 'serial')
+            ->where('estado_operativo', 'activo')
+            ->orderBy('nombre_equipo')
+            ->limit(500)
+            ->get();
+        $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion', 'identificacion as cedula')
+            ->where('estado', 'activo')
+            ->orderBy('nombres')
+            ->limit(500)
+            ->get();
         
         return view('licencias_asignaciones.create', compact('licencias', 'equipos', 'funcionarios'));
     }
@@ -81,8 +89,16 @@ class LicenciaAsignacionController extends Controller
                 },
             ])
             ->get();
-        $equipos = Equipo::select('id', 'nombre_equipo', 'activo_fijo', 'serial')->get();
-        $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion', 'identificacion as cedula')->get();
+        $equipos = Equipo::select('id', 'nombre_equipo', 'activo_fijo', 'serial')
+            ->where('estado_operativo', 'activo')
+            ->orderBy('nombre_equipo')
+            ->limit(500)
+            ->get();
+        $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion', 'identificacion as cedula')
+            ->where('estado', 'activo')
+            ->orderBy('nombres')
+            ->limit(500)
+            ->get();
 
         return view('licencias_asignaciones.edit', compact('licencia_asignacion', 'licencias', 'equipos', 'funcionarios'));
     }

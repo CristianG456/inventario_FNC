@@ -78,7 +78,7 @@ class EquipoController extends Controller
             ->orderBy('orden')
             ->get();
         $plantillasExportacion = \App\Models\PlantillaExportacion::where('modulo', 'equipos')
-                                    ->select('id', 'nombre', 'columnas_estandar', 'columnas_personalizadas')
+                                    ->select('id', 'nombre', 'configuracion_json')
                                     ->orderBy('nombre')
                                     ->get();
 
@@ -338,8 +338,10 @@ class EquipoController extends Controller
             \App\Models\PlantillaExportacion::create([
                 'nombre' => $request->nombre_plantilla,
                 'modulo' => 'equipos',
-                'columnas_estandar' => $columnasEstandar,
-                'columnas_personalizadas' => $columnasPersonalizadas,
+                'configuracion_json' => [
+                    'columnas_estandar' => $columnasEstandar,
+                    'columnas_personalizadas' => $columnasPersonalizadas,
+                ],
             ]);
         }
 
