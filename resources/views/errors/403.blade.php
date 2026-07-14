@@ -14,7 +14,7 @@
                 <h3 class="text-2xl font-bold text-gray-800 mb-2">Usted no tiene permisos para realizar esta acción.</h3>
                 <p class="text-gray-600 mb-6">{{ $exception->getMessage() }}</p>
                 
-                <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <a href="{{ url()->previous() !== url()->current() ? url()->previous() : (Route::has('inicio') ? route('inicio') : route('dashboard')) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                     Volver
                 </a>
             </div>

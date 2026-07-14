@@ -5,15 +5,15 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ Route::has('inicio') ? route('inicio') : route('dashboard') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
                 </div>
 
                 <!-- Enlaces de navegación -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        Panel
+                    <x-nav-link :href="Route::has('inicio') ? route('inicio') : route('dashboard')" :active="request()->routeIs('inicio', 'dashboard')">
+                        Inicio
                     </x-nav-link>
                 </div>
             </div>
@@ -67,8 +67,8 @@
     <!-- Menú responsive -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                Panel
+            <x-responsive-nav-link :href="Route::has('inicio') ? route('inicio') : route('dashboard')" :active="request()->routeIs('inicio', 'dashboard')">
+                Inicio
             </x-responsive-nav-link>
         </div>
 

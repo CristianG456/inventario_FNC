@@ -7,6 +7,7 @@
 @import './equipos/equipos.css';
 @import './usuarios/usuarios.css';
 @import './dashboard/dashboard.css';
+@import './solicitudes-password/solicitudes-password.css';
 
 @tailwind base;
 @tailwind components;

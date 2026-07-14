@@ -11,6 +11,7 @@ use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\SolicitudCambioPasswordController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\LicenciaController;
 use App\Http\Controllers\LicenciaAsignacionController;
@@ -21,15 +22,17 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuditController;
 
-// Ruta raíz redirige al dashboard (o al login si no está autenticado)
+// Ruta raíz redirige a la pantalla principal (o al login si no está autenticado)
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    return redirect()->route('inicio');
 });
 
 // === Rutas protegidas por autenticación ===
 Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
 
-    // Dashboard
+    // Pantalla principal
+    Route::get('/inicio', [DashboardController::class, 'index'])->name('inicio')->middleware('permission:dashboard.ver');
+    Route::get('/inicia', [DashboardController::class, 'index'])->name('inicia')->middleware('permission:dashboard.ver');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard.ver');
 
     // Perfil (generado por Breeze)
@@ -53,6 +56,20 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     
     // Módulo de Auditoría
     Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index')->middleware('permission:roles.ver');
+
+    // Solicitudes de cambio de contraseña (solo Administrador)
+    Route::middleware('role:Administrador')->group(function () {
+        Route::get('/solicitudes-cambio-password', [SolicitudCambioPasswordController::class, 'index'])
+            ->name('solicitudes-password.index');
+        Route::get('/solicitudes-cambio-password/{solicitud}', [SolicitudCambioPasswordController::class, 'show'])
+            ->name('solicitudes-password.show');
+        Route::get('/solicitudes-cambio-password/{solicitud}/cambiar', [SolicitudCambioPasswordController::class, 'editPassword'])
+            ->name('solicitudes-password.edit-password');
+        Route::put('/solicitudes-cambio-password/{solicitud}/cambiar', [SolicitudCambioPasswordController::class, 'updatePassword'])
+            ->name('solicitudes-password.update-password');
+        Route::put('/solicitudes-cambio-password/{solicitud}/rechazar', [SolicitudCambioPasswordController::class, 'reject'])
+            ->name('solicitudes-password.reject');
+    });
 
     // Exportar debe declararse ANTES del resource para evitar conflicto con 'show'
     Route::get('/equipos/exportar', [EquipoController::class, 'exportar'])->name('equipos.exportar')->middleware('permission:equipos.exportar');

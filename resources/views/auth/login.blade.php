@@ -16,7 +16,7 @@
         <!-- Estado de la sesión -->
         <x-auth-session-status class="mb-4 w-full" :status="session('status')" />
 
-        <form method="POST" action="{{ route('login') }}" class="w-full">
+        <form method="POST" action="{{ route('login') }}" class="w-full" id="login-form" data-solicitud-action="{{ Route::has('solicitudes-password.store-public') ? route('solicitudes-password.store-public') : '' }}">
             @csrf
 
             <!-- Correo electrónico -->
@@ -35,7 +35,7 @@
             </div>
 
             <!-- Contraseña -->
-            <div class="mb-5">
+            <div class="mb-5" id="password-group">
                 <label for="password" class="block font-bold text-xs text-gray-700 mb-1.5">Contraseña</label>
                 <input id="password" 
                        class="block w-full border-0 bg-[#f8f9fa] rounded-lg focus:ring-2 focus:ring-[#9e052b] focus:bg-white px-4 py-3.5 text-sm text-gray-900 placeholder-gray-400 transition-colors tracking-widest"
@@ -47,24 +47,22 @@
                 <x-input-error :messages="$errors->get('password')" class="mt-2" />
             </div>
 
-            <!-- Checkbox (Solicitar recuperación / Recordar) -->
-            <div class="flex items-center mb-8">
-                <label for="remember_me" class="inline-flex items-center cursor-pointer">
-                    <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-[#9e052b] shadow-sm focus:ring-[#9e052b] cursor-pointer w-4 h-4" name="remember">
-                    @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="ms-2 text-[13px] text-gray-600 hover:text-[#9e052b] hover:underline transition-colors">
-                            Solicitar recuperación de contraseña
-                        </a>
-                    @else
-                        <span class="ms-2 text-[13px] text-gray-600">Solicitar recuperación de contraseña</span>
-                    @endif
+            <!-- Checkbox: Solicitud de cambio de contraseña -->
+            <div class="flex items-center mb-3" id="solicitud-toggle-group">
+                <label for="solicitar_cambio_password" class="inline-flex items-center cursor-pointer">
+                    <input id="solicitar_cambio_password" type="checkbox" class="rounded border-gray-300 text-[#9e052b] shadow-sm focus:ring-[#9e052b] cursor-pointer w-4 h-4" name="solicitar_cambio_password" value="1">
+                    <span class="ms-2 text-[13px] text-gray-700">Solicitar cambio de contraseña</span>
                 </label>
             </div>
 
+            <p id="solicitud-info" class="hidden mb-6 text-[13px] text-gray-600 leading-relaxed">
+                Se enviará una solicitud al Administrador del sistema para el cambio de su contraseña.
+            </p>
+
             <!-- Botón Ingresar -->
             <div>
-                <button type="submit" class="w-full bg-[#9e052b] hover:bg-[#7a0421] text-white font-semibold py-3.5 px-4 rounded-lg transition duration-200 ease-in-out shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9e052b] text-sm">
-                    Ingresar al sistema
+                <button id="login-submit-button" type="submit" class="w-full bg-[#9e052b] hover:bg-[#7a0421] text-white font-semibold py-3.5 px-4 rounded-lg transition duration-200 ease-in-out shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9e052b] text-sm">
+                    Iniciar sesión
                 </button>
             </div>
         </form>

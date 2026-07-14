@@ -21,8 +21,8 @@
     </div>
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
+            <a href="{{ Route::has('inicio') ? route('inicio') : route('dashboard') }}" class="nav-link {{ request()->routeIs('inicio', 'dashboard') ? 'active' : '' }}">
+                <i class="bi bi-speedometer2"></i> Inicio
             </a>
         </li>
         <li class="nav-item">
