@@ -6,6 +6,7 @@ use App\Models\Asignacion;
 use App\Models\PlantillaPdf;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class PdfService
 {
@@ -29,6 +30,7 @@ class PdfService
     {
         $asignacion->load(['equipo.tipoRecurso', 'registradoPor']);
         $equipo = $asignacion->equipo;
+        $usuarioSistema = Auth::user()?->name ?? '—';
 
         $datos = $this->prepararDatos($asignacion, $equipo);
 
@@ -37,6 +39,7 @@ class PdfService
 
         if ($plantilla) {
             $contenidoHtml = $plantilla->procesarVariables($datos);
+            $contenidoHtml = $this->forzarNombreUsuarioSistema($contenidoHtml, $usuarioSistema);
             $html          = view('pdf.acta_entrega_wrapper', compact('contenidoHtml', 'equipo', 'asignacion'))->render();
         } else {
             // Vista por defecto
@@ -68,6 +71,7 @@ class PdfService
     public function generarActaDesdeEquipo(\App\Models\Equipo $equipo): Response
     {
         $equipo->load(['tipoRecurso', 'usuarioAsignado']);
+        $usuarioSistema = Auth::user()?->name ?? '—';
         
         $datos = $this->prepararDatosDesdeEquipo($equipo);
 
@@ -76,6 +80,7 @@ class PdfService
 
         if ($plantilla) {
             $contenidoHtml = $plantilla->procesarVariables($datos);
+            $contenidoHtml = $this->forzarNombreUsuarioSistema($contenidoHtml, $usuarioSistema);
             $html          = view('pdf.acta_entrega_wrapper', compact('contenidoHtml', 'equipo'))->render();
         } else {
             // Vista por defecto
@@ -142,7 +147,7 @@ class PdfService
             'motivo'           => $asignacion->motivo ?? '—',
             // Sistema
             'fecha_generacion' => now()->format('d/m/Y H:i'),
-            'usuario_sistema'  => auth()->user()?->name ?? '—',
+            'usuario_sistema'  => Auth::user()?->name ?? '—',
             // Logos (para plantillas limpias)
             'logo_fnc'         => $this->obtenerLogoPath(),
         ];
@@ -196,9 +201,26 @@ class PdfService
             'motivo'           => '—',
             // Sistema
             'fecha_generacion' => now()->format('d/m/Y H:i'),
-            'usuario_sistema'  => auth()->user()?->name ?? '—',
+            'usuario_sistema'  => Auth::user()?->name ?? '—',
             // Logos
             'logo_fnc'         => $this->obtenerLogoPath(),
         ];
+    }
+
+    /**
+     * Fuerza que la firma del sistema use el usuario autenticado actual,
+     * incluso si la plantilla personalizada tiene texto fijo o placeholder sin reemplazar.
+     */
+    private function forzarNombreUsuarioSistema(string $contenidoHtml, string $usuarioSistema): string
+    {
+        $nombre = trim($usuarioSistema) !== '' ? $usuarioSistema : '—';
+
+        // Reemplaza placeholder si quedó sin procesar por variaciones de formato.
+        $contenidoHtml = str_replace(['{{usuario_sistema}}', '{{ usuario_sistema }}'], $nombre, $contenidoHtml);
+
+        // Reemplaza texto fijo heredado en plantillas antiguas.
+        $contenidoHtml = preg_replace('/>(\s*)administrador(\s*)</i', '>' . $nombre . '<', $contenidoHtml) ?? $contenidoHtml;
+
+        return $contenidoHtml;
     }
 }

@@ -6,12 +6,16 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-laptop me-2 text-primary"></i>Inventario de Equipos</h4>
     <div class="d-flex gap-2">
+        @can('equipos.exportar')
         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalExportacion">
             <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
         </button>
+        @endcan
+        @can('equipos.crear')
         <a href="{{ route('equipos.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nuevo Equipo
         </a>
+        @endcan
     </div>
 </div>
 
@@ -160,12 +164,15 @@
                                        class="btn btn-sm btn-outline-info" title="Ver detalle">
                                         <i class="bi bi-eye"></i>
                                     </a>
+                                    @can('equipos.editar')
                                     <a href="{{ route('equipos.edit', $equipo) }}"
                                        class="btn btn-sm btn-outline-warning" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    @endcan
 
                                     {{-- Botones dinámicos según estado de asignación --}}
+                                    @can('equipos.crear')
                                     @if(!$equipo->usuarioAsignado)
                                         {{-- Sin asignar: mostrar botón Asignar solo si está activo --}}
                                         @if($equipo->estado_operativo === 'activo')
@@ -225,7 +232,9 @@
                                             <i class="bi bi-x-circle"></i>
                                         </button>
                                     @endif
+                                    @endcan
 
+                                    @can('equipos.eliminar')
                                     <button type="button"
                                             class="btn btn-sm btn-outline-danger"
                                             title="Eliminar"
@@ -233,6 +242,7 @@
                                             data-delete-name="{{ $equipo->nombre_equipo }}">
                                         <i class="bi bi-trash"></i>
                                     </button>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

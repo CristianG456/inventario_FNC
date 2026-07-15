@@ -5,9 +5,11 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0"><i class="bi bi-calendar-check me-2 text-primary"></i>Gestión de Suscripciones</h4>
+        @can('suscripciones.crear')
         <a href="{{ route('suscripciones.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Nueva Suscripción
         </a>
+        @endcan
     </div>
     
     <div class="row g-3 mb-4">

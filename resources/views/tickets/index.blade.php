@@ -8,9 +8,11 @@
         <h4 class="page-title">Mesa de Ayuda TIC</h4>
         <p class="page-subtitle">Centro de gestión de incidentes y servicios tecnológicos ({{ $totalTickets }} tickets)</p>
     </div>
+    @can('mesaayuda.crear')
     <a href="{{ route('tickets.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i> Nuevo Ticket
     </a>
+    @endcan
 </div>
 
 <div class="card p-0">

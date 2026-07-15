@@ -5,9 +5,11 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0"><i class="bi bi-award me-2 text-primary"></i>Gestión de Licencias Vitalicias</h4>
+        @can('vitalicias.crear')
         <a href="{{ route('vitalicias.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Nueva Vitalicia
         </a>
+        @endcan
     </div>
 
     <div class="row g-3 mb-4">

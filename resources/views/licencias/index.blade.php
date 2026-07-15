@@ -6,18 +6,22 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-key me-2 text-primary"></i>Gestión de Licencias</h4>
     <div class="d-flex gap-2">
+        @can('licencias.exportar')
         <a href="{{ route('licencias.exportar', request()->query()) }}" class="btn btn-success">
             <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
         </a>
+        @endcan
         <a href="{{ route('licencia-asignaciones.index') }}" class="btn btn-outline-primary">
             <i class="bi bi-list-check me-1"></i>Ver Asignaciones
         </a>
         <a href="{{ route('licencias.historial') }}" class="btn btn-outline-secondary">
             <i class="bi bi-clock-history me-1"></i>Historial
         </a>
+        @can('licencias.crear')
         <a href="{{ route('licencias.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nueva Licencia
         </a>
+        @endcan
     </div>
 </div>
 
@@ -118,14 +122,18 @@
                                     <a href="{{ route('licencias.show', $licencia) }}" class="btn btn-sm btn-outline-info" title="Ver detalle">
                                         <i class="bi bi-eye"></i>
                                     </a>
+                                    @can('licencias.editar')
                                     <a href="{{ route('licencias.edit', $licencia) }}" class="btn btn-sm btn-outline-warning" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    @endcan
+                                    @can('licencias.eliminar')
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
                                             data-delete-url="{{ route('licencias.destroy', $licencia) }}"
                                             data-delete-name="{{ $licencia->nombre }}">
                                         <i class="bi bi-trash"></i>
                                     </button>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

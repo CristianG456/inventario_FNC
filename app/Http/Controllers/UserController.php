@@ -32,6 +32,15 @@ class UserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'exists:roles,name'],
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'Debe ingresar un correo electrónico válido.',
+            'email.max' => 'El correo electrónico no puede superar 255 caracteres.',
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+            'role.required' => 'Debe seleccionar un rol.',
+            'role.exists' => 'El rol seleccionado no es válido.',
         ]);
 
         DB::beginTransaction();
@@ -71,6 +80,13 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$usuario->id],
             'role' => ['required', 'exists:roles,name'],
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'Debe ingresar un correo electrónico válido.',
+            'email.max' => 'El correo electrónico no puede superar 255 caracteres.',
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+            'role.required' => 'Debe seleccionar un rol.',
+            'role.exists' => 'El rol seleccionado no es válido.',
         ]);
 
         DB::beginTransaction();
@@ -81,7 +97,11 @@ class UserController extends Controller
             ]);
 
             if ($request->filled('password')) {
-                $request->validate(['password' => ['confirmed', Rules\Password::defaults()]]);
+                $request->validate([
+                    'password' => ['confirmed', Rules\Password::defaults()],
+                ], [
+                    'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+                ]);
                 $usuario->update(['password' => Hash::make($request->password)]);
             }
 

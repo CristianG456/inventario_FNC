@@ -1,4 +1,131 @@
 (function () {
+    const SIDEBAR_SCROLL_KEY = 'inventario.sidebar.navMenu.scrollTop';
+
+    function leerScrollGuardado() {
+        try {
+            const enSession = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+            if (enSession !== null) return Number(enSession);
+        } catch (_) {
+            // Ignorar.
+        }
+
+        try {
+            const enLocal = localStorage.getItem(SIDEBAR_SCROLL_KEY);
+            if (enLocal !== null) return Number(enLocal);
+        } catch (_) {
+            // Ignorar.
+        }
+
+        return null;
+    }
+
+    function obtenerContenedorScrollSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return null;
+        const navMenu = sidebar.querySelector('.nav-menu');
+        return navMenu || sidebar;
+    }
+
+    function guardarScrollSidebar(contenedor) {
+        if (!contenedor) return;
+        const valor = String(contenedor.scrollTop || 0);
+        try {
+            sessionStorage.setItem(SIDEBAR_SCROLL_KEY, valor);
+        } catch (_) {
+            // Ignorar y probar fallback.
+        }
+
+        try {
+            localStorage.setItem(SIDEBAR_SCROLL_KEY, valor);
+        } catch (_) {
+            // Sin almacenamiento disponible, no interrumpe la navegacion.
+        }
+    }
+
+    function restaurarScrollSidebar(contenedor) {
+        if (!contenedor) return;
+        const valor = leerScrollGuardado();
+        if (valor === null || !Number.isFinite(valor)) return;
+        contenedor.scrollTop = Math.max(0, valor);
+    }
+
+    function restaurarScrollSidebarConReintento(contenedor) {
+        if (!contenedor) return;
+
+        const intentosMs = [0, 40, 120, 260, 500];
+        intentosMs.forEach(function (delay) {
+            setTimeout(function () {
+                restaurarScrollSidebar(contenedor);
+                asegurarModuloActivoVisible(contenedor);
+            }, delay);
+        });
+    }
+
+    function asegurarModuloActivoVisible(contenedor) {
+        if (!contenedor) return;
+        const activos = Array.from(contenedor.querySelectorAll('.nav-link.active'));
+        if (activos.length === 0) return;
+
+        const rutaActual = window.location.pathname.replace(/\/$/, '');
+        const activo = activos.find(function (link) {
+            try {
+                const href = new URL(link.href, window.location.origin);
+                return href.pathname.replace(/\/$/, '') === rutaActual;
+            } catch (_) {
+                return false;
+            }
+        }) || activos[activos.length - 1];
+
+        if (!activo) return;
+
+        const contRect = contenedor.getBoundingClientRect();
+        const actRect = activo.getBoundingClientRect();
+        const fueraArriba = actRect.top < contRect.top;
+        const fueraAbajo = actRect.bottom > contRect.bottom;
+
+        if (fueraArriba || fueraAbajo) {
+            activo.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+    }
+
+    function inicializarPersistenciaScrollSidebar() {
+        const contenedor = obtenerContenedorScrollSidebar();
+        if (!contenedor) return;
+
+        restaurarScrollSidebarConReintento(contenedor);
+        window.addEventListener('load', function () {
+            restaurarScrollSidebarConReintento(contenedor);
+        });
+
+        let ticking = false;
+        contenedor.addEventListener('scroll', function () {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(function () {
+                guardarScrollSidebar(contenedor);
+                ticking = false;
+            });
+        }, { passive: true });
+
+        document.addEventListener('click', function (event) {
+            const enlace = event.target.closest('#sidebar .nav-menu .nav-link');
+            if (!enlace) return;
+            guardarScrollSidebar(contenedor);
+        });
+
+        window.addEventListener('pagehide', function () {
+            guardarScrollSidebar(contenedor);
+        });
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') {
+                guardarScrollSidebar(contenedor);
+            }
+        });
+    }
+
+    inicializarPersistenciaScrollSidebar();
+
     // === Capitalización Automática ===
     function esCampoValido(el) {
         if (!el || el.disabled || el.readOnly) return false;
