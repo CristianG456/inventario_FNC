@@ -97,21 +97,17 @@
             </li>
             @endcan
 
-            @can('suscripciones.ver')
             <li class="nav-item">
                 <a href="{{ route('suscripciones.index') }}" class="nav-link {{ request()->routeIs('suscripciones.*') || request()->routeIs('suscripcion-asignaciones.*') ? 'active' : '' }}">
                     <i class="bi bi-calendar-check"></i> Suscripciones
                 </a>
             </li>
-            @endcan
 
-            @can('vitalicias.ver')
             <li class="nav-item">
                 <a href="{{ route('vitalicias.index') }}" class="nav-link {{ request()->routeIs('vitalicias.*') || request()->routeIs('vitalicia-asignaciones.*') ? 'active' : '' }}">
                     <i class="bi bi-award"></i> Vitalicias
                 </a>
             </li>
-            @endcan
             
             @can('dashboard.ver')
             <li class="nav-item">
@@ -162,15 +158,6 @@
                     <i class="bi bi-journal-text"></i> Auditoría
                 </a>
             </li>
-            @role('Administrador')
-            @if (Route::has('solicitudes-password.index'))
-            <li class="nav-item">
-                <a href="{{ route('solicitudes-password.index') }}" class="nav-link {{ request()->routeIs('solicitudes-password.*') ? 'active' : '' }}">
-                    <i class="bi bi-shield-exclamation"></i> Solicitudes de Cambio de Contraseña
-                </a>
-            </li>
-            @endif
-            @endrole
             @endcan
             
             @can('configuracion.editar')
@@ -223,7 +210,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ asset('js/app-core.js') }}?v={{ @filemtime(public_path('js/app-core.js')) ?: time() }}"></script>
+<script src="{{ asset('js/app-core.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         window.initAlerts(

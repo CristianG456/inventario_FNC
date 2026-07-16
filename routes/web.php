@@ -11,7 +11,6 @@ use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\ReporteController;
-use App\Http\Controllers\SolicitudCambioPasswordController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\LicenciaController;
 use App\Http\Controllers\LicenciaAsignacionController;
@@ -41,50 +40,21 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // ====== CAMPOS PERSONALIZADOS ======
-    Route::get('/campos-personalizados', [\App\Http\Controllers\CampoPersonalizadoController::class, 'index'])
-        ->name('campos-personalizados.index')
+    Route::resource('campos-personalizados', \App\Http\Controllers\CampoPersonalizadoController::class)
+        ->except(['show', 'create', 'edit'])
         ->middleware('permission:campos_personalizados.ver');
-    Route::post('/campos-personalizados', [\App\Http\Controllers\CampoPersonalizadoController::class, 'store'])
-        ->name('campos-personalizados.store')
-        ->middleware('permission:campos_personalizados.crear');
-    Route::put('/campos-personalizados/{campos_personalizado}', [\App\Http\Controllers\CampoPersonalizadoController::class, 'update'])
-        ->name('campos-personalizados.update')
-        ->middleware('permission:campos_personalizados.editar');
-    Route::delete('/campos-personalizados/{campos_personalizado}', [\App\Http\Controllers\CampoPersonalizadoController::class, 'destroy'])
-        ->name('campos-personalizados.destroy')
-        ->middleware('permission:campos_personalizados.eliminar');
     Route::post('/campos-personalizados/reorder', [\App\Http\Controllers\CampoPersonalizadoController::class, 'reorder'])
         ->name('campos-personalizados.reorder')
         ->middleware('permission:campos_personalizados.editar');
 
     // Módulo Usuarios y Asignación de Roles (solo administradores o con permiso)
-    Route::resource('usuarios', UserController::class)->only(['index', 'show'])->middleware('permission:roles.ver');
-    Route::resource('usuarios', UserController::class)->only(['create', 'store'])->middleware('permission:roles.crear');
-    Route::resource('usuarios', UserController::class)->only(['edit', 'update'])->middleware('permission:roles.editar');
-    Route::resource('usuarios', UserController::class)->only(['destroy'])->middleware('permission:roles.eliminar');
+    Route::resource('usuarios', UserController::class)->middleware('permission:roles.ver');
     
     // Módulo de Roles y Permisos (solo administradores o con permiso)
-    Route::resource('roles', RoleController::class)->only(['index', 'show'])->middleware('permission:roles.ver');
-    Route::resource('roles', RoleController::class)->only(['create', 'store'])->middleware('permission:roles.crear');
-    Route::resource('roles', RoleController::class)->only(['edit', 'update'])->middleware('permission:roles.editar');
-    Route::resource('roles', RoleController::class)->only(['destroy'])->middleware('permission:roles.eliminar');
+    Route::resource('roles', RoleController::class)->middleware('permission:roles.ver');
     
     // Módulo de Auditoría
     Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index')->middleware('permission:roles.ver');
-
-    // Solicitudes de cambio de contraseña (solo Administrador)
-    Route::middleware('role:Administrador')->group(function () {
-        Route::get('/solicitudes-cambio-password', [SolicitudCambioPasswordController::class, 'index'])
-            ->name('solicitudes-password.index');
-        Route::get('/solicitudes-cambio-password/{solicitud}', [SolicitudCambioPasswordController::class, 'show'])
-            ->name('solicitudes-password.show');
-        Route::get('/solicitudes-cambio-password/{solicitud}/cambiar', [SolicitudCambioPasswordController::class, 'editPassword'])
-            ->name('solicitudes-password.edit-password');
-        Route::put('/solicitudes-cambio-password/{solicitud}/cambiar', [SolicitudCambioPasswordController::class, 'updatePassword'])
-            ->name('solicitudes-password.update-password');
-        Route::put('/solicitudes-cambio-password/{solicitud}/rechazar', [SolicitudCambioPasswordController::class, 'reject'])
-            ->name('solicitudes-password.reject');
-    });
 
     // Exportar debe declararse ANTES del resource para evitar conflicto con 'show'
     Route::get('/equipos/exportar', [EquipoController::class, 'exportar'])->name('equipos.exportar')->middleware('permission:equipos.exportar');
@@ -99,10 +69,7 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
         ->name('equipos.historial-vida')->middleware('permission:equipos.ver');
 
     // Equipos (CRUD)
-    Route::resource('equipos', EquipoController::class)->only(['create', 'store'])->middleware('permission:equipos.crear');
-    Route::resource('equipos', EquipoController::class)->only(['edit', 'update'])->middleware('permission:equipos.editar');
-    Route::resource('equipos', EquipoController::class)->only(['destroy'])->middleware('permission:equipos.eliminar');
-    Route::resource('equipos', EquipoController::class)->only(['index', 'show'])->middleware('permission:equipos.ver');
+    Route::resource('equipos', EquipoController::class)->middleware('permission:equipos.ver');
 
     // ── Asignaciones ──────────────────────────────────────────────────────────
     Route::get('/asignaciones', [AsignacionController::class, 'index'])
@@ -151,20 +118,13 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::resource('tipo-recursos', TipoRecursoController::class)->middleware('permission:configuracion.editar');
 
     // ── Checklists ────────────────────────────────────────────────────────────
-    Route::resource('checklists', ChecklistController::class)->only(['index', 'show'])->middleware('permission:checklist.ver');
-    Route::resource('checklists', ChecklistController::class)->only(['create', 'store'])->middleware('permission:checklist.crear');
-    Route::resource('checklists', ChecklistController::class)->only(['edit', 'update'])->middleware('permission:checklist.editar');
-    Route::resource('checklists', ChecklistController::class)->only(['destroy'])->middleware('permission:checklist.eliminar');
+    Route::resource('checklists', ChecklistController::class)->middleware('permission:checklist.ver');
 
     // ── Funcionarios ──────────────────────────────────────────────────────────
-    Route::resource('funcionarios', FuncionarioController::class)->only(['index'])->middleware('permission:usuarios.ver');
-    Route::resource('funcionarios', FuncionarioController::class)->only(['create', 'store'])->middleware('permission:usuarios.crear');
+    Route::resource('funcionarios', FuncionarioController::class)->only(['index', 'create', 'store'])->middleware('permission:usuarios.ver');
 
     // ── HelpDesk (Tickets) ────────────────────────────────────────────────────
-    Route::resource('tickets', TicketController::class)->only(['index', 'show'])->middleware('permission:mesaayuda.ver');
-    Route::resource('tickets', TicketController::class)->only(['create', 'store'])->middleware('permission:mesaayuda.crear');
-    Route::resource('tickets', TicketController::class)->only(['edit', 'update'])->middleware('permission:mesaayuda.editar');
-    Route::resource('tickets', TicketController::class)->only(['destroy'])->middleware('permission:mesaayuda.cerrar');
+    Route::resource('tickets', TicketController::class)->middleware('permission:mesaayuda.ver');
 
     // ── Reportes ──────────────────────────────────────────────────────────────
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index')->middleware('permission:dashboard.ver');
@@ -178,24 +138,15 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::get('/licencias/reportes', [LicenciaController::class, 'reportes'])->name('licencias.reportes')->middleware('permission:licencias.ver');
     Route::get('/licencias/exportar', [LicenciaController::class, 'exportar'])->name('licencias.exportar')->middleware('permission:licencias.exportar');
     Route::get('/licencias/historial', [LicenciaHistorialController::class, 'index'])->name('licencias.historial')->middleware('permission:licencias.ver');
-    Route::resource('licencias', LicenciaController::class)->only(['index', 'show'])->middleware('permission:licencias.ver');
-    Route::resource('licencias', LicenciaController::class)->only(['create', 'store'])->middleware('permission:licencias.crear');
-    Route::resource('licencias', LicenciaController::class)->only(['edit', 'update'])->middleware('permission:licencias.editar');
-    Route::resource('licencias', LicenciaController::class)->only(['destroy'])->middleware('permission:licencias.eliminar');
+    Route::resource('licencias', LicenciaController::class)->middleware('permission:licencias.ver');
     Route::resource('licencia-asignaciones', LicenciaAsignacionController::class)->middleware('permission:licencias.editar');
 
     // ── Suscripciones (Nuevo Módulo) ──────────────────────────────────────────
-    Route::resource('suscripciones', App\Http\Controllers\SuscripcionController::class)->only(['index', 'show'])->middleware('permission:suscripciones.ver');
-    Route::resource('suscripciones', App\Http\Controllers\SuscripcionController::class)->only(['create', 'store'])->middleware('permission:suscripciones.crear');
-    Route::resource('suscripciones', App\Http\Controllers\SuscripcionController::class)->only(['edit', 'update'])->middleware('permission:suscripciones.editar');
-    Route::resource('suscripciones', App\Http\Controllers\SuscripcionController::class)->only(['destroy'])->middleware('permission:suscripciones.eliminar');
+    Route::resource('suscripciones', App\Http\Controllers\SuscripcionController::class)->middleware('permission:licencias.ver');
     Route::resource('suscripcion-asignaciones', App\Http\Controllers\SuscripcionAsignacionController::class)->middleware('permission:licencias.editar');
 
     // ── Vitalicias (Nuevo Módulo) ─────────────────────────────────────────────
-    Route::resource('vitalicias', App\Http\Controllers\VitaliciaController::class)->only(['index', 'show'])->middleware('permission:vitalicias.ver');
-    Route::resource('vitalicias', App\Http\Controllers\VitaliciaController::class)->only(['create', 'store'])->middleware('permission:vitalicias.crear');
-    Route::resource('vitalicias', App\Http\Controllers\VitaliciaController::class)->only(['edit', 'update'])->middleware('permission:vitalicias.editar');
-    Route::resource('vitalicias', App\Http\Controllers\VitaliciaController::class)->only(['destroy'])->middleware('permission:vitalicias.eliminar');
+    Route::resource('vitalicias', App\Http\Controllers\VitaliciaController::class)->middleware('permission:licencias.ver');
     Route::resource('vitalicia-asignaciones', App\Http\Controllers\VitaliciaAsignacionController::class)->middleware('permission:licencias.editar');
 
     Route::get('/test-logo', function() {

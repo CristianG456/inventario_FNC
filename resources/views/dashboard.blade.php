@@ -1,4 +1,4 @@
-@extends('layouts.inventario')
+﻿@extends('layouts.inventario')
 
 @section('title', 'Inicio')
 
@@ -23,33 +23,53 @@
 </div>
 @endif
 
-<div class="row g-4 mb-4">
-    {{-- Tarjeta: Total --}}
-    <div class="col-sm-6 col-xl-3">
-        <div class="card p-4 text-center border-start border-primary border-4">
-            <div class="fs-1 fw-bold text-primary">{{ $totalEquipos }}</div>
-            <div class="text-muted mt-1"><i class="bi bi-laptop me-1"></i>Total de Equipos</div>
-        </div>
+{{-- Resumen General del Inventario --}}
+<div class="dashboard-summary-panel mb-4">
+    <div class="dashboard-summary-header">
+        <h2 class="dashboard-summary-title">
+            <i class="bi bi-graph-up"></i> RESUMEN GENERAL DEL INVENTARIO
+        </h2>
+        <p class="dashboard-summary-subtitle">Estado actual del inventario tecnológico</p>
     </div>
-    {{-- Tarjeta: Activos --}}
-    <div class="col-sm-6 col-xl-3">
-        <div class="card p-4 text-center border-start border-success border-4">
-            <div class="fs-1 fw-bold text-success">{{ $activos }}</div>
-            <div class="text-muted mt-1"><i class="bi bi-check-circle me-1"></i>Activos</div>
-        </div>
+    
+    <div class="dashboard-summary-divider"></div>
+    
+    <div class="dashboard-summary-total">
+        <div class="dashboard-total-number">{{ $totalEquipos }}</div>
+        <div class="dashboard-total-label">Equipos registrados</div>
     </div>
-    {{-- Tarjeta: Mantenimiento --}}
-    <div class="col-sm-6 col-xl-3">
-        <div class="card p-4 text-center border-start border-warning border-4">
-            <div class="fs-1 fw-bold text-warning">{{ $enMantenimiento }}</div>
-            <div class="text-muted mt-1"><i class="bi bi-tools me-1"></i>En Mantenimiento</div>
+    
+    <div class="dashboard-summary-divider"></div>
+    
+    <div class="dashboard-summary-states">
+        <div class="dashboard-state-item">
+            <div class="dashboard-state-icon active">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label">Activos</div>
+                <div class="dashboard-state-value active">{{ $activos }}</div>
+            </div>
         </div>
-    </div>
-    {{-- Tarjeta: Baja --}}
-    <div class="col-sm-6 col-xl-3">
-        <div class="card p-4 text-center border-start border-danger border-4">
-            <div class="fs-1 fw-bold text-danger">{{ $deBaja }}</div>
-            <div class="text-muted mt-1"><i class="bi bi-x-circle me-1"></i>De Baja</div>
+        
+        <div class="dashboard-state-item">
+            <div class="dashboard-state-icon maintenance">
+                <i class="bi bi-tools"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label">En mantenimiento</div>
+                <div class="dashboard-state-value maintenance">{{ $enMantenimiento }}</div>
+            </div>
+        </div>
+        
+        <div class="dashboard-state-item">
+            <div class="dashboard-state-icon inactive">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label">Dados de baja</div>
+                <div class="dashboard-state-value inactive">{{ $deBaja }}</div>
+            </div>
         </div>
     </div>
 </div>
