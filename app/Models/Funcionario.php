@@ -37,4 +37,9 @@ class Funcionario extends Model
     {
         return $this->hasMany(UsuarioAsignado::class, 'cedula', 'identificacion');
     }
+
+    public function autorizacionesActivos()
+    {
+        return $this->hasMany(AutorizacionActivo::class, 'funcionario_id');
+    }
 }

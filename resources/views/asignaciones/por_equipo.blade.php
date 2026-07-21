@@ -1,12 +1,12 @@
 @extends('layouts.inventario')
 
-@section('title', 'Historial de Asignaciones — ' . $equipo->nombre_equipo)
+@section('title', 'Historial de Préstamos — ' . $equipo->nombre_equipo)
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold mb-0">
-            <i class="bi bi-person-fill-gear me-2 text-primary"></i>Asignaciones del Equipo
+            <i class="bi bi-person-fill-gear me-2 text-primary"></i>Préstamos del Equipo
         </h4>
         <small class="text-muted">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</small>
     </div>
@@ -78,7 +78,7 @@
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                No hay registros de asignaciones para este equipo.
+                                No hay registros de préstamos para este equipo.
                             </td>
                         </tr>
                     @endforelse

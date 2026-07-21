@@ -7,11 +7,13 @@ use App\Models\Equipo;
 use App\Models\HistorialAdministrativo;
 use App\Models\HistorialTecnico;
 use App\Models\Funcionario;
+use App\Models\AutorizacionActivo;
 use App\Models\User;
 use App\Models\UsuarioAsignado;
 use App\Services\HistorialTecnicoService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class AsignacionService
 {
@@ -26,6 +28,7 @@ class AsignacionService
     public function asignar(Equipo $equipo, array $datos, User $responsable): Asignacion
     {
         return DB::transaction(function () use ($equipo, $datos, $responsable) {
+            $requiereConsumoAutorizacion = $this->validarPoliticaActivosConAutorizacion($equipo, $datos);
 
             // Crear o actualizar usuario_asignado (tabla activa actual)
             $equipo->usuarioAsignado()->updateOrCreate(
@@ -60,6 +63,10 @@ class AsignacionService
             // Sincronizar con el catálogo global de funcionarios
             $this->sincronizarFuncionario($datos);
 
+            if ($requiereConsumoAutorizacion) {
+                $this->consumirAutorizacionDisponible($equipo, $asignacion, $datos, $responsable);
+            }
+
             return $asignacion;
         });
     }
@@ -70,6 +77,7 @@ class AsignacionService
     public function reemplazar(Equipo $equipo, array $datos, User $responsable): Asignacion
     {
         return DB::transaction(function () use ($equipo, $datos, $responsable) {
+            $requiereConsumoAutorizacion = $this->validarPoliticaActivosConAutorizacion($equipo, $datos);
 
             $usuarioAnterior = $equipo->usuarioAsignado?->nombre ?? 'Sin asignar';
 
@@ -105,6 +113,10 @@ class AsignacionService
             // Sincronizar con el catálogo global de funcionarios
             $this->sincronizarFuncionario($datos);
 
+            if ($requiereConsumoAutorizacion) {
+                $this->consumirAutorizacionDisponible($equipo, $asignacion, $datos, $responsable);
+            }
+
             return $asignacion;
         });
     }
@@ -112,9 +124,14 @@ class AsignacionService
     /**
      * Retira la asignación activa del equipo.
      */
-    public function retirar(Equipo $equipo, string $motivo, User $responsable, ?string $observaciones = null): Asignacion
+    public function retirar(Equipo $equipo, ?string $motivo, User $responsable, ?string $observaciones = null): Asignacion
     {
         return DB::transaction(function () use ($equipo, $motivo, $responsable, $observaciones) {
+            $motivoNormalizado = trim((string) $motivo);
+            $observacionesNormalizadas = trim((string) $observaciones);
+            $motivoRetiro = $motivoNormalizado !== ''
+                ? $motivoNormalizado
+                : ($observacionesNormalizadas !== '' ? $observacionesNormalizadas : 'Retiro manual');
 
             $usuario = $equipo->usuarioAsignado;
             $nombreAnterior = $usuario?->nombre ?? 'Sin asignar';
@@ -129,8 +146,8 @@ class AsignacionService
             $asignacion = $equipo->asignaciones()->create([
                 ...$snapshot,
                 'tipo_accion'  => Asignacion::TIPO_RETIRO,
-                'motivo'       => $motivo,
-                'observaciones'=> $observaciones,
+                'motivo'       => $motivoRetiro,
+                'observaciones'=> $observacionesNormalizadas !== '' ? $observacionesNormalizadas : null,
                 'user_id'      => $responsable->id,
                 'fecha_accion' => now(),
             ]);
@@ -140,7 +157,7 @@ class AsignacionService
                 'retiro',
                 $nombreAnterior,
                 null,
-                "Retiro de asignación: {$nombreAnterior}. Motivo: {$motivo}",
+                "Retiro de asignación: {$nombreAnterior}. Motivo: {$motivoRetiro}",
                 $responsable
             );
 
@@ -154,9 +171,14 @@ class AsignacionService
     /**
      * Pasa el equipo a estado mantenimiento.
      */
-    public function pasarAMantenimiento(Equipo $equipo, string $motivo, User $responsable, ?string $observaciones = null): Asignacion
+    public function pasarAMantenimiento(Equipo $equipo, ?string $motivo, User $responsable, ?string $observaciones = null): Asignacion
     {
         return DB::transaction(function () use ($equipo, $motivo, $responsable, $observaciones) {
+            $motivoNormalizado = trim((string) $motivo);
+            $observacionesNormalizadas = trim((string) $observaciones);
+            $motivoMantenimiento = $motivoNormalizado !== ''
+                ? $motivoNormalizado
+                : ($observacionesNormalizadas !== '' ? $observacionesNormalizadas : 'Envío a mantenimiento manual');
 
             $nombreUsuario = $equipo->usuarioAsignado?->nombre ?? 'Sin asignar';
             $snapshot      = $equipo->usuarioAsignado
@@ -165,13 +187,13 @@ class AsignacionService
 
             // Cambiar estado del equipo
             $estadoAnterior = $equipo->estado_operativo;
-            $equipo->update(['estado_operativo' => 'mantenimiento', 'razon_estado' => $motivo]);
+            $equipo->update(['estado_operativo' => 'mantenimiento', 'razon_estado' => $motivoMantenimiento]);
 
             $asignacion = $equipo->asignaciones()->create([
                 ...$snapshot,
                 'tipo_accion'  => Asignacion::TIPO_MANTENIMIENTO,
-                'motivo'       => $motivo,
-                'observaciones'=> $observaciones,
+                'motivo'       => $motivoMantenimiento,
+                'observaciones'=> $observacionesNormalizadas !== '' ? $observacionesNormalizadas : null,
                 'user_id'      => $responsable->id,
                 'fecha_accion' => now(),
             ]);
@@ -181,7 +203,7 @@ class AsignacionService
                 'cambio_estado',
                 $estadoAnterior,
                 'mantenimiento',
-                "Estado cambiado a Mantenimiento. Motivo: {$motivo}",
+                "Estado cambiado a Mantenimiento. Motivo: {$motivoMantenimiento}",
                 $responsable
             );
 
@@ -189,9 +211,9 @@ class AsignacionService
             $this->historialTecnicoService->registrarEvento(
                 $equipo,
                 [
-                    'tipo_evento'         => 'mantenimiento_preventivo',
-                    'descripcion'         => "Enviado a mantenimiento desde asignaciones. Motivo: {$motivo}",
-                    'observaciones'       => $observaciones,
+                    'tipo_evento'         => 'incidente',
+                    'descripcion'         => "Enviado a mantenimiento desde asignaciones. Motivo: {$motivoMantenimiento}",
+                    'observaciones'       => $observacionesNormalizadas !== '' ? $observacionesNormalizadas : null,
                     'fecha_evento'        => now(),
                     'usuario_responsable' => $responsable->name,
                 ],
@@ -206,22 +228,27 @@ class AsignacionService
     /**
      * Da de baja el equipo.
      */
-    public function darDeBaja(Equipo $equipo, string $motivo, User $responsable, ?string $observaciones = null): Asignacion
+    public function darDeBaja(Equipo $equipo, ?string $motivo, User $responsable, ?string $observaciones = null): Asignacion
     {
         return DB::transaction(function () use ($equipo, $motivo, $responsable, $observaciones) {
+            $motivoNormalizado = trim((string) $motivo);
+            $observacionesNormalizadas = trim((string) $observaciones);
+            $motivoBaja = $motivoNormalizado !== ''
+                ? $motivoNormalizado
+                : ($observacionesNormalizadas !== '' ? $observacionesNormalizadas : 'Retiro definitivo manual');
 
             $snapshot = $equipo->usuarioAsignado
                 ? $this->camposSnapshotDesdeModel($equipo->usuarioAsignado)
                 : [];
 
             $estadoAnterior = $equipo->estado_operativo;
-            $equipo->update(['estado_operativo' => 'baja', 'razon_estado' => $motivo]);
+            $equipo->update(['estado_operativo' => 'baja', 'razon_estado' => $motivoBaja]);
 
             $asignacion = $equipo->asignaciones()->create([
                 ...$snapshot,
                 'tipo_accion'  => Asignacion::TIPO_BAJA,
-                'motivo'       => $motivo,
-                'observaciones'=> $observaciones,
+                'motivo'       => $motivoBaja,
+                'observaciones'=> $observacionesNormalizadas !== '' ? $observacionesNormalizadas : null,
                 'user_id'      => $responsable->id,
                 'fecha_accion' => now(),
             ]);
@@ -231,7 +258,7 @@ class AsignacionService
                 'cambio_estado',
                 $estadoAnterior,
                 'baja',
-                "Equipo dado de baja. Motivo: {$motivo}",
+                "Activo retirado definitivamente. Motivo: {$motivoBaja}",
                 $responsable
             );
 
@@ -242,16 +269,22 @@ class AsignacionService
     /**
      * Restaura un equipo previamente dado de baja o en mantenimiento.
      */
-    public function restaurar(Equipo $equipo, string $motivo, User $responsable): Asignacion
+    public function restaurar(Equipo $equipo, ?string $motivo, User $responsable, ?string $observaciones = null): Asignacion
     {
-        return DB::transaction(function () use ($equipo, $motivo, $responsable) {
+        return DB::transaction(function () use ($equipo, $motivo, $responsable, $observaciones) {
+            $motivoNormalizado = trim((string) $motivo);
+            $observacionesNormalizadas = trim((string) $observaciones);
+            $motivoRestauracion = $motivoNormalizado !== ''
+                ? $motivoNormalizado
+                : ($observacionesNormalizadas !== '' ? $observacionesNormalizadas : 'Restauracion manual');
 
             $estadoAnterior = $equipo->estado_operativo;
             $equipo->update(['estado_operativo' => 'activo', 'razon_estado' => null]);
 
             $asignacion = $equipo->asignaciones()->create([
                 'tipo_accion'  => Asignacion::TIPO_RESTAURACION,
-                'motivo'       => $motivo,
+                'motivo'       => $motivoRestauracion,
+                'observaciones'=> $observacionesNormalizadas !== '' ? $observacionesNormalizadas : null,
                 'user_id'      => $responsable->id,
                 'fecha_accion' => now(),
             ]);
@@ -261,7 +294,7 @@ class AsignacionService
                 'restauracion',
                 $estadoAnterior,
                 'activo',
-                "Equipo restaurado a Activo. Motivo: {$motivo}",
+                "Equipo restaurado a Activo. Motivo: {$motivoRestauracion}",
                 $responsable
             );
 
@@ -377,5 +410,72 @@ class AsignacionService
         if ($funcionario->trashed()) {
             $funcionario->restore();
         }
+    }
+
+    /**
+     * Regla de negocio: desde el segundo activo se requiere al menos una autorización disponible.
+     */
+    private function validarPoliticaActivosConAutorizacion(Equipo $equipo, array $datos): bool
+    {
+        $cedula = trim((string) ($datos['cedula'] ?? ''));
+
+        if ($cedula === '') {
+            return false;
+        }
+
+        $activosActuales = UsuarioAsignado::query()
+            ->where('cedula', $cedula)
+            ->where('equipo_id', '!=', $equipo->id)
+            ->count();
+
+        // Primer activo: no requiere autorización
+        if ($activosActuales === 0) {
+            return false;
+        }
+
+        $autorizacionesDisponibles = AutorizacionActivo::query()
+            ->where('cedula', $cedula)
+            ->where('estado', AutorizacionActivo::ESTADO_CARGADA)
+            ->count();
+
+        if ($autorizacionesDisponibles < 1) {
+            throw ValidationException::withMessages([
+                'cedula' => 'Este funcionario ya tiene activos asignados y no cuenta con autorización disponible. Debes cargar una autorización en el módulo de funcionarios.',
+            ]);
+        }
+
+        return true;
+    }
+
+    /**
+     * Consume una autorización disponible y la vincula a la asignación creada.
+     */
+    private function consumirAutorizacionDisponible(Equipo $equipo, Asignacion $asignacion, array $datos, User $responsable): void
+    {
+        $cedula = trim((string) ($datos['cedula'] ?? ''));
+        if ($cedula === '') {
+            return;
+        }
+
+        $autorizacion = AutorizacionActivo::query()
+            ->where('cedula', $cedula)
+            ->where('estado', AutorizacionActivo::ESTADO_CARGADA)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->first();
+
+        if (!$autorizacion) {
+            throw ValidationException::withMessages([
+                'cedula' => 'No hay autorización disponible para consumir en esta asignación.',
+            ]);
+        }
+
+        $autorizacion->update([
+            'estado' => AutorizacionActivo::ESTADO_CONSUMIDA,
+            'equipo_id' => $equipo->id,
+            'asignacion_id' => $asignacion->id,
+            'consumida_en' => now(),
+            'consumida_por_user_id' => $responsable->id,
+        ]);
     }
 }

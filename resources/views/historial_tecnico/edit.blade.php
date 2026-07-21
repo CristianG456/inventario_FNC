@@ -42,29 +42,12 @@
                     @error('tipo_evento')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                </div>
-
-                <div class="col-12">
-                    <label for="descripcion" class="form-label fw-medium">
-                        Descripción <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" name="descripcion" id="descripcion"
-                           class="form-control @error('descripcion') is-invalid @enderror"
-                           value="{{ old('descripcion', $historialTecnico->descripcion) }}"
-                           required maxlength="500">
-                    @error('descripcion')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <small class="text-muted d-block mt-1">
+                        Requerimiento: solicitud que no impide trabajar. Incidente: problema que impide realizar las labores normalmente.
+                    </small>
                 </div>
 
                 <div class="col-md-6">
-                    <label for="motivo" class="form-label fw-medium">Motivo</label>
-                    <input type="text" name="motivo" id="motivo"
-                           class="form-control"
-                           value="{{ old('motivo', $historialTecnico->motivo) }}" maxlength="500">
-                </div>
-
-                <div class="col-md-3">
                     <label for="fecha_evento" class="form-label fw-medium">
                         Fecha del Evento <span class="text-danger">*</span>
                     </label>
@@ -77,7 +60,7 @@
                     @enderror
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <label for="usuario_responsable" class="form-label fw-medium">
                         Técnico Responsable <span class="text-danger">*</span>
                     </label>
@@ -91,9 +74,12 @@
                 </div>
 
                 <div class="col-12">
-                    <label for="observaciones" class="form-label fw-medium">Observaciones</label>
+                    <label for="observaciones" class="form-label fw-medium">Observaciones <span class="text-danger">*</span></label>
                     <textarea name="observaciones" id="observaciones" rows="3"
-                              class="form-control">{{ old('observaciones', $historialTecnico->observaciones) }}</textarea>
+                              class="form-control @error('observaciones') is-invalid @enderror" required>{{ old('observaciones', $historialTecnico->observaciones) }}</textarea>
+                    @error('observaciones')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 

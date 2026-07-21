@@ -14,7 +14,6 @@ class Checklist extends Model
 
     protected $fillable = [
         'equipo_id',
-        'responsable_ti',
         'orden_trabajo',
         'observaciones',
         'cruce_av',
@@ -27,5 +26,14 @@ class Checklist extends Model
     public function equipo(): BelongsTo
     {
         return $this->belongsTo(Equipo::class);
+    }
+
+    public function getResponsableTiAttribute(): ?string
+    {
+        if ($this->relationLoaded('equipo')) {
+            return $this->equipo?->responsable_nombre;
+        }
+
+        return $this->equipo()->value('responsable_nombre');
     }
 }

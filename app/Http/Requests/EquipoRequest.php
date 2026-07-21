@@ -26,7 +26,7 @@ class EquipoRequest extends FormRequest
             'marca'            => ['required', 'string', 'max:100'],
             'modelo'           => ['required', 'string', 'max:100'],
             'nombre_equipo'    => ['required', 'string', 'max:150'],
-            'estado_operativo' => ['required', Rule::in(['activo', 'mantenimiento', 'baja', 'asignado', 'disponible'])],
+            'estado_operativo' => ['required', Rule::in(['activo', 'mantenimiento', 'baja', 'asignado', 'disponible', 'almacenado'])],
             'razon_estado'     => ['nullable', 'string', 'max:500'],
             'procesador'       => ['nullable', 'string', 'max:150'],
             'ram'              => ['nullable', 'string', 'max:50'],
@@ -36,7 +36,7 @@ class EquipoRequest extends FormRequest
             'fin_garantia'     => ['nullable', 'date', 'after_or_equal:fecha_compra'],
             'tiempo_uso'       => ['nullable', 'string', 'max:100'],
 
-            // --- Responsable Temporal ---
+            // --- Responsable del Activo ---
             'responsable_cedula'       => ['nullable', 'string', 'max:20'],
             'responsable_nombre'       => ['nullable', 'string', 'max:150'],
             'responsable_cargo'        => ['nullable', 'string', 'max:100'],
@@ -47,8 +47,8 @@ class EquipoRequest extends FormRequest
             'fecha_fin_responsable'    => ['nullable', 'date', 'after_or_equal:fecha_inicio_responsable'],
 
             // --- Usuario asignado ---
-            'usuario_nombre'       => ['required', 'string', 'max:150'],
-            'usuario_cedula'       => ['required', 'string', 'max:20'],
+            'usuario_nombre'       => ['nullable', 'string', 'max:150'],
+            'usuario_cedula'       => ['nullable', 'string', 'max:20'],
             'usuario_empresa_propietaria' => ['nullable', 'string', 'max:150'],
             'usuario_dependencia' => ['nullable', 'string', 'max:150'],
             'usuario_fuente_recurso' => ['nullable', 'string', 'max:150'],

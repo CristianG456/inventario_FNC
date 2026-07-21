@@ -17,12 +17,12 @@ class HistorialTecnicoRequest extends FormRequest
     {
         return [
             'equipo_id'          => ['required', 'exists:equipos,id'],
-            'tipo_evento'        => ['required', Rule::in(array_keys(HistorialTecnico::TIPOS_EVENTO))],
-            'descripcion'        => ['required', 'string', 'max:500'],
+            'tipo_evento'        => ['required', Rule::in(array_keys(HistorialTecnico::TIPOS_EVENTO_FORM))],
+            'descripcion'        => ['nullable', 'string', 'max:500'],
             'motivo'             => ['nullable', 'string', 'max:500'],
             'fecha_evento'       => ['required', 'date', 'before_or_equal:today'],
             'usuario_responsable'=> ['required', 'string', 'max:150'],
-            'observaciones'      => ['nullable', 'string', 'max:2000'],
+            'observaciones'      => ['required', 'string', 'max:2000'],
             'archivos'           => ['nullable', 'array', 'max:5'],
             'archivos.*'         => ['file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:5120'],
         ];
@@ -35,8 +35,8 @@ class HistorialTecnicoRequest extends FormRequest
             'equipo_id.exists'             => 'El equipo seleccionado no existe.',
             'tipo_evento.required'         => 'El tipo de evento es obligatorio.',
             'tipo_evento.in'               => 'El tipo de evento seleccionado no es válido.',
-            'descripcion.required'         => 'La descripción del evento es obligatoria.',
             'descripcion.max'              => 'La descripción no puede superar los 500 caracteres.',
+            'observaciones.required'       => 'Las observaciones son obligatorias.',
             'fecha_evento.required'        => 'La fecha del evento es obligatoria.',
             'fecha_evento.date'            => 'La fecha del evento debe ser una fecha válida.',
             'fecha_evento.before_or_equal' => 'La fecha del evento no puede ser futura.',

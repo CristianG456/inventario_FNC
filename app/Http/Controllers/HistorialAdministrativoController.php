@@ -30,10 +30,12 @@ class HistorialAdministrativoController extends Controller
     {
         $query = HistorialAdministrativo::with(['equipo', 'realizadoPor'])
             ->when($request->filled('buscar'), fn($q) =>
-                $q->where('descripcion', 'like', "%{$request->buscar}%")
-                  ->orWhereHas('equipo', fn($e) =>
-                      $e->where('nombre_equipo', 'like', "%{$request->buscar}%")
-                  )
+                $q->where(function ($subQuery) use ($request) {
+                    $subQuery->where('descripcion', 'like', "%{$request->buscar}%")
+                        ->orWhereHas('equipo', fn($e) =>
+                            $e->where('nombre_equipo', 'like', "%{$request->buscar}%")
+                        );
+                })
             )
             ->when($request->filled('tipo_cambio'), fn($q) =>
                 $q->where('tipo_cambio', $request->tipo_cambio)

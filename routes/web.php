@@ -68,8 +68,12 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::get('/equipos/{equipo}/historial-vida', [EquipoController::class, 'historialVida'])
         ->name('equipos.historial-vida')->middleware('permission:equipos.ver');
 
-    // Equipos (CRUD)
-    Route::resource('equipos', EquipoController::class)->middleware('permission:equipos.ver');
+    // Equipos (CRUD) con permisos por acción
+    Route::resource('equipos', EquipoController::class)
+        ->middlewareFor(['index', 'show'], 'permission:equipos.ver')
+        ->middlewareFor(['create', 'store'], 'permission:equipos.crear')
+        ->middlewareFor(['edit', 'update'], 'permission:equipos.editar')
+        ->middlewareFor(['destroy'], 'permission:equipos.eliminar');
 
     // ── Asignaciones ──────────────────────────────────────────────────────────
     Route::get('/asignaciones', [AsignacionController::class, 'index'])
@@ -77,6 +81,9 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
 
     Route::post('/asignaciones', [AsignacionController::class, 'store'])
         ->name('asignaciones.store')->middleware('permission:equipos.crear');
+
+    Route::get('/asignaciones/funcionarios-elegibles', [AsignacionController::class, 'funcionariosElegibles'])
+        ->name('asignaciones.funcionarios-elegibles')->middleware('permission:equipos.ver');
 
     Route::get('/asignaciones/{asignacion}', [AsignacionController::class, 'show'])
         ->name('asignaciones.show')->middleware('permission:equipos.ver');
@@ -121,7 +128,21 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::resource('checklists', ChecklistController::class)->middleware('permission:checklist.ver');
 
     // ── Funcionarios ──────────────────────────────────────────────────────────
-    Route::resource('funcionarios', FuncionarioController::class)->only(['index', 'create', 'store'])->middleware('permission:usuarios.ver');
+    Route::resource('funcionarios', FuncionarioController::class)
+        ->only(['index', 'create', 'store', 'show'])
+        ->middleware('permission:usuarios.ver');
+    Route::get('/funcionarios/{funcionario}/edit', [FuncionarioController::class, 'edit'])
+        ->name('funcionarios.edit')
+        ->middleware('permission:usuarios.editar');
+    Route::put('/funcionarios/{funcionario}', [FuncionarioController::class, 'update'])
+        ->name('funcionarios.update')
+        ->middleware('permission:usuarios.editar');
+    Route::post('/funcionarios/{funcionario}/autorizaciones', [FuncionarioController::class, 'storeAutorizacion'])
+        ->name('funcionarios.autorizaciones.store')
+        ->middleware('permission:usuarios.crear');
+    Route::patch('/funcionarios/{funcionario}/autorizaciones/{autorizacion}/anular', [FuncionarioController::class, 'anularAutorizacion'])
+        ->name('funcionarios.autorizaciones.anular')
+        ->middleware('permission:usuarios.editar');
 
     // ── HelpDesk (Tickets) ────────────────────────────────────────────────────
     Route::resource('tickets', TicketController::class)->middleware('permission:mesaayuda.ver');

@@ -34,8 +34,9 @@ class HistorialAdministrativo extends Model
         'eliminacion'      => 'Eliminación lógica',
         'restauracion'     => 'Restauración',
         'creacion'         => 'Registro creado',
-        'asignacion'       => 'Asignación de usuario',
-        'retiro'           => 'Retiro de usuario',
+        'asignacion'       => 'Préstamo de usuario',
+        'retiro'           => 'Retiro definitivo de usuario',
+        'cambio_responsable' => 'Cambio de Responsable del Activo',
         'otro'             => 'Otro cambio',
     ];
 

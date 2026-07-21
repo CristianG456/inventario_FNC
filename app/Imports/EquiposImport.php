@@ -44,12 +44,14 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
     private array $rowFailures = [];
     private array $rawHeaders  = [];
     private int   $detectedHeadingRow = 1;
+    private string $responsableInstitucional;
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
-    public function __construct(string $filePath)
+    public function __construct(string $filePath, string $responsableInstitucional)
     {
         $this->mapper = new CMDBMapperService();
+        $this->responsableInstitucional = $responsableInstitucional;
         $this->detectHeadingRow($filePath);
     }
     
@@ -173,7 +175,14 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
                 // 2. Resolver serial (autogenerar si no existe)
                 $serialFinal = $this->resolverSerial($serial);
 
-                // 3. Crear o actualizar equipo
+                // 3. Resolver responsable inicial para importaciones sin responsable explícito
+                $responsableNombre = $this->mapper->get($row, 'responsable_nombre');
+
+                if (empty($responsableNombre)) {
+                    $responsableNombre = $this->responsableInstitucional;
+                }
+
+                // 4. Crear o actualizar equipo
                 $equipo = Equipo::updateOrCreate(
                     ['serial' => $serialFinal],
                     [
@@ -192,7 +201,7 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
                         'fin_garantia'      => $this->mapper->getDate($row, 'fin_garantia'),
                         'tiempo_uso'        => $this->mapper->get($row, 'tiempo_uso'),
                         'responsable_cedula'=> $this->mapper->get($row, 'responsable_cedula'),
-                        'responsable_nombre'=> $this->mapper->get($row, 'responsable_nombre'),
+                        'responsable_nombre'=> $responsableNombre,
                         'responsable_cargo' => $this->mapper->get($row, 'responsable_cargo'),
                         'responsable_ciudad'=> $this->mapper->get($row, 'responsable_ciudad'),
                         'responsable_area'  => $this->mapper->get($row, 'responsable_area'),
@@ -202,7 +211,7 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
                     ]
                 );
 
-                // 4. Guardar campos personalizados dinámicamente
+                // 5. Guardar campos personalizados dinámicamente
                 $customFields = $this->mapper->getCustomFields($row);
                 foreach ($customFields as $campoId => $valor) {
                     if ($valor !== null) {
@@ -213,31 +222,40 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
                     }
                 }
 
-                // 5. Crear o actualizar usuario asignado (misma fila = mismo equipo)
-                $cedula = $this->mapper->getOrDefault($row, 'cedula');
-                $nombre = $this->mapper->getOrDefault($row, 'nombre_usuario');
-                
-                UsuarioAsignado::updateOrCreate(
-                    ['equipo_id' => $equipo->id],
-                    [
-                        'nombre'              => $nombre,
-                        'cedula'              => $cedula,
-                        'empresa_propietaria' => $this->mapper->get($row, 'empresa_propietaria'),
-                        'dependencia'         => $this->mapper->get($row, 'dependencia'),
-                        'fuente_recurso'      => $this->mapper->get($row, 'fuente_recurso'),
-                        'empresa_funcionario' => $this->mapper->get($row, 'empresa_funcionario'),
-                        'tipo_vinculacion'    => $this->mapper->get($row, 'tipo_vinculacion'),
-                        'shortname'           => $this->mapper->get($row, 'shortname'),
-                        'departamento'        => $this->mapper->get($row, 'departamento'),
-                        'ciudad'              => $this->mapper->get($row, 'ciudad'),
-                        'cargo'               => $this->mapper->get($row, 'cargo'),
-                        'area'                => $this->mapper->get($row, 'area'),
-                        'piso'                => $this->mapper->get($row, 'piso'),
-                    ]
-                );
+                // 6. Crear o actualizar usuario asignado solo si la fila trae funcionario real
+                $cedula = $this->mapper->get($row, 'cedula');
+                $nombre = $this->mapper->get($row, 'nombre_usuario');
 
-                // 6. Sincronizar automáticamente con el módulo de Funcionarios
-                if ($cedula && $cedula !== 'Sin Asignar' && $nombre && $nombre !== 'Sin Asignar') {
+                $placeholders = ['SIN ASIGNAR', 'PENDIENTE', 'N/A', 'NA', 'NO APLICA', 'NULL', '-'];
+                $nombreNormalizado = strtoupper(trim((string) $nombre));
+                $cedulaNormalizada = strtoupper(trim((string) $cedula));
+                $tieneFuncionarioValido =
+                    !empty($nombreNormalizado) &&
+                    !empty($cedulaNormalizada) &&
+                    !in_array($nombreNormalizado, $placeholders, true) &&
+                    !in_array($cedulaNormalizada, $placeholders, true);
+
+                if ($tieneFuncionarioValido) {
+                    UsuarioAsignado::updateOrCreate(
+                        ['equipo_id' => $equipo->id],
+                        [
+                            'nombre'              => $nombre,
+                            'cedula'              => $cedula,
+                            'empresa_propietaria' => $this->mapper->get($row, 'empresa_propietaria'),
+                            'dependencia'         => $this->mapper->get($row, 'dependencia'),
+                            'fuente_recurso'      => $this->mapper->get($row, 'fuente_recurso'),
+                            'empresa_funcionario' => $this->mapper->get($row, 'empresa_funcionario'),
+                            'tipo_vinculacion'    => $this->mapper->get($row, 'tipo_vinculacion'),
+                            'shortname'           => $this->mapper->get($row, 'shortname'),
+                            'departamento'        => $this->mapper->get($row, 'departamento'),
+                            'ciudad'              => $this->mapper->get($row, 'ciudad'),
+                            'cargo'               => $this->mapper->get($row, 'cargo'),
+                            'area'                => $this->mapper->get($row, 'area'),
+                            'piso'                => $this->mapper->get($row, 'piso'),
+                        ]
+                    );
+
+                    // 7. Sincronizar automáticamente con el módulo de Funcionarios
                     \App\Models\Funcionario::updateOrCreate(
                         ['identificacion' => $cedula],
                         [
@@ -347,21 +365,33 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
     private function mapearEstadoOperativo(?string $estado): string
     {
         if (!$estado) {
-            return 'activo';
+            return 'disponible';
         }
 
         $e = strtolower(trim($estado));
 
-        if (str_contains($e, 'operaci') || str_contains($e, 'activo') || str_contains($e, 'asignado')) {
+        if (str_contains($e, 'disponible')) {
+            return 'disponible';
+        }
+        if (str_contains($e, 'almacenado') || str_contains($e, 'almacen')) {
+            return 'almacenado';
+        }
+        if (str_contains($e, 'mantenimiento') || str_contains($e, 'alistamiento')) {
+            return 'mantenimiento';
+        }
+        if (str_contains($e, 'asignado')) {
+            return 'asignado';
+        }
+        if (str_contains($e, 'operaci') || str_contains($e, 'activo')) {
             return 'activo';
         }
         if (str_contains($e, 'baja') || str_contains($e, 'desechado') || str_contains($e, 'obsoleto')) {
             return 'baja';
         }
-        if (str_contains($e, 'almacenado') || str_contains($e, 'pendiente') || str_contains($e, 'mantenimiento') || str_contains($e, 'alistamiento')) {
-            return 'mantenimiento';
+        if (str_contains($e, 'pendiente')) {
+            return 'almacenado';
         }
 
-        return 'activo';
+        return 'disponible';
     }
 }

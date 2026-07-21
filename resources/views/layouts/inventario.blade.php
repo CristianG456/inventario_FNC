@@ -219,6 +219,19 @@
             @json(session('warning')),
             @json($errors->all())
         );
+
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && window.matchMedia('(min-width: 769px)').matches) {
+            sidebar.classList.remove('is-expanded');
+
+            sidebar.addEventListener('mouseenter', () => {
+                sidebar.classList.add('is-expanded');
+            });
+
+            sidebar.addEventListener('mouseleave', () => {
+                sidebar.classList.remove('is-expanded');
+            });
+        }
     });
 </script>
 @stack('scripts')

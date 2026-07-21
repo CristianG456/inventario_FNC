@@ -3,6 +3,9 @@
 @section('title', 'Historial Técnico — ' . $equipo->nombre_equipo)
 
 @section('content')
+@php
+    $puedeModificarBitacora = in_array((string) $equipo->estado_operativo, ['mantenimiento', 'baja'], true);
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold mb-0">
@@ -11,11 +14,11 @@
         <small class="text-muted">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</small>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('historial-tecnico.create', ['equipo_id' => $equipo->id]) }}"
+        <a href="{{ route('historial-tecnico.create', ['equipo_id' => $equipo->id, 'return_to' => request()->fullUrl()]) }}"
            class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nuevo Evento
         </a>
-        <a href="{{ route('equipos.show', $equipo) }}" class="btn btn-outline-secondary">
+        <a href="{{ $volverUrl }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Volver
         </a>
     </div>
@@ -61,7 +64,7 @@
                                     <span class="badge bg-{{ $registro->tipo_evento_color }} me-2">
                                         {{ $registro->tipo_evento_label }}
                                     </span>
-                                    <strong>{{ $registro->descripcion }}</strong>
+                                    <strong>{{ $registro->observaciones ?: $registro->descripcion }}</strong>
                                 </div>
                                 <small class="text-muted text-nowrap ms-2">
                                     <i class="bi bi-calendar2 me-1"></i>
@@ -69,18 +72,10 @@
                                 </small>
                             </div>
 
-                            {{-- Motivo --}}
-                            @if($registro->motivo)
-                            <p class="text-muted small mb-2">
-                                <i class="bi bi-chat-left-dots me-1"></i>
-                                <strong>Motivo:</strong> {{ $registro->motivo }}
-                            </p>
-                            @endif
-
                             {{-- Responsable --}}
                             <p class="mb-2 small">
                                 <i class="bi bi-person-fill me-1 text-muted"></i>
-                                <strong>Responsable:</strong> {{ $registro->usuario_responsable }}
+                                <strong>Responsable:</strong> {{ $registro->usuario_responsable_label }}
                             </p>
 
                             {{-- Usuario asignado en ese momento --}}
@@ -97,12 +92,6 @@
                             @endif
 
                             {{-- Observaciones --}}
-                            @if($registro->observaciones)
-                            <p class="text-muted small mb-2">
-                                <i class="bi bi-journal-text me-1"></i>{{ $registro->observaciones }}
-                            </p>
-                            @endif
-
                             {{-- Archivos --}}
                             @if($registro->archivos && count($registro->archivos) > 0)
                             <div class="mb-2">
@@ -122,16 +111,18 @@
                                    class="btn btn-sm btn-outline-info">
                                     <i class="bi bi-eye me-1"></i>Ver
                                 </a>
-                                <a href="{{ route('historial-tecnico.edit', $registro) }}"
-                                   class="btn btn-sm btn-outline-warning">
-                                    <i class="bi bi-pencil me-1"></i>Editar
-                                </a>
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        data-delete-url="{{ route('historial-tecnico.destroy', $registro) }}"
-                                        data-delete-name="el evento del {{ $registro->fecha_evento?->format('d/m/Y') }}">
-                                    <i class="bi bi-trash me-1"></i>Eliminar
-                                </button>
+                                @if($puedeModificarBitacora)
+                                    <a href="{{ route('historial-tecnico.edit', $registro) }}"
+                                       class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil me-1"></i>Editar
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-delete-url="{{ route('historial-tecnico.destroy', $registro) }}"
+                                            data-delete-name="el evento del {{ $registro->fecha_evento?->format('d/m/Y') }}">
+                                        <i class="bi bi-trash me-1"></i>Eliminar
+                                    </button>
+                                @endif
                                 <small class="text-muted ms-auto align-self-center">
                                     Registrado por: {{ $registro->registradoPor?->name ?? '—' }}
                                 </small>

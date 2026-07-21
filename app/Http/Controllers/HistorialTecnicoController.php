@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\HistorialTecnicoRequest;
 use App\Models\Equipo;
 use App\Models\HistorialTecnico;
+use App\Models\User;
 use App\Services\HistorialTecnicoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class HistorialTecnicoController extends Controller
@@ -43,7 +45,7 @@ class HistorialTecnicoController extends Controller
             ->orderByDesc('fecha_evento');
 
         $registros    = $query->paginate(15)->withQueryString();
-        $tiposEvento  = HistorialTecnico::TIPOS_EVENTO;
+        $tiposEvento  = HistorialTecnico::TIPOS_EVENTO_FORM;
 
         $conteosPorEstado = HistorialTecnico::selectRaw('estado, COUNT(*) as total')
             ->groupBy('estado')
@@ -67,12 +69,22 @@ class HistorialTecnicoController extends Controller
     /**
      * Timeline de historial técnico de un equipo específico.
      */
-    public function porEquipo(Equipo $equipo): View
+    public function porEquipo(Request $request, Equipo $equipo): View
     {
         $registros   = $equipo->historialTecnico()->with('registradoPor')->get();
-        $tiposEvento = HistorialTecnico::TIPOS_EVENTO;
+        $tiposEvento = HistorialTecnico::TIPOS_EVENTO_FORM;
+        $volverUrl   = route('historial-tecnico.index');
 
-        return view('historial_tecnico.por_equipo', compact('equipo', 'registros', 'tiposEvento'));
+        $returnTo = $request->query('return_to');
+        if (is_string($returnTo) && $returnTo !== '') {
+            $path = parse_url($returnTo, PHP_URL_PATH);
+
+            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
+                $volverUrl = $returnTo;
+            }
+        }
+
+        return view('historial_tecnico.por_equipo', compact('equipo', 'registros', 'tiposEvento', 'volverUrl'));
     }
 
     /**
@@ -80,15 +92,33 @@ class HistorialTecnicoController extends Controller
      */
     public function create(Request $request): View
     {
-        $tiposEvento = HistorialTecnico::TIPOS_EVENTO;
+        $tiposEvento = HistorialTecnico::TIPOS_EVENTO_FORM;
         $equipoId    = $request->equipo_id;
         $equipo      = $equipoId ? Equipo::find($equipoId) : null;
+        $volverUrl   = $equipo ? route('historial-tecnico.por-equipo', $equipo) : route('historial-tecnico.index');
+
+        $returnTo = $request->query('return_to');
+        if (is_string($returnTo) && $returnTo !== '') {
+            $path = parse_url($returnTo, PHP_URL_PATH);
+
+            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
+                $volverUrl = $returnTo;
+            }
+        }
+
+        $analistasSoporte = User::query()
+            ->whereHas('roles', fn ($q) => $q->where('name', 'Soporte TI'))
+            ->select('name')
+            ->get();
+        $responsableSugerido = $analistasSoporte->count() === 1
+            ? (string) $analistasSoporte->first()->name
+            : 'Analista TIC';
         $equipos     = Equipo::select('id', 'nombre_equipo', 'serial')
             ->orderBy('nombre_equipo')
             ->limit(500)
             ->get();
 
-        return view('historial_tecnico.create', compact('tiposEvento', 'equipo', 'equipos'));
+        return view('historial_tecnico.create', compact('tiposEvento', 'equipo', 'equipos', 'responsableSugerido', 'volverUrl'));
     }
 
     /**
@@ -116,15 +146,23 @@ class HistorialTecnicoController extends Controller
     public function show(HistorialTecnico $historialTecnico): View
     {
         $historialTecnico->load(['equipo', 'registradoPor']);
-        return view('historial_tecnico.show', compact('historialTecnico'));
+        $puedeModificarBitacora = $this->puedeModificarBitacora($historialTecnico);
+
+        return view('historial_tecnico.show', compact('historialTecnico', 'puedeModificarBitacora'));
     }
 
     /**
      * Formulario de edición.
      */
-    public function edit(HistorialTecnico $historialTecnico): View
+    public function edit(HistorialTecnico $historialTecnico): View|RedirectResponse
     {
-        $tiposEvento = HistorialTecnico::TIPOS_EVENTO;
+        if (!$this->puedeModificarBitacora($historialTecnico)) {
+            return redirect()
+                ->route('historial-tecnico.show', $historialTecnico)
+                ->with('warning', 'La bitácora del activo restaurado es de solo lectura y no se puede editar.');
+        }
+
+        $tiposEvento = HistorialTecnico::TIPOS_EVENTO_FORM;
         $historialTecnico->load('equipo');
         return view('historial_tecnico.edit', compact('historialTecnico', 'tiposEvento'));
     }
@@ -134,6 +172,12 @@ class HistorialTecnicoController extends Controller
      */
     public function update(HistorialTecnicoRequest $request, HistorialTecnico $historialTecnico): RedirectResponse
     {
+        if (!$this->puedeModificarBitacora($historialTecnico)) {
+            return redirect()
+                ->route('historial-tecnico.show', $historialTecnico)
+                ->with('warning', 'La bitácora del activo restaurado es de solo lectura y no se puede editar.');
+        }
+
         $historialTecnico->update($request->validated());
 
         return redirect()
@@ -146,11 +190,24 @@ class HistorialTecnicoController extends Controller
      */
     public function destroy(HistorialTecnico $historialTecnico): RedirectResponse
     {
+        if (!$this->puedeModificarBitacora($historialTecnico)) {
+            return redirect()
+                ->route('historial-tecnico.show', $historialTecnico)
+                ->with('warning', 'La bitácora del activo restaurado es de solo lectura y no se puede eliminar.');
+        }
+
         $equipoId = $historialTecnico->equipo_id;
         $historialTecnico->delete();
 
         return redirect()
             ->route('historial-tecnico.por-equipo', $equipoId)
             ->with('success', 'Evento técnico eliminado.');
+    }
+
+    private function puedeModificarBitacora(HistorialTecnico $historialTecnico): bool
+    {
+        $historialTecnico->loadMissing('equipo:id,estado_operativo');
+
+        return in_array((string) $historialTecnico->equipo?->estado_operativo, ['mantenimiento', 'baja'], true);
     }
 }

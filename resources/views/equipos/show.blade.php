@@ -16,7 +16,7 @@
             <i class="bi bi-tools me-1"></i>Historial Técnico
         </a>
         <a href="{{ route('asignaciones.por-equipo', $equipo) }}" class="btn btn-outline-success">
-            <i class="bi bi-person-fill-gear me-1"></i>Asignaciones
+            <i class="bi bi-person-fill-gear me-1"></i>Préstamos
         </a>
         <a href="{{ route('equipos.edit', $equipo) }}" class="btn btn-warning text-white">
             <i class="bi bi-pencil me-1"></i>Editar
@@ -111,22 +111,22 @@
     </div>
     @endif
     
-    {{-- Usuario asignado --}}
+    {{-- Usuario en préstamo --}}
     <div class="col-lg-6">
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-person me-2 text-success"></i>Usuario Asignado</span>
+                <span><i class="bi bi-person me-2 text-success"></i>Usuario en Préstamo</span>
                 @if($equipo->usuarioAsignado)
-                    <span class="badge bg-success">Asignado</span>
+                    <span class="badge bg-success">En préstamo</span>
                 @else
-                    <span class="badge bg-secondary">Sin asignar</span>
+                    <span class="badge bg-secondary">Sin préstamo</span>
                 @endif
             </div>
             <div class="card-body">
                 @if($equipo->usuarioAsignado)
                     <dl class="row mb-0">
                         <dt class="col-sm-5 text-muted">Nombre</dt>
-                        <dd class="col-sm-7 fw-bold">{{ $equipo->usuarioAsignado->nombre }}</dd>
+                        <dd class="col-sm-7 fw-bold text-success">{{ $equipo->usuarioAsignado->nombre }}</dd>
                         <dt class="col-sm-5 text-muted">Cédula</dt>
                         <dd class="col-sm-7">{{ $equipo->usuarioAsignado->cedula }}</dd>
                         <dt class="col-sm-5 text-muted">Empresa Propietaria</dt>
@@ -157,16 +157,23 @@
                         <dd class="col-sm-7 fw-bold">{{ $equipo->usuarioAsignado->seccional ?? '—' }}</dd>
                     </dl>
                 @else
-                    <p class="text-muted mb-0">Sin usuario asignado.</p>
+                    <p class="text-muted mb-0">Sin usuario en préstamo.</p>
                 @endif
             </div>
         </div>
 
-        {{-- Responsable Temporal --}}
+        {{-- Responsable del Activo --}}
         @if($equipo->responsable_nombre)
-        <div class="card mb-4 border-0 shadow-sm mt-3">
-            <div class="card-header bg-secondary bg-opacity-10 fw-semibold border-0 py-3">
-                <i class="bi bi-person-badge me-2 text-secondary"></i>Responsable Temporal
+        <div class="card mb-4 border-0 shadow-sm mt-3 border-start border-info border-3">
+            <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3">
+                <div class="mb-2">
+                    <i class="bi bi-person-badge me-2 text-info"></i>
+                    <span class="fw-bold">Responsable del Activo</span>
+                </div>
+                <small class="text-muted d-block ps-4">
+                    Persona responsable de la administración y control del activo durante su ciclo de vida. 
+                    Esta responsabilidad es independiente del usuario al que se encuentre asignado el equipo.
+                </small>
             </div>
             <div class="card-body">
                 <dl class="row mb-0">
@@ -217,12 +224,12 @@
         </div>
     </div>
 
-    {{-- Últimas asignaciones --}}
+    {{-- Últimos préstamos --}}
     @if($equipo->asignaciones->isNotEmpty())
     <div class="col-lg-6">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-person-fill-gear me-2 text-success"></i>Últimas Asignaciones</span>
+                <span><i class="bi bi-person-fill-gear me-2 text-success"></i>Últimos Préstamos</span>
                 <a href="{{ route('asignaciones.por-equipo', $equipo) }}"
                    class="btn btn-sm btn-outline-success">Ver todas</a>
             </div>

@@ -200,7 +200,7 @@ class CMDBMapperService
             'anos_uso',
         ],
 
-        // ─── Campos del responsable temporal ─────────────────────────────
+        // ─── Campos del responsable del activo ────────────────────────────
 
         'responsable_cedula' => [
             'responsable_cedula',

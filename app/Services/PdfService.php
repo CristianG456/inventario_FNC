@@ -123,7 +123,7 @@ class PdfService
             'ram'              => $equipo->ram ?? '—',
             'disco'            => $equipo->disco ?? '—',
             'sistema_operativo'=> $equipo->sistema_operativo ?? '—',
-            'estado_operativo' => ucfirst($equipo->estado_operativo),
+            'estado_operativo' => $equipo->estado_label,
             'fecha_compra'     => $equipo->fecha_compra?->format('d/m/Y') ?? '—',
             'fin_garantia'     => $equipo->fin_garantia?->format('d/m/Y') ?? '—',
             // Usuario asignado (snapshot)

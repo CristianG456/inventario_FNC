@@ -23,7 +23,7 @@ class AsignacionesExport implements FromQuery, WithHeadings, WithMapping, Should
 
     public function title(): string
     {
-        return 'Asignaciones y Movimientos';
+        return 'Préstamos y Movimientos';
     }
 
     public function headings(): array

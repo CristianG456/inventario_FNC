@@ -47,9 +47,9 @@ class AsignacionRequest extends FormRequest
             ]);
         }
 
-        // Retiro y baja requieren motivo
-        if (in_array($accion, ['retiro', 'baja', 'mantenimiento'])) {
-            $reglasBase['motivo'] = ['required', 'string', 'max:500'];
+        // Retiro, baja y mantenimiento usan solo observaciones
+        if (in_array($accion, ['retiro', 'baja', 'mantenimiento'], true)) {
+            $reglasBase['observaciones'] = ['required', 'string', 'max:1000'];
         }
 
         return $reglasBase;
@@ -65,6 +65,7 @@ class AsignacionRequest extends FormRequest
             'nombre.required'      => 'El nombre del usuario es obligatorio.',
             'cedula.required'      => 'La cédula del usuario es obligatoria.',
             'motivo.required'      => 'El motivo es obligatorio para esta acción.',
+            'observaciones.required' => 'Las observaciones son obligatorias para esta acción.',
             'fecha_accion.date'    => 'La fecha de acción debe ser una fecha válida.',
             'distrito.max'         => 'El distrito no puede superar los 150 caracteres.',
             'seccional.max'        => 'La seccional no puede superar los 150 caracteres.',

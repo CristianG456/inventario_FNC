@@ -8,10 +8,12 @@ use App\Imports\EquiposImport;
 use App\Models\Equipo;
 use App\Models\Funcionario;
 use App\Models\TipoRecurso;
+use App\Models\User;
 use App\Services\HistorialService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -27,7 +29,7 @@ class EquipoController extends Controller
     public function index(Request $request): View
     {
         $buscar = trim((string) $request->input('buscar', ''));
-        $filtroActivoFijo = trim((string) $request->input('activo_fijo', ''));
+        $filtroFuncionario = trim((string) $request->input('funcionario', ''));
 
         $query = Equipo::select([
                 'id',
@@ -38,6 +40,8 @@ class EquipoController extends Controller
                 'marca',
                 'modelo',
                 'nombre_equipo',
+            'responsable_nombre',
+            'responsable_cedula',
                 'estado_operativo',
                 'created_at',
             ])
@@ -57,20 +61,10 @@ class EquipoController extends Controller
             })
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
             ->when($request->filled('estado'), fn($q) => $q->where('estado_operativo', $request->estado))
-            ->when($filtroActivoFijo !== '', fn($q) => $q->where('activo_fijo', 'like', '%' . $filtroActivoFijo . '%'))
+            ->when($filtroFuncionario !== '', fn($q) => $q->whereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $filtroFuncionario . '%')))
             ->latest();
 
-        $equipos      = $query->paginate(15)->withQueryString();
-        $cedulasAsignadas = $equipos->getCollection()
-            ->pluck('usuarioAsignado.cedula')
-            ->filter()
-            ->unique()
-            ->values();
-
-        $funcionariosPorCedula = Funcionario::whereIn('identificacion', $cedulasAsignadas)
-            ->get(['identificacion', 'nombres', 'apellidos'])
-            ->keyBy('identificacion');
-
+        $equipos      = $query->paginate(6)->withQueryString();
         $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
         $camposExportables = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
             ->where('exportable', true)
@@ -82,7 +76,7 @@ class EquipoController extends Controller
                                     ->orderBy('nombre')
                                     ->get();
 
-        return view('equipos.index', compact('equipos', 'tipoRecursos', 'plantillasExportacion', 'funcionariosPorCedula', 'camposExportables'));
+        return view('equipos.index', compact('equipos', 'tipoRecursos', 'plantillasExportacion', 'camposExportables'));
     }
 
     /**
@@ -121,29 +115,33 @@ class EquipoController extends Controller
             'fecha_inicio_responsable', 'fecha_fin_responsable'
         ]);
 
+        // Completar responsable administrativo desde el usuario autenticado
+        $usuarioAutenticado = Auth::user();
+        if ($usuarioAutenticado) {
+            if (empty($datosEquipo['responsable_nombre'])) {
+                $datosEquipo['responsable_nombre'] = $usuarioAutenticado->name;
+            }
+
+            if (empty($datosEquipo['responsable_cargo'])) {
+                $datosEquipo['responsable_cargo'] = $usuarioAutenticado->cargo ?? 'Analista TIC';
+            }
+
+            if (empty($datosEquipo['fecha_inicio_responsable'])) {
+                $datosEquipo['fecha_inicio_responsable'] = now()->toDateString();
+            }
+        }
+
         if ($request->sin_serial_fisico && empty($datosEquipo['serial'])) {
             $datosEquipo['serial'] = 'SIN_SERIAL_' . strtoupper(uniqid());
         }
 
-        $equipo = Equipo::create($datosEquipo);
+        // Regla: si no hay funcionario asignado en este flujo, no puede quedar como activo/asignado.
+        if (in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
+            $datosEquipo['estado_operativo'] = 'disponible';
+            $datosEquipo['razon_estado'] = null;
+        }
 
-        $equipo->usuarioAsignado()->create([
-            'nombre'               => $request->usuario_nombre,
-            'cedula'               => $request->usuario_cedula,
-            'empresa_propietaria'  => $request->usuario_empresa_propietaria,
-            'dependencia'          => $request->usuario_dependencia,
-            'fuente_recurso'       => $request->usuario_fuente_recurso,
-            'empresa_funcionario'  => $request->usuario_empresa_funcionario,
-            'tipo_vinculacion'     => $request->usuario_tipo_vinculacion,
-            'shortname'            => $request->usuario_shortname,
-            'departamento'         => $request->usuario_departamento,
-            'ciudad'               => $request->usuario_ciudad,
-            'cargo'                => $request->usuario_cargo,
-            'area'                 => $request->usuario_area,
-            'piso'                 => $request->usuario_piso,
-            'distrito'             => $request->usuario_distrito,
-            'seccional'            => $request->usuario_seccional,
-        ]);
+        $equipo = Equipo::create($datosEquipo);
 
         $equipo->periferico()->create([
             'telefono' => $request->periferico_telefono,
@@ -163,16 +161,13 @@ class EquipoController extends Controller
             }
         }
 
-        // Sincronizar funcionario en la tabla de funcionarios
-        $this->sincronizarFuncionario($request);
-
         $this->historialService->registrarCambio(
             $equipo,
             'creacion',
             null,
             $equipo->serial,
             "Equipo '{$equipo->nombre_equipo}' registrado en el sistema.",
-            auth()->user()
+            Auth::user()
         );
 
         return redirect()->route('equipos.index')
@@ -231,6 +226,8 @@ class EquipoController extends Controller
         $camposAnteriores = $equipo->only([
             'serial', 'activo_fijo', 'estado_operativo', 'marca', 'modelo',
             'nombre_equipo', 'procesador', 'ram', 'disco', 'sistema_operativo',
+            'responsable_cedula', 'responsable_nombre', 'responsable_cargo',
+            'responsable_ciudad', 'responsable_area', 'responsable_tipo_recurso',
         ]);
 
         $datosEquipo = $request->only([
@@ -247,35 +244,55 @@ class EquipoController extends Controller
             $datosEquipo['serial'] = 'SIN_SERIAL_' . strtoupper(uniqid());
         }
 
+        // Regla: un activo sin funcionario asignado no puede quedar como activo/asignado.
+        if (!$equipo->usuarioAsignado()->exists() && in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
+            $datosEquipo['estado_operativo'] = 'disponible';
+            $datosEquipo['razon_estado'] = null;
+        }
+
         $equipo->update($datosEquipo);
 
         $camposNuevos = $equipo->fresh()->only(array_keys($camposAnteriores));
+        
+        // Detectar cambios en responsable_* y registrar UN ÚNICO evento consolidado
+        $camposResponsable = [
+            'responsable_cedula' => 'Cédula',
+            'responsable_nombre' => 'Nombre',
+            'responsable_cargo' => 'Cargo',
+            'responsable_ciudad' => 'Ciudad',
+            'responsable_area' => 'Área',
+            'responsable_tipo_recurso' => 'Tipo de Recurso'
+        ];
+        
+        $cambiosResponsable = [];
+        foreach ($camposResponsable as $campo => $etiqueta) {
+            if (array_key_exists($campo, $camposAnteriores) && 
+                array_key_exists($campo, $camposNuevos) && 
+                $camposAnteriores[$campo] !== $camposNuevos[$campo]) {
+                $valorAnterior = $camposAnteriores[$campo] ?? 'Sin valor';
+                $valorNuevo = $camposNuevos[$campo] ?? 'Sin valor';
+                $cambiosResponsable[] = "- {$etiqueta}: {$valorAnterior} → {$valorNuevo}";
+            }
+        }
+        
+        // Registrar un único evento si hubo cambios en responsable
+        if (!empty($cambiosResponsable)) {
+            $descripcion = "Cambio de Responsable del Activo.\n\nCampos modificados:\n" . implode("\n", $cambiosResponsable);
+            $this->historialService->registrarCambio(
+                $equipo,
+                'cambio_responsable',
+                json_encode($camposAnteriores),
+                json_encode($camposNuevos),
+                $descripcion,
+                Auth::user()
+            );
+        }
+        
         $this->historialService->registrarCambiosCampos(
             $equipo,
             $camposAnteriores,
             $camposNuevos,
-            auth()->user()
-        );
-
-        $equipo->usuarioAsignado()->updateOrCreate(
-            ['equipo_id' => $equipo->id],
-            [
-                'nombre'               => $request->usuario_nombre,
-                'cedula'               => $request->usuario_cedula,
-                'empresa_propietaria'  => $request->usuario_empresa_propietaria,
-                'dependencia'          => $request->usuario_dependencia,
-                'fuente_recurso'       => $request->usuario_fuente_recurso,
-                'empresa_funcionario'  => $request->usuario_empresa_funcionario,
-                'tipo_vinculacion'     => $request->usuario_tipo_vinculacion,
-                'shortname'            => $request->usuario_shortname,
-                'departamento'         => $request->usuario_departamento,
-                'ciudad'               => $request->usuario_ciudad,
-                'cargo'                => $request->usuario_cargo,
-                'area'                 => $request->usuario_area,
-                'piso'                 => $request->usuario_piso,
-                'distrito'             => $request->usuario_distrito,
-                'seccional'            => $request->usuario_seccional,
-            ]
+            Auth::user()
         );
 
         $equipo->periferico()->updateOrCreate(
@@ -316,7 +333,7 @@ class EquipoController extends Controller
             'activo',
             'eliminado',
             "Equipo '{$equipo->nombre_equipo}' eliminado del sistema.",
-            auth()->user()
+            Auth::user()
         );
 
         $equipo->delete();
@@ -384,8 +401,16 @@ class EquipoController extends Controller
             'archivo.mimes'    => 'Solo se permiten archivos .xlsx o .xls.',
             'archivo.max'      => 'El archivo no puede superar 10 MB.',
         ]);
+
+        try {
+            $responsableInstitucional = $this->obtenerNombreAnalistaTicInstitucional();
+        } catch (\RuntimeException $e) {
+            return redirect()->route('equipos.importar.form')
+                ->withErrors(['archivo' => $e->getMessage()]);
+        }
+
         $filePath = $request->file('archivo')->getRealPath();
-        $import = new EquiposImport($filePath);
+        $import = new EquiposImport($filePath, $responsableInstitucional);
         Excel::import($import, $request->file('archivo'));
 
         $rowFailures  = $import->getRowFailures();
@@ -466,5 +491,21 @@ class EquipoController extends Controller
         if ($funcionario->trashed()) {
             $funcionario->restore();
         }
+    }
+
+    /**
+     * Obtiene de forma inequívoca el Analista TIC institucional por rol.
+     */
+    private function obtenerNombreAnalistaTicInstitucional(): string
+    {
+        $analistas = User::role('Soporte TI')->select('id', 'name')->get();
+
+        if ($analistas->count() !== 1) {
+            throw new \RuntimeException(
+                'No se puede determinar el Analista TIC institucional. Debe existir exactamente un usuario con rol Soporte TI.'
+            );
+        }
+
+        return (string) $analistas->first()->name;
     }
 }

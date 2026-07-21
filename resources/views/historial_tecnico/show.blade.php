@@ -14,12 +14,18 @@
         </small>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('historial-tecnico.edit', $historialTecnico) }}" class="btn btn-warning text-white">
-            <i class="bi bi-pencil me-1"></i>Editar
-        </a>
-        <a href="{{ route('historial-tecnico.por-equipo', $historialTecnico->equipo_id) }}"
+        @if($puedeModificarBitacora)
+            <a href="{{ route('historial-tecnico.edit', $historialTecnico) }}" class="btn btn-warning text-white">
+                <i class="bi bi-pencil me-1"></i>Editar
+            </a>
+        @endif
+        <a href="{{ route('historial-tecnico.por-equipo', ['equipo' => $historialTecnico->equipo_id, 'return_to' => request()->fullUrl()]) }}"
            class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Historial del Equipo
+            <i class="bi bi-clock-history me-1"></i>Historial del Equipo
+        </a>
+        <a href="{{ route('historial-tecnico.index') }}"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
         </a>
     </div>
 </div>
@@ -39,20 +45,12 @@
                             {{ $historialTecnico->tipo_evento_label }}
                         </span>
                     </dd>
-                    <dt class="col-sm-4 text-muted">Descripción</dt>
-                    <dd class="col-sm-8">{{ $historialTecnico->descripcion }}</dd>
-                    @if($historialTecnico->motivo)
-                    <dt class="col-sm-4 text-muted">Motivo</dt>
-                    <dd class="col-sm-8">{{ $historialTecnico->motivo }}</dd>
-                    @endif
+                    <dt class="col-sm-4 text-muted">Observaciones</dt>
+                    <dd class="col-sm-8">{{ $historialTecnico->observaciones ?: $historialTecnico->descripcion }}</dd>
                     <dt class="col-sm-4 text-muted">Fecha del Evento</dt>
                     <dd class="col-sm-8">{{ $historialTecnico->fecha_evento?->format('d \d\e F \d\e Y') }}</dd>
                     <dt class="col-sm-4 text-muted">Técnico Responsable</dt>
-                    <dd class="col-sm-8 fw-bold">{{ $historialTecnico->usuario_responsable }}</dd>
-                    @if($historialTecnico->observaciones)
-                    <dt class="col-sm-4 text-muted">Observaciones</dt>
-                    <dd class="col-sm-8">{{ $historialTecnico->observaciones }}</dd>
-                    @endif
+                    <dd class="col-sm-8 fw-bold">{{ $historialTecnico->usuario_responsable_label }}</dd>
                     <dt class="col-sm-4 text-muted">Registrado por</dt>
                     <dd class="col-sm-8">{{ $historialTecnico->registradoPor?->name ?? '—' }}</dd>
                     <dt class="col-sm-4 text-muted">Fecha de Registro</dt>

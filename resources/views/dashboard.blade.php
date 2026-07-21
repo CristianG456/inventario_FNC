@@ -51,6 +51,26 @@
                 <div class="dashboard-state-value active">{{ $activos }}</div>
             </div>
         </div>
+
+        <div class="dashboard-state-item">
+            <div class="dashboard-state-icon active">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label">Disponibles</div>
+                <div class="dashboard-state-value active">{{ $disponibles }}</div>
+            </div>
+        </div>
+
+        <div class="dashboard-state-item">
+            <div class="dashboard-state-icon inactive">
+                <i class="bi bi-archive"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label">Almacenados</div>
+                <div class="dashboard-state-value inactive">{{ $almacenados }}</div>
+            </div>
+        </div>
         
         <div class="dashboard-state-item">
             <div class="dashboard-state-icon maintenance">

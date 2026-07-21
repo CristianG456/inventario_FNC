@@ -101,12 +101,43 @@
                         }}">{{ $reg->estado }}</span>
                     </td>
                     <td class="text-muted maint-truncate-td">
-                        {{ $reg->descripcion }}
+                        {{ $reg->observaciones ?: $reg->descripcion }}
                     </td>
-                    <td>{{ $reg->usuario_responsable }}</td>
+                    <td>{{ $reg->usuario_responsable_label }}</td>
                     <td>{{ \Carbon\Carbon::parse($reg->fecha_evento)->format('d M Y') }}</td>
                     <td class="text-end pe-4">
-                        <a href="{{ route('historial-tecnico.show', $reg) }}" class="btn btn-sm btn-light rounded-circle"><i class="bi bi-eye"></i></a>
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <a href="{{ route('historial-tecnico.show', $reg) }}"
+                               class="btn btn-sm btn-light rounded-circle"
+                               title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @if($reg->equipo_id)
+                                <a href="{{ route('historial-tecnico.por-equipo', ['equipo' => $reg->equipo_id, 'return_to' => request()->fullUrl()]) }}"
+                                   class="btn btn-sm btn-light rounded-circle"
+                                   title="Ver historial del activo">
+                                    <i class="bi bi-clock-history"></i>
+                                </a>
+                            @endif
+                            @can('equipos.crear')
+                            @if($reg->equipo && in_array($reg->equipo->estado_operativo, ['mantenimiento', 'baja'], true))
+                                <form method="POST"
+                                      action="{{ route('asignaciones.store') }}"
+                                                                            class="d-inline js-form-restaurar"
+                                                                            data-equipo="{{ $reg->equipo->nombre_equipo ?? 'este equipo' }}">
+                                    @csrf
+                                    <input type="hidden" name="equipo_id" value="{{ $reg->equipo_id }}">
+                                    <input type="hidden" name="tipo_accion" value="restauracion">
+                                                                        <input type="hidden" name="return_to" value="{{ route('historial-tecnico.por-equipo', ['equipo' => $reg->equipo_id, 'return_to' => request()->fullUrl()]) }}">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-success rounded-circle"
+                                            title="Restaurar equipo a Activo">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </button>
+                                </form>
+                            @endif
+                            @endcan
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -126,3 +157,33 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.js-form-restaurar').forEach((form) => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const nombreEquipo = form.dataset.equipo || 'este equipo';
+            const resultado = await Swal.fire({
+                title: 'Restaurar equipo',
+                html: `Se cambiará <strong>${nombreEquipo}</strong> a estado <strong>Activo</strong>.<br>¿Deseas continuar?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, restaurar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true,
+                focusCancel: true,
+            });
+
+            if (resultado.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+@endpush

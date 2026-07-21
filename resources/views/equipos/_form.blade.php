@@ -102,9 +102,10 @@
                 <select name="estado_operativo"
                         class="form-select @error('estado_operativo') is-invalid @enderror"
                         required id="estadoSelect">
-                    <option value="activo" {{ old('estado_operativo', $equipo->estado_operativo ?? 'activo') === 'activo' ? 'selected' : '' }}>Activo</option>
+                    <option value="activo" {{ old('estado_operativo', $equipo->estado_operativo ?? 'activo') === 'activo' ? 'selected' : '' }}>Asignado</option>
                     <option value="asignado" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'asignado' ? 'selected' : '' }}>Asignado</option>
                     <option value="disponible" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'disponible' ? 'selected' : '' }}>Disponible</option>
+                    <option value="almacenado" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'almacenado' ? 'selected' : '' }}>Almacenado</option>
                     <option value="mantenimiento" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
                     <option value="baja" {{ old('estado_operativo', $equipo->estado_operativo ?? '') === 'baja' ? 'selected' : '' }}>Baja</option>
                 </select>
@@ -197,6 +198,12 @@
         <i class="bi bi-person me-2 text-success"></i>Usuario Asignado
     </div>
     <div class="card-body">
+        @if (!$equipo->exists)
+            <div class="alert alert-light border mb-3">
+                <strong>Registro inicial sin funcionario asignado.</strong>
+                El funcionario se registra posteriormente desde el modulo de préstamos.
+            </div>
+        @endif
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label fw-medium">Empresa Propietaria del Equipo</label>
@@ -247,19 +254,19 @@
                 @error('usuario_shortname') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-6">
-                <label class="form-label fw-medium">Nombre <span class="text-danger">*</span></label>
+                  <label class="form-label fw-medium">Nombre</label>
                 <input type="text" name="usuario_nombre"
                        class="form-control @error('usuario_nombre') is-invalid @enderror"
                        value="{{ old('usuario_nombre', $equipo->usuarioAsignado->nombre ?? '') }}"
-                       required maxlength="150">
+                      maxlength="150">
                 @error('usuario_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-medium">Cédula <span class="text-danger">*</span></label>
+                  <label class="form-label fw-medium">Cédula</label>
                 <input type="text" name="usuario_cedula"
                        class="form-control @error('usuario_cedula') is-invalid @enderror"
                        value="{{ old('usuario_cedula', $equipo->usuarioAsignado->cedula ?? '') }}"
-                       required maxlength="20">
+                      maxlength="20">
                 @error('usuario_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-3">
@@ -322,76 +329,90 @@
     </div>
 </div>
 
-{{-- === RESPONSABLE TEMPORAL === --}}
+{{-- === RESPONSABLE DEL ACTIVO === --}}
 <div class="card mb-4">
-    <div class="card-header bg-secondary bg-opacity-10 border-0 fw-semibold py-3">
-        <i class="bi bi-person-badge me-2 text-secondary"></i>Responsable Temporal del Activo
+    <div class="card-header bg-info bg-opacity-10 border-0 fw-semibold py-3">
+        <i class="bi bi-person-badge me-2 text-info"></i>Responsable del Activo
     </div>
     <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label fw-medium">Cédula</label>
-                <input type="text" name="responsable_cedula"
-                       class="form-control @error('responsable_cedula') is-invalid @enderror"
-                       value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}"
-                       maxlength="20">
-                @error('responsable_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        @if (!$equipo->exists)
+            {{-- CREATE: Mostrar tarjeta informativa --}}
+            <div class="alert alert-info border-0 rounded d-flex align-items-center">
+                <i class="bi bi-info-circle me-3" style="font-size: 1.25rem;"></i>
+                <div>
+                    <strong>Responsable del Activo (Asignación Automática):</strong><br>
+                    El responsable inicial se asigna automáticamente al Analista TIC institucional (rol Soporte TI). 
+                    Esta responsabilidad puede ser modificada posteriormente por usuarios con permisos de edición, 
+                    según los cambios administrativos en el control del activo.
+                </div>
             </div>
-            <div class="col-md-5">
-                <label class="form-label fw-medium">Nombre</label>
-                <input type="text" name="responsable_nombre"
-                       class="form-control @error('responsable_nombre') is-invalid @enderror"
-                       value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}"
-                       maxlength="150">
-                @error('responsable_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        @else
+            {{-- EDIT: Mostrar campos editables --}}
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Cédula</label>
+                    <input type="text" name="responsable_cedula"
+                           class="form-control @error('responsable_cedula') is-invalid @enderror"
+                           value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}"
+                           maxlength="20">
+                    @error('responsable_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-medium">Nombre</label>
+                    <input type="text" name="responsable_nombre"
+                           class="form-control @error('responsable_nombre') is-invalid @enderror"
+                           value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}"
+                           maxlength="150">
+                    @error('responsable_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Cargo</label>
+                    <input type="text" name="responsable_cargo"
+                           class="form-control @error('responsable_cargo') is-invalid @enderror"
+                           value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}"
+                           maxlength="100">
+                    @error('responsable_cargo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Ciudad</label>
+                    <input type="text" name="responsable_ciudad"
+                           class="form-control @error('responsable_ciudad') is-invalid @enderror"
+                           value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}"
+                           maxlength="100">
+                    @error('responsable_ciudad') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Área</label>
+                    <input type="text" name="responsable_area"
+                           class="form-control @error('responsable_area') is-invalid @enderror"
+                           value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}"
+                           maxlength="100">
+                    @error('responsable_area') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Tipo de Recurso</label>
+                    <input type="text" name="responsable_tipo_recurso"
+                           class="form-control @error('responsable_tipo_recurso') is-invalid @enderror"
+                           value="{{ old('responsable_tipo_recurso', $equipo->responsable_tipo_recurso ?? '') }}"
+                           maxlength="100">
+                    @error('responsable_tipo_recurso') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Fecha Inicio</label>
+                    <input type="date" name="fecha_inicio_responsable"
+                           class="form-control @error('fecha_inicio_responsable') is-invalid @enderror"
+                           value="{{ old('fecha_inicio_responsable', isset($equipo->fecha_inicio_responsable) ? $equipo->fecha_inicio_responsable->format('Y-m-d') : '') }}">
+                    @error('fecha_inicio_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">Fecha Fin</label>
+                    <input type="date" name="fecha_fin_responsable"
+                           class="form-control @error('fecha_fin_responsable') is-invalid @enderror"
+                           value="{{ old('fecha_fin_responsable', isset($equipo->fecha_fin_responsable) ? $equipo->fecha_fin_responsable->format('Y-m-d') : '') }}">
+                    @error('fecha_fin_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
             </div>
-            <div class="col-md-4">
-                <label class="form-label fw-medium">Cargo</label>
-                <input type="text" name="responsable_cargo"
-                       class="form-control @error('responsable_cargo') is-invalid @enderror"
-                       value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}"
-                       maxlength="100">
-                @error('responsable_cargo') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-medium">Ciudad</label>
-                <input type="text" name="responsable_ciudad"
-                       class="form-control @error('responsable_ciudad') is-invalid @enderror"
-                       value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}"
-                       maxlength="100">
-                @error('responsable_ciudad') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-medium">Área</label>
-                <input type="text" name="responsable_area"
-                       class="form-control @error('responsable_area') is-invalid @enderror"
-                       value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}"
-                       maxlength="100">
-                @error('responsable_area') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-medium">Tipo de Recurso</label>
-                <input type="text" name="responsable_tipo_recurso"
-                       class="form-control @error('responsable_tipo_recurso') is-invalid @enderror"
-                       value="{{ old('responsable_tipo_recurso', $equipo->responsable_tipo_recurso ?? '') }}"
-                       maxlength="100">
-                @error('responsable_tipo_recurso') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-medium">Fecha Inicio</label>
-                <input type="date" name="fecha_inicio_responsable"
-                       class="form-control @error('fecha_inicio_responsable') is-invalid @enderror"
-                       value="{{ old('fecha_inicio_responsable', isset($equipo->fecha_inicio_responsable) ? $equipo->fecha_inicio_responsable->format('Y-m-d') : '') }}">
-                @error('fecha_inicio_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-medium">Fecha Fin</label>
-                <input type="date" name="fecha_fin_responsable"
-                       class="form-control @error('fecha_fin_responsable') is-invalid @enderror"
-                       value="{{ old('fecha_fin_responsable', isset($equipo->fecha_fin_responsable) ? $equipo->fecha_fin_responsable->format('Y-m-d') : '') }}">
-                @error('fecha_fin_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-        </div>
+        @endif
     </div>
 </div>
 

@@ -45,7 +45,7 @@ class ReporteController extends Controller
         $stats = [
             'total_equipos' => Equipo::count(),
             'equipos_activos' => Equipo::where('estado_operativo', 'activo')->count(),
-            'equipos_inactivos' => Equipo::where('estado_operativo', 'inactivo')->count(),
+            'equipos_inactivos' => Equipo::whereIn('estado_operativo', ['almacenado', 'baja'])->count(),
             'equipos_mantenimiento' => Equipo::where('estado_operativo', 'mantenimiento')->count(),
             'equipos_baja' => Equipo::where('estado_operativo', 'baja')->count(),
             'equipos_por_tipo' => Equipo::join('tipo_recursos', 'equipos.tipo_recurso_id', '=', 'tipo_recursos.id')

@@ -15,7 +15,6 @@ class ChecklistRequest extends FormRequest
     {
         return [
             'equipo_id'       => ['required', 'exists:equipos,id'],
-            'responsable_ti'  => ['nullable', 'string', 'max:150'],
             'orden_trabajo'   => ['nullable', 'string', 'max:100'],
             'observaciones'   => ['nullable', 'string', 'max:1000'],
             'cruce_av'        => ['nullable', 'string', 'max:100'],

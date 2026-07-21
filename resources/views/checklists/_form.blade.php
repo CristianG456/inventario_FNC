@@ -26,11 +26,8 @@
 
             <div class="col-md-6">
                 <label class="form-label fw-medium">Responsable TI</label>
-                <input type="text" name="responsable_ti"
-                       class="form-control @error('responsable_ti') is-invalid @enderror"
-                       value="{{ old('responsable_ti', $checklist->responsable_ti ?? '') }}"
-                       maxlength="150">
-                @error('responsable_ti') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <div class="form-control bg-light">Se completara automaticamente desde el Responsable del Activo.</div>
+                <small class="text-muted">La fecha del checklist tambien se registra automaticamente con la fecha actual del sistema.</small>
             </div>
 
             <div class="col-md-4">

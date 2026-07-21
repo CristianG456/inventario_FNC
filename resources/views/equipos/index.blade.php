@@ -23,18 +23,13 @@
 <div class="card mb-4">
     <div class="card-body py-3">
         <form method="GET" action="{{ route('equipos.index') }}" class="row g-2 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <label class="form-label fw-medium small mb-1">Buscar</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="buscar" value="{{ request('buscar') }}"
                            class="form-control" placeholder="Serial, nombre, marca, activo fijo, usuario...">
                 </div>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label fw-medium small mb-1">Activo Fijo</label>
-                <input type="text" name="activo_fijo" value="{{ request('activo_fijo') }}"
-                       class="form-control" placeholder="Filtrar por activo fijo...">
             </div>
             <div class="col-md-2">
                 <label class="form-label fw-medium small mb-1">Tipo</label>
@@ -51,18 +46,17 @@
                 <label class="form-label fw-medium small mb-1">Estado</label>
                 <select name="estado" class="form-select">
                     <option value="">Todos</option>
-                    <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Activo</option>
+                    <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Asignado</option>
+                    <option value="disponible" {{ request('estado') === 'disponible' ? 'selected' : '' }}>Disponible</option>
+                    <option value="almacenado" {{ request('estado') === 'almacenado' ? 'selected' : '' }}>Almacenado</option>
                     <option value="mantenimiento" {{ request('estado') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
                     <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-2">
+            <div class="col-md-2 d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary flex-fill">
                     <i class="bi bi-funnel me-1"></i>Filtrar
                 </button>
-                <a href="{{ route('equipos.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                </a>
             </div>
         </form>
     </div>
@@ -80,7 +74,8 @@
                         <th>Serial Interno / Placa</th>
                         <th>Tipo</th>
                         <th>Marca / Modelo</th>
-                        <th>Usuario Asignado</th>
+                        <th>Responsable</th>
+                        <th>Funcionario Asignado</th>
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -131,30 +126,55 @@
                                 <br><small class="text-muted">{{ $equipo->modelo }}</small>
                             </td>
                             <td>
-                                @if($equipo->usuarioAsignado)
-                                    @php
-                                        $nombreMostrar = $equipo->usuarioAsignado->nombre;
-                                        $cedulaAsignada = $equipo->usuarioAsignado->cedula;
-                                        if ($nombreMostrar === 'Sin Asignar' && $cedulaAsignada && $cedulaAsignada !== 'Sin Asignar') {
-                                            $func = $funcionariosPorCedula[$cedulaAsignada] ?? null;
-                                            if ($func && $func->nombres !== 'Sin Nombre Registrado') {
-                                                $nombreMostrar = trim($func->nombres . ' ' . $func->apellidos);
-                                            }
-                                        }
-                                    @endphp
-                                    @if($nombreMostrar !== 'Sin Asignar')
-                                        <span class="fw-medium">{{ $nombreMostrar }}</span>
-                                    @else
-                                        <span class="text-muted fst-italic">Sin nombre registrado</span>
-                                    @endif
-                                    <br><small class="text-muted">CC: {{ $cedulaAsignada }}</small>
+                                @php
+                                    $responsableNombre = trim((string) ($equipo->responsable_nombre ?? ''));
+                                    $responsableCedula = trim((string) ($equipo->responsable_cedula ?? ''));
+                                @endphp
+                                @if($responsableNombre !== '')
+                                    <span class="fw-medium">{{ $responsableNombre }}</span>
                                 @else
-                                    <span class="text-muted fst-italic">Sin asignar</span>
+                                    <span class="text-muted fst-italic">Sin responsable</span>
+                                @endif
+                                @if($responsableCedula !== '')
+                                    <br><small class="text-muted">CC: {{ $responsableCedula }}</small>
                                 @endif
                             </td>
                             <td>
+                                @if($equipo->usuarioAsignado)
+                                    @php
+                                        $nombreMostrar = trim((string) ($equipo->usuarioAsignado->nombre ?? ''));
+                                        $cedulaAsignada = trim((string) ($equipo->usuarioAsignado->cedula ?? ''));
+                                        $placeholders = ['SIN ASIGNAR', 'N/A', 'NA', 'NO APLICA', 'NULL', '-'];
+                                        $nombreNormalizado = strtoupper($nombreMostrar);
+                                        $tieneAsignacionReal =
+                                            $nombreMostrar !== '' &&
+                                            !in_array($nombreNormalizado, $placeholders, true);
+                                    @endphp
+                                    @if($tieneAsignacionReal)
+                                        <span class="fw-medium">{{ $nombreMostrar }}</span>
+                                        <br><small class="text-muted">CC: {{ $cedulaAsignada }}</small>
+                                    @else
+                                        <span class="text-muted fst-italic">Sin préstamo</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted fst-italic">Sin préstamo</span>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $nombreAsignado = trim((string) ($equipo->usuarioAsignado->nombre ?? ''));
+                                    $placeholdersAsignacion = ['SIN ASIGNAR', 'N/A', 'NA', 'NO APLICA', 'NULL', '-'];
+                                    $tieneFuncionarioReal =
+                                        $nombreAsignado !== '' &&
+                                        !in_array(strtoupper($nombreAsignado), $placeholdersAsignacion, true);
+
+                                    $estadoMostrado = $equipo->estado_label;
+                                    if ($equipo->estado_operativo === 'mantenimiento' && !$tieneFuncionarioReal) {
+                                        $estadoMostrado = 'Disponible / Mantenimiento';
+                                    }
+                                @endphp
                                 <span class="badge bg-{{ $equipo->estado_badge }}">
-                                    {{ $equipo->estado_label }}
+                                    {{ $estadoMostrado }}
                                 </span>
                             </td>
                             <td class="text-center">
@@ -171,14 +191,14 @@
                                     </a>
                                     @endcan
 
-                                    {{-- Botones dinámicos según estado de asignación --}}
+                                    {{-- Botones dinámicos según estado de préstamo --}}
                                     @can('equipos.crear')
                                     @if(!$equipo->usuarioAsignado)
-                                        {{-- Sin asignar: mostrar botón Asignar solo si está activo --}}
-                                        @if($equipo->estado_operativo === 'activo')
+                                        {{-- Sin préstamo: mostrar botón Registrar préstamo solo si está activo --}}
+                                        @if(in_array($equipo->estado_operativo, ['activo', 'disponible'], true))
                                         <button type="button"
                                                 class="btn btn-sm btn-success"
-                                                title="Asignar Funcionario"
+                                            title="Registrar préstamo"
                                                 onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')">
                                             <i class="bi bi-person-plus"></i>
                                         </button>
@@ -192,10 +212,10 @@
                                         @endif
                                     @else
                                         {{-- Ya asignado: opciones de gestión y ACTA --}}
-                                        @if($equipo->estado_operativo === 'activo')
+                                        @if(in_array($equipo->estado_operativo, ['activo', 'asignado'], true))
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-primary"
-                                                title="Reasignar Funcionario"
+                                                title="Reemplazar préstamo"
                                                 onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')">
                                             <i class="bi bi-arrow-left-right"></i>
                                         </button>
@@ -221,13 +241,13 @@
                                         
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-secondary"
-                                                title="Retirar asignación"
+                                                title="Retiro de funcionario"
                                                 onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro')">
                                             <i class="bi bi-person-dash"></i>
                                         </button>
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-danger"
-                                                title="Dar de baja"
+                                                title="Retiro definitivo del activo"
                                                 onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'baja')">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
@@ -248,7 +268,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                                 No hay equipos que coincidan con los filtros.
                             </td>
@@ -268,17 +288,18 @@
     @endif
 </div>
 
-{{-- ═══ MODAL: Acción con datos de usuario (asignar / reemplazar) ══════════ --}}
+{{-- ═══ MODAL: Acción con datos de usuario (préstamo / reemplazo) ══════════ --}}
 <div class="modal fade" id="modalAsignacion" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="formAsignacion" method="POST" action="{{ route('asignaciones.store') }}">
+            <form id="formAsignacion" method="POST" action="{{ route('asignaciones.store') }}" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="equipo_id" id="asig_equipo_id">
                 <input type="hidden" name="tipo_accion" id="asig_tipo_accion">
+                <input type="hidden" name="return_to" id="asig_return_to" value="{{ request()->fullUrl() }}">
 
                 <div class="modal-header equipo-modal-header">
-                    <h5 class="modal-title" id="modalAsignacionTitulo">Asignar Equipo</h5>
+                    <h5 class="modal-title" id="modalAsignacionTitulo">Registrar Préstamo</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -288,63 +309,44 @@
                     </p>
 
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Nombre Completo <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre" class="form-control" required>
+                        <input type="hidden" name="nombre" id="asig_nombre_hidden" required>
+                        <input type="hidden" name="cedula" id="asig_cedula_hidden" required>
+                        <input type="hidden" name="cargo" id="asig_cargo_hidden">
+                        <input type="hidden" name="area" id="asig_area_hidden">
+                        <input type="hidden" name="dependencia" id="asig_dependencia_hidden">
+                        <input type="hidden" name="distrito" id="asig_distrito_hidden">
+                        <input type="hidden" name="seccional" id="asig_seccional_hidden">
+                        <input type="hidden" name="ciudad" id="asig_ciudad_hidden">
+                        <input type="hidden" name="departamento" id="asig_departamento_hidden">
+                        <input type="hidden" name="empresa_propietaria" id="asig_empresa_propietaria_hidden">
+                        <input type="hidden" name="empresa_funcionario" id="asig_empresa_funcionario_hidden">
+                        <input type="hidden" name="tipo_vinculacion" id="asig_tipo_vinculacion_hidden">
+                        <input type="hidden" name="shortname" id="asig_shortname_hidden">
+
+                        <div class="col-12 d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Selecciona un funcionario elegible. Si tiene activos, debe tener autorizaciones cargadas en el módulo Funcionarios.
+                            </small>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAbrirSelectorFuncionario">
+                                <i class="bi bi-people me-1"></i>Seleccionar funcionario elegible
+                            </button>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Cédula <span class="text-danger">*</span></label>
-                            <input type="text" name="cedula" class="form-control" data-no-capitalize-first="true" required>
+
+                        <div class="col-12">
+                            <div class="border rounded p-3 bg-light" id="resumenFuncionarioSeleccionado">
+                                <div class="text-muted">Aún no has seleccionado un funcionario.</div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Cargo</label>
-                            <input type="text" name="cargo" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Área</label>
-                            <input type="text" name="area" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Dependencia</label>
-                            <input type="text" name="dependencia" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Distrito</label>
-                            <input type="text" name="distrito" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Seccional</label>
-                            <input type="text" name="seccional" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Ciudad</label>
-                            <input type="text" name="ciudad" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Departamento</label>
-                            <input type="text" name="departamento" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Empresa Propietaria</label>
-                            <input type="text" name="empresa_propietaria" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Shortname</label>
-                            <input type="text" name="shortname" class="form-control" data-no-capitalize-first="true">
-                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Entregado Por</label>
                             <input type="text" name="entregado_por" class="form-control"
                                    value="{{ auth()->user()->name }}">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Fecha de Asignación</label>
+                            <label class="form-label fw-medium">Fecha de Préstamo</label>
                             <input type="date" name="fecha_accion" class="form-control"
                                    value="{{ date('Y-m-d') }}">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-medium">Motivo / Observaciones</label>
-                            <textarea name="motivo" rows="2" class="form-control"></textarea>
                         </div>
                     </div>
                 </div>
@@ -359,6 +361,41 @@
     </div>
 </div>
 
+{{-- ═══ MODAL: Selector de funcionarios elegibles ══════════════════════════ --}}
+<div class="modal fade" id="modalSelectorFuncionario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-people me-2"></i>Funcionarios elegibles</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="filtroFuncionarioElegible" class="form-control" placeholder="Buscar por nombre, cédula, cargo o área...">
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Funcionario</th>
+                                <th>Cédula</th>
+                                <th>Cargo / Área</th>
+                                <th>Estado de elegibilidad</th>
+                                <th class="text-end">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaFuncionariosElegibles">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">Cargando funcionarios...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- ═══ MODAL: Acción simple (retiro, baja, mantenimiento) ════════════════ --}}
 <div class="modal fade" id="modalSimple" tabindex="-1">
     <div class="modal-dialog">
@@ -367,6 +404,7 @@
                 @csrf
                 <input type="hidden" name="equipo_id" id="simple_equipo_id">
                 <input type="hidden" name="tipo_accion" id="simple_tipo_accion">
+                <input type="hidden" name="return_to" id="simple_return_to" value="{{ request()->fullUrl() }}">
 
                 <div class="modal-header equipo-modal-header">
                     <h5 class="modal-title" id="modalSimpleTitulo">Acción</h5>
@@ -377,14 +415,14 @@
                         <i class="bi bi-laptop me-1"></i>
                         Equipo: <strong id="simple_nombre_equipo"></strong>
                     </p>
-                    <div class="mb-3">
-                        <label class="form-label fw-medium">Motivo <span class="text-danger">*</span></label>
-                        <textarea name="motivo" rows="3" class="form-control" required
+                    <div class="mb-3" id="simple_motivo_wrap">
+                        <label class="form-label fw-medium" id="simple_motivo_label">Motivo <span class="text-danger">*</span></label>
+                        <textarea name="motivo" id="simple_motivo" rows="3" class="form-control" required
                                   placeholder="Describa el motivo de esta acción..."></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-medium">Observaciones</label>
-                        <textarea name="observaciones" rows="2" class="form-control"></textarea>
+                        <label class="form-label fw-medium" id="simple_observaciones_label">Observaciones</label>
+                        <textarea name="observaciones" id="simple_observaciones" rows="2" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -510,12 +548,12 @@
 @push('scripts')
 <script>
 const LABELS_ACCION = {
-    asignacion:    'Asignar Equipo',
+    asignacion:    'Registrar Préstamo',
     reemplazo:     'Reemplazar Usuario',
-    retiro:        'Retirar Asignación',
+    retiro:        'Retiro de funcionario',
     mantenimiento: 'Pasar a Mantenimiento',
     restauracion:  'Restaurar Equipo',
-    baja:          'Dar de Baja',
+    baja:          'Retiro definitivo del activo',
 };
 
 const COLORES_ACCION = {
@@ -527,9 +565,93 @@ const COLORES_ACCION = {
     baja:          'btn-danger',
 };
 
+const FUNCIONARIOS_ELEGIBLES_URL = @json(route('asignaciones.funcionarios-elegibles'));
+let funcionariosElegiblesCache = [];
+let funcionariosBloqueadosCache = [];
+
+function poblarFormularioFuncionario(funcionario) {
+    if (!funcionario) return;
+
+    const setHidden = (id, value) => {
+        const input = document.getElementById(id);
+        if (input) input.value = value ?? '';
+    };
+
+    setHidden('asig_nombre_hidden', funcionario.nombre);
+    setHidden('asig_cedula_hidden', funcionario.identificacion);
+    setHidden('asig_cargo_hidden', funcionario.cargo);
+    setHidden('asig_area_hidden', funcionario.area);
+    setHidden('asig_dependencia_hidden', funcionario.dependencia);
+    setHidden('asig_distrito_hidden', funcionario.distrito);
+    setHidden('asig_seccional_hidden', funcionario.seccional);
+    setHidden('asig_ciudad_hidden', funcionario.ciudad);
+    setHidden('asig_departamento_hidden', funcionario.departamento);
+    setHidden('asig_empresa_propietaria_hidden', funcionario.empresa_propietaria);
+    setHidden('asig_empresa_funcionario_hidden', funcionario.empresa_funcionario);
+    setHidden('asig_tipo_vinculacion_hidden', funcionario.tipo_vinculacion);
+    setHidden('asig_shortname_hidden', funcionario.shortname);
+
+    const resumen = document.getElementById('resumenFuncionarioSeleccionado');
+    if (resumen) {
+        const estado = funcionario.activos_count === 0
+            ? 'Sin activos'
+            : `${funcionario.autorizaciones_count} acta(s) disponible(s)`;
+
+        resumen.innerHTML = `
+            <div class="fw-semibold">${funcionario.nombre || '—'}</div>
+            <div class="small text-muted">CC: ${funcionario.identificacion || '—'}</div>
+            <div class="small text-muted">${funcionario.cargo || '—'} / ${funcionario.area || '—'}</div>
+            <div class="small mt-1"><span class="badge bg-info text-dark">${estado}</span></div>
+        `;
+    }
+}
+
+function renderFuncionariosElegibles(lista) {
+    const tbody = document.getElementById('tablaFuncionariosElegibles');
+    if (!tbody) return;
+
+    if (!Array.isArray(lista) || lista.length === 0) {
+        const filtro = (document.getElementById('filtroFuncionarioElegible')?.value || '').trim();
+        if (filtro !== '' && funcionariosBloqueadosCache.length > 0) {
+            const sugerencias = funcionariosBloqueadosCache.slice(0, 3).map((f) => {
+                return `${f.nombre} (CC ${f.identificacion}): faltan ${f.autorizaciones_faltantes} autorizacion(es).`;
+            }).join('<br>');
+
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-warning py-4">No hay elegibles con ese criterio.<br><small>${sugerencias}</small></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No se encontraron funcionarios elegibles.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = lista.map((f) => {
+        const estado = f.activos_count === 0
+            ? '<span class="badge bg-success">Sin activos</span>'
+            : `<span class="badge bg-info text-dark">${f.autorizaciones_count} acta(s) disponible(s)</span>`;
+
+        const cargoArea = [f.cargo, f.area].filter(Boolean).join(' / ') || '—';
+
+        return `
+            <tr>
+                <td>${f.nombre || '—'}</td>
+                <td>${f.identificacion || '—'}</td>
+                <td>${cargoArea}</td>
+                <td>${estado}</td>
+                <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-primary" data-funcionario-id="${f.id}">
+                        Seleccionar
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
 function abrirModalAsignacion(equipoId, nombreEquipo, tipo) {
     document.getElementById('asig_equipo_id').value   = equipoId;
     document.getElementById('asig_tipo_accion').value = tipo;
+    document.getElementById('asig_return_to').value   = window.location.href;
     document.getElementById('asig_nombre_equipo').textContent = nombreEquipo;
     document.getElementById('modalAsignacionTitulo').textContent = LABELS_ACCION[tipo] || tipo;
 
@@ -542,17 +664,55 @@ function abrirModalAsignacion(equipoId, nombreEquipo, tipo) {
         if (el.name !== 'entregado_por') el.value = '';
     });
 
+    ['asig_nombre_hidden','asig_cedula_hidden','asig_cargo_hidden','asig_area_hidden','asig_dependencia_hidden','asig_distrito_hidden','asig_seccional_hidden','asig_ciudad_hidden','asig_departamento_hidden','asig_empresa_propietaria_hidden','asig_empresa_funcionario_hidden','asig_tipo_vinculacion_hidden','asig_shortname_hidden']
+        .forEach((id) => {
+            const input = document.getElementById(id);
+            if (input) input.value = '';
+        });
+
+    const resumen = document.getElementById('resumenFuncionarioSeleccionado');
+    if (resumen) {
+        resumen.innerHTML = '<div class="text-muted">Aún no has seleccionado un funcionario.</div>';
+    }
+
     new bootstrap.Modal(document.getElementById('modalAsignacion')).show();
 }
 
 function abrirModalSimple(equipoId, nombreEquipo, tipo) {
     document.getElementById('simple_equipo_id').value   = equipoId;
     document.getElementById('simple_tipo_accion').value = tipo;
+    document.getElementById('simple_return_to').value   = window.location.href;
     document.getElementById('simple_nombre_equipo').textContent = nombreEquipo;
     document.getElementById('modalSimpleTitulo').textContent = LABELS_ACCION[tipo] || tipo;
 
     const btn = document.getElementById('btnConfirmarSimple');
     btn.className = 'btn ' + (COLORES_ACCION[tipo] || 'btn-danger');
+
+    const motivoWrap = document.getElementById('simple_motivo_wrap');
+    const motivoInput = document.getElementById('simple_motivo');
+    const observacionesInput = document.getElementById('simple_observaciones');
+    const observacionesLabel = document.getElementById('simple_observaciones_label');
+
+    if (['retiro', 'baja', 'mantenimiento', 'restauracion'].includes(tipo)) {
+        motivoWrap.classList.add('d-none');
+        motivoInput.required = false;
+        motivoInput.value = '';
+        observacionesInput.required = true;
+        observacionesInput.placeholder = tipo === 'baja'
+            ? 'Describa la observacion del retiro definitivo del activo...'
+            : (tipo === 'mantenimiento'
+                ? 'Describa la observacion del envío a mantenimiento...'
+            : (tipo === 'retiro'
+                ? 'Describa la observacion del retiro de funcionario...'
+                : 'Describa la observacion de la restauracion...'));
+        observacionesLabel.innerHTML = 'Observaciones <span class="text-danger">*</span>';
+    } else {
+        motivoWrap.classList.remove('d-none');
+        motivoInput.required = true;
+        observacionesInput.required = false;
+        observacionesInput.placeholder = '';
+        observacionesLabel.textContent = 'Observaciones';
+    }
 
     document.getElementById('formSimple').querySelectorAll('textarea').forEach(el => el.value = '');
 
@@ -560,10 +720,103 @@ function abrirModalSimple(equipoId, nombreEquipo, tipo) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    const modalSelectorFuncionarioEl = document.getElementById('modalSelectorFuncionario');
+    const modalSelectorFuncionario = modalSelectorFuncionarioEl ? new bootstrap.Modal(modalSelectorFuncionarioEl) : null;
+    const btnAbrirSelectorFuncionario = document.getElementById('btnAbrirSelectorFuncionario');
+    const filtroFuncionarioElegible = document.getElementById('filtroFuncionarioElegible');
+
+    const cargarFuncionariosElegibles = (termino = '') => {
+        const tbody = document.getElementById('tablaFuncionariosElegibles');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Cargando funcionarios...</td></tr>';
+        }
+
+        const url = new URL(FUNCIONARIOS_ELEGIBLES_URL, window.location.origin);
+        if (termino.trim() !== '') {
+            url.searchParams.set('q', termino.trim());
+        }
+
+        fetch(url.toString(), {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+            .then((response) => response.json())
+            .then((payload) => {
+                funcionariosElegiblesCache = Array.isArray(payload.data) ? payload.data : [];
+                funcionariosBloqueadosCache = Array.isArray(payload.bloqueados) ? payload.bloqueados : [];
+                renderFuncionariosElegibles(funcionariosElegiblesCache);
+            })
+            .catch(() => {
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">No se pudo cargar la lista de funcionarios elegibles.</td></tr>';
+                }
+            });
+    };
+
+    if (btnAbrirSelectorFuncionario && modalSelectorFuncionario) {
+        btnAbrirSelectorFuncionario.addEventListener('click', function() {
+            if (filtroFuncionarioElegible) {
+                filtroFuncionarioElegible.value = '';
+            }
+            modalSelectorFuncionario.show();
+            cargarFuncionariosElegibles('');
+        });
+    }
+
+    if (filtroFuncionarioElegible) {
+        filtroFuncionarioElegible.addEventListener('input', function() {
+            const termino = this.value.trim().toLowerCase();
+            if (termino === '') {
+                renderFuncionariosElegibles(funcionariosElegiblesCache);
+                return;
+            }
+
+            const filtrados = funcionariosElegiblesCache.filter((f) => {
+                const texto = [
+                    f.nombre,
+                    f.identificacion,
+                    f.cargo,
+                    f.area,
+                    f.departamento,
+                    f.ciudad,
+                ].join(' ').toLowerCase();
+
+                return texto.includes(termino);
+            });
+
+            renderFuncionariosElegibles(filtrados);
+        });
+    }
+
+    const tablaFuncionariosElegibles = document.getElementById('tablaFuncionariosElegibles');
+    if (tablaFuncionariosElegibles && modalSelectorFuncionario) {
+        tablaFuncionariosElegibles.addEventListener('click', function(e) {
+            const button = e.target.closest('button[data-funcionario-id]');
+            if (!button) return;
+
+            const funcionarioId = Number(button.getAttribute('data-funcionario-id'));
+            const funcionario = funcionariosElegiblesCache.find((f) => Number(f.id) === funcionarioId) || null;
+            if (!funcionario) return;
+
+            poblarFormularioFuncionario(funcionario);
+            modalSelectorFuncionario.hide();
+        });
+    }
+
     const formAsignacion = document.getElementById('formAsignacion');
     if(formAsignacion) {
         formAsignacion.addEventListener('submit', function(e) {
             const tipoAccion = document.getElementById('asig_tipo_accion').value;
+            const cedulaSeleccionada = (document.getElementById('asig_cedula_hidden')?.value || '').trim();
+
+            if (['asignacion', 'reemplazo'].includes(tipoAccion) && cedulaSeleccionada === '') {
+                e.preventDefault();
+                Swal.fire('Funcionario requerido', 'Debes seleccionar un funcionario elegible antes de confirmar.', 'warning');
+                return;
+            }
+
             if (tipoAccion === 'reemplazo') {
                 e.preventDefault();
                 Swal.fire({

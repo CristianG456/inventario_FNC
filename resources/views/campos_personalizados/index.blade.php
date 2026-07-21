@@ -138,11 +138,6 @@
                             <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Centro de Costos">
                         </div>
                         
-                        <div class="col-md-12">
-                            <label class="form-label">Descripción</label>
-                            <textarea name="descripcion" id="descripcion" class="form-control" rows="2" placeholder="Ayuda para el usuario..."></textarea>
-                        </div>
-
                         <div class="col-md-12 opciones-wrapper">
                             <label class="form-label text-primary">Opciones de la Lista</label>
                             <textarea name="opciones" id="opciones" class="form-control" rows="3" placeholder="Opción A, Opción B, Opción C... (Separadas por comas)"></textarea>
@@ -234,7 +229,6 @@
         document.getElementById('modulo').value = campo.modulo;
         document.getElementById('tipo').value = campo.tipo;
         document.getElementById('nombre').value = campo.nombre;
-        document.getElementById('descripcion').value = campo.descripcion || '';
         
         document.getElementById('obligatorio').checked = campo.obligatorio;
         document.getElementById('visible').checked = campo.visible;

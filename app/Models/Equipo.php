@@ -118,7 +118,10 @@ class Equipo extends Model
     public function getEstadoLabelAttribute(): string
     {
         return match ($this->estado_operativo) {
-            'activo'        => 'Activo',
+            'activo'        => 'Asignado',
+            'disponible'    => 'Disponible',
+            'asignado'      => 'Asignado',
+            'almacenado'    => 'Almacenado',
             'mantenimiento' => 'Mantenimiento',
             'baja'          => 'Baja',
             default         => $this->estado_operativo,
@@ -132,6 +135,9 @@ class Equipo extends Model
     {
         return match ($this->estado_operativo) {
             'activo'        => 'success',
+            'disponible'    => 'primary',
+            'asignado'      => 'success',
+            'almacenado'    => 'secondary',
             'mantenimiento' => 'warning',
             'baja'          => 'danger',
             default         => 'secondary',

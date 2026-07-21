@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AsignacionRequest;
 use App\Models\Asignacion;
+use App\Models\AutorizacionActivo;
 use App\Models\Equipo;
+use App\Models\Funcionario;
 use App\Services\AsignacionService;
 use App\Services\PdfService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AsignacionController extends Controller
@@ -61,20 +66,95 @@ class AsignacionController extends Controller
     }
 
     /**
+     * Lista funcionarios elegibles para asignación rápida.
+     * Elegible = sin activos o con al menos una autorización disponible para activo adicional.
+     */
+    public function funcionariosElegibles(Request $request): JsonResponse
+    {
+        $termino = trim((string) $request->query('q', ''));
+
+        $funcionarios = Funcionario::query()
+            ->where('estado', 'Activo')
+            ->when($termino !== '', function ($q) use ($termino) {
+                $q->where(function ($sub) use ($termino) {
+                    $sub->where('identificacion', 'like', "%{$termino}%")
+                        ->orWhere('nombres', 'like', "%{$termino}%")
+                        ->orWhere('apellidos', 'like', "%{$termino}%")
+                        ->orWhere('cargo', 'like', "%{$termino}%")
+                        ->orWhere('area', 'like', "%{$termino}%");
+                });
+            })
+            ->withCount([
+                'equiposAsignados as activos_count',
+                'autorizacionesActivos as autorizaciones_disponibles_count' => fn ($q) =>
+                    $q->where('estado', AutorizacionActivo::ESTADO_CARGADA),
+            ])
+            ->orderBy('nombres')
+            ->limit(200)
+            ->get();
+
+        $enriquecidos = $funcionarios->map(function ($f) {
+            $activos = (int) $f->activos_count;
+            $autorizacionesDisponibles = (int) $f->autorizaciones_disponibles_count;
+            $esElegible = $activos === 0 || $autorizacionesDisponibles >= 1;
+
+            return [
+                'id' => $f->id,
+                'identificacion' => $f->identificacion,
+                'nombre' => trim("{$f->nombres} {$f->apellidos}"),
+                'cargo' => $f->cargo,
+                'area' => $f->area,
+                'departamento' => $f->departamento,
+                'ciudad' => $f->ciudad,
+                'empresa_funcionario' => $f->empresa_funcionario,
+                'tipo_vinculacion' => $f->tipo_vinculacion,
+                'activos_count' => $activos,
+                'autorizaciones_count' => $autorizacionesDisponibles,
+                'es_elegible' => $esElegible,
+                'autorizaciones_faltantes' => $activos > 0 && $autorizacionesDisponibles < 1 ? 1 : 0,
+            ];
+        });
+
+        $elegibles = $enriquecidos
+            ->filter(fn ($f) => $f['es_elegible'])
+            ->values();
+
+        $bloqueadosCoincidentes = $enriquecidos
+            ->filter(fn ($f) => !$f['es_elegible'])
+            ->values()
+            ->map(function ($f) {
+                return [
+                    'id' => $f['id'],
+                    'identificacion' => $f['identificacion'],
+                    'nombre' => $f['nombre'],
+                    'activos_count' => $f['activos_count'],
+                    'autorizaciones_count' => $f['autorizaciones_count'],
+                    'autorizaciones_faltantes' => $f['autorizaciones_faltantes'],
+                ];
+            });
+
+        return response()->json([
+            'data' => $elegibles,
+            'bloqueados' => $bloqueadosCoincidentes,
+        ]);
+    }
+
+    /**
      * Procesa acciones sobre un equipo (asignar, reemplazar, retirar, baja, mantenimiento).
      */
     public function store(AsignacionRequest $request): RedirectResponse
     {
         $equipo  = Equipo::findOrFail($request->equipo_id);
-        $usuario = auth()->user();
+        $usuario = Auth::user();
         $accion  = $request->tipo_accion;
+        $datos   = $request->validated();
 
         $asignacion = match ($accion) {
             'asignacion'    => $this->asignacionService->asignar(
-                $equipo, $request->validated(), $usuario
+                $equipo, $datos, $usuario
             ),
             'reemplazo'     => $this->asignacionService->reemplazar(
-                $equipo, $request->validated(), $usuario
+                $equipo, $datos, $usuario
             ),
             'retiro'        => $this->asignacionService->retirar(
                 $equipo, $request->motivo, $usuario, $request->observaciones
@@ -86,10 +166,16 @@ class AsignacionController extends Controller
                 $equipo, $request->motivo, $usuario, $request->observaciones
             ),
             'restauracion'  => $this->asignacionService->restaurar(
-                $equipo, $request->motivo, $usuario
+                $equipo, $request->motivo, $usuario, $request->observaciones
             ),
             default         => abort(422, 'Acción no válida'),
         };
+
+        $returnTo = (string) $request->input('return_to', '');
+
+        if ($returnTo !== '' && Str::startsWith($returnTo, [url('/equipos'), url('/historial-tecnico')])) {
+            return redirect($returnTo)->with('success', 'Acción registrada correctamente.');
+        }
 
         return redirect()
             ->route('equipos.show', $equipo)

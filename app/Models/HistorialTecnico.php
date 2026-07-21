@@ -34,7 +34,14 @@ class HistorialTecnico extends Model
 
     // ── Constantes de tipos de evento ─────────────────────────────────────────
 
+    const TIPOS_EVENTO_FORM = [
+        'requerimiento'             => 'Requerimiento',
+        'incidente'                 => 'Incidente',
+    ];
+
     const TIPOS_EVENTO = [
+        'requerimiento'             => 'Requerimiento',
+        'incidente'                 => 'Incidente',
         'formateo'                  => 'Formateo',
         'cambio_disco'              => 'Cambio de Disco',
         'cambio_ram'                => 'Cambio de RAM',
@@ -48,6 +55,8 @@ class HistorialTecnico extends Model
     ];
 
     const ICONOS_EVENTO = [
+        'requerimiento'             => 'bi-life-preserver',
+        'incidente'                 => 'bi-exclamation-triangle',
         'formateo'                  => 'bi-hdd',
         'cambio_disco'              => 'bi-hdd-stack',
         'cambio_ram'                => 'bi-memory',
@@ -61,6 +70,8 @@ class HistorialTecnico extends Model
     ];
 
     const COLORES_EVENTO = [
+        'requerimiento'             => 'info',
+        'incidente'                 => 'danger',
         'formateo'                  => 'primary',
         'cambio_disco'              => 'info',
         'cambio_ram'                => 'info',
@@ -100,5 +111,16 @@ class HistorialTecnico extends Model
     public function getTipoEventoColorAttribute(): string
     {
         return self::COLORES_EVENTO[$this->tipo_evento] ?? 'secondary';
+    }
+
+    public function getUsuarioResponsableLabelAttribute(): string
+    {
+        $responsable = trim((string) $this->usuario_responsable);
+
+        if ($responsable === '' || strcasecmp($responsable, 'admin') === 0) {
+            return 'Analista TIC';
+        }
+
+        return $responsable;
     }
 }

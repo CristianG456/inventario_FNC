@@ -47,7 +47,7 @@ class ActivosPorFuncionarioExport implements FromQuery, WithHeadings, WithMappin
             'MARCA',
             'MODELO',
             'ESTADO OPERATIVO',
-            'FECHA DE ASIGNACIÓN (SISTEMA)'
+            'FECHA DE PRÉSTAMO (SISTEMA)'
         ];
     }
 

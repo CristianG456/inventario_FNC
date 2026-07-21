@@ -52,11 +52,11 @@ class Asignacion extends Model
     const TIPO_RESTAURACION = 'restauracion';
 
     const TIPOS_ACCION = [
-        self::TIPO_ASIGNACION    => 'Asignación',
+        self::TIPO_ASIGNACION    => 'Préstamo',
         self::TIPO_REEMPLAZO     => 'Reemplazo',
-        self::TIPO_RETIRO        => 'Retiro',
+        self::TIPO_RETIRO        => 'Retiro de funcionario',
         self::TIPO_MANTENIMIENTO => 'Mantenimiento',
-        self::TIPO_BAJA          => 'Baja',
+        self::TIPO_BAJA          => 'Retiro definitivo del equipo',
         self::TIPO_RESTAURACION  => 'Restauración',
     ];
 

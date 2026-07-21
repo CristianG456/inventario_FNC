@@ -1,13 +1,13 @@
 @extends('layouts.inventario')
 
-@section('title', 'Detalle de Asignación')
+@section('title', 'Detalle de Préstamo')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold mb-0">
             <i class="bi bi-person-fill-gear me-2 text-primary"></i>
-            Detalle de Asignación #{{ str_pad($asignacion->id, 5, '0', STR_PAD_LEFT) }}
+            Detalle de Préstamo #{{ str_pad($asignacion->id, 5, '0', STR_PAD_LEFT) }}
         </h4>
         <small class="text-muted">
             {{ $asignacion->equipo?->nombre_equipo }} — {{ $asignacion->fecha_accion?->format('d/m/Y H:i') }}
