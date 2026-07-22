@@ -66,17 +66,8 @@ class EquipoController extends Controller
 
         $equipos      = $query->paginate(6)->withQueryString();
         $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
-        $camposExportables = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
-            ->where('exportable', true)
-            ->select('id', 'nombre', 'exportar_por_defecto')
-            ->orderBy('orden')
-            ->get();
-        $plantillasExportacion = \App\Models\PlantillaExportacion::where('modulo', 'equipos')
-                                    ->select('id', 'nombre', 'configuracion_json')
-                                    ->orderBy('nombre')
-                                    ->get();
 
-        return view('equipos.index', compact('equipos', 'tipoRecursos', 'plantillasExportacion', 'camposExportables'));
+        return view('equipos.index', compact('equipos', 'tipoRecursos'));
     }
 
     /**
@@ -347,11 +338,37 @@ class EquipoController extends Controller
      */
     public function exportar(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        $columnasEstandar = $request->input('columnas_estandar', []);
-        $columnasPersonalizadas = $request->input('columnas_personalizadas', []);
+        $modoExportacion = (string) $request->input('modo_exportacion', 'personalizada');
+        $columnasEstandar = (array) $request->input('columnas_estandar', []);
+        $columnasPersonalizadas = (array) $request->input('columnas_personalizadas', []);
+        $baseCmdbPrincipal = $request->boolean('base_cmdb_principal');
+
+        $nombreArchivo = 'inventario_personalizado_' . date('Ymd_His') . '.xlsx';
+
+        if (in_array($modoExportacion, ['cmdb', 'cmdb_principal'], true)) {
+            $columnasEstandar = EquiposExport::columnasCmdbPrincipal();
+            $columnasPersonalizadas = [];
+            $nombreArchivo = 'cmdb_principal_' . date('Ymd_His') . '.xlsx';
+        }
+
+        if ($modoExportacion === 'completa') {
+            $columnasEstandar = EquiposExport::columnasCompletas();
+            $columnasPersonalizadas = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
+                ->where('exportable', true)
+                ->pluck('id')
+                ->toArray();
+            $nombreArchivo = 'inventario_completo_' . date('Ymd_His') . '.xlsx';
+        }
+
+        if ($modoExportacion === 'personalizada' && $baseCmdbPrincipal) {
+            $columnasEstandar = array_values(array_unique(array_merge(
+                EquiposExport::columnasCmdbPrincipal(),
+                $columnasEstandar
+            )));
+        }
         
         // Guardar plantilla si se solicita
-        if ($request->input('guardar_plantilla') && $request->filled('nombre_plantilla')) {
+        if ($modoExportacion === 'personalizada' && $request->input('guardar_plantilla') && $request->filled('nombre_plantilla')) {
             \App\Models\PlantillaExportacion::create([
                 'nombre' => $request->nombre_plantilla,
                 'modulo' => 'equipos',
@@ -364,16 +381,12 @@ class EquipoController extends Controller
 
         // Si no se selecciona nada (ej. llamada directa sin modal), exportar todo lo por defecto
         if (empty($columnasEstandar) && empty($columnasPersonalizadas)) {
-            $columnasEstandar = [
-                'id', 'nombre_equipo', 'serial', 'activo_fijo', 'placa',
-                'marca', 'modelo', 'tipo', 'estado', 'usuario_asignado', 'cedula_asignado'
-            ];
-            $columnasPersonalizadas = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
-                                        ->where('exportar_por_defecto', true)
-                                        ->pluck('id')->toArray();
+            $columnasEstandar = $baseCmdbPrincipal
+                ? EquiposExport::columnasCmdbPrincipal()
+                : EquiposExport::columnasCmdbPorDefecto();
         }
 
-        return Excel::download(new EquiposExport($columnasEstandar, $columnasPersonalizadas, $request->all()), 'inventario_equipos.xlsx');
+        return Excel::download(new EquiposExport($columnasEstandar, $columnasPersonalizadas, $request->all()), $nombreArchivo);
     }
 
     /**

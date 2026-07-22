@@ -17,7 +17,20 @@ class ReporteController extends Controller
 {
     public function index()
     {
-        return view('reportes.index');
+        $camposExportables = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
+            ->where('exportable', true)
+            ->select('id', 'nombre', 'exportar_por_defecto')
+            ->orderBy('orden')
+            ->get();
+
+        $plantillasExportacion = \App\Models\PlantillaExportacion::where('modulo', 'equipos')
+            ->select('id', 'nombre', 'configuracion_json')
+            ->orderBy('nombre')
+            ->get();
+
+        $columnasAdicionalesCmdb = \App\Exports\EquiposExport::columnasAdicionalesSobreCmdbPrincipal();
+
+        return view('reportes.index', compact('camposExportables', 'plantillasExportacion', 'columnasAdicionalesCmdb'));
     }
 
     public function activosPorFuncionario()

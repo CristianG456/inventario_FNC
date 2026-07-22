@@ -6,11 +6,6 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-laptop me-2 text-primary"></i>Inventario de Equipos</h4>
     <div class="d-flex gap-2">
-        @can('equipos.exportar')
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalExportacion">
-            <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
-        </button>
-        @endcan
         @can('equipos.crear')
         <a href="{{ route('equipos.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nuevo Equipo
@@ -436,113 +431,6 @@
     </div>
 </div>
 
-{{-- ═══ MODAL: Exportación Inteligente ════════════════ --}}
-<div class="modal fade" id="modalExportacion" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="formExportacion" method="GET" action="{{ route('equipos.exportar') }}">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="bi bi-file-earmark-excel me-2"></i>Exportación Avanzada</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted small mb-3">
-                        Selecciona las columnas que deseas incluir en el archivo Excel. Puedes guardar esta selección como plantilla para futuras exportaciones.
-                    </p>
-                    
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small text-primary">Plantillas Guardadas</label>
-                            <select class="form-select form-select-sm" id="plantillaExportacionSelect">
-                                <option value="">-- Seleccionar Plantilla (Opcional) --</option>
-                                @if(isset($plantillasExportacion))
-                                    @foreach($plantillasExportacion as $plantilla)
-                                        <option value="{{ $plantilla->id }}" data-estandar="{{ json_encode($plantilla->columnas_estandar) }}" data-personalizadas="{{ json_encode($plantilla->columnas_personalizadas) }}">
-                                            {{ $plantilla->nombre }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="card mb-3 border-secondary border-opacity-25">
-                        <div class="card-header bg-light fw-bold py-2">
-                            <i class="bi bi-list-check me-1"></i>Columnas Estándar del Sistema
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="row g-2">
-                                @php
-                                    $columnasEstandar = [
-                                        'id' => 'ID Interno',
-                                        'nombre_equipo' => 'Nombre del Equipo',
-                                        'serial' => 'Serial',
-                                        'activo_fijo' => 'Activo Fijo',
-                                        'placa' => 'Placa / Inventario',
-                                        'marca' => 'Marca',
-                                        'modelo' => 'Modelo',
-                                        'tipo' => 'Tipo de Equipo',
-                                        'estado' => 'Estado Operativo',
-                                        'usuario_asignado' => 'Usuario Asignado (Nombre)',
-                                        'cedula_asignado' => 'Usuario Asignado (Cédula)'
-                                    ];
-                                @endphp
-                                @foreach($columnasEstandar as $key => $label)
-                                <div class="col-md-4 col-sm-6">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="columnas_estandar[]" value="{{ $key }}" id="col_est_{{ $key }}" checked>
-                                        <label class="form-check-label small" for="col_est_{{ $key }}">{{ $label }}</label>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card mb-2 border-secondary border-opacity-25">
-                        <div class="card-header bg-light fw-bold py-2">
-                            <i class="bi bi-ui-checks-grid me-1"></i>Campos Personalizados (Dinámicos)
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="row g-2" id="contenedorCamposExportables">
-                                @if($camposExportables->isEmpty())
-                                    <div class="col-12 text-muted small fst-italic">No hay campos personalizados configurados como exportables.</div>
-                                @else
-                                    @foreach($camposExportables as $campo)
-                                    <div class="col-md-4 col-sm-6">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="columnas_personalizadas[]" value="{{ $campo->id }}" id="col_pers_{{ $campo->id }}" {{ $campo->exportar_por_defecto ? 'checked' : '' }}>
-                                            <label class="form-check-label small text-primary" for="col_pers_{{ $campo->id }}">{{ $campo->nombre }}</label>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-3 pt-3 border-top">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="guardar_plantilla" name="guardar_plantilla" value="1">
-                            <label class="form-check-label fw-bold text-success" for="guardar_plantilla">Guardar esta selección como nueva plantilla</label>
-                        </div>
-                        <div class="mt-2" id="div_nombre_plantilla" style="display: none;">
-                            <input type="text" class="form-control form-control-sm" name="nombre_plantilla" placeholder="Ej: Reporte Mensual Gerencia">
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-download me-1"></i>Generar y Descargar Excel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 @endsection
 
 @push('scripts')
@@ -894,73 +782,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Lógica para exportación: mostrar campo de nombre si se selecciona guardar
-    const checkGuardarPlantilla = document.getElementById('guardar_plantilla');
-    if (checkGuardarPlantilla) {
-        checkGuardarPlantilla.addEventListener('change', function() {
-            document.getElementById('div_nombre_plantilla').style.display = this.checked ? 'block' : 'none';
-            if(this.checked) {
-                document.querySelector('input[name="nombre_plantilla"]').setAttribute('required', 'required');
-            } else {
-                document.querySelector('input[name="nombre_plantilla"]').removeAttribute('required');
-            }
-        });
-    }
-
-    // Lógica para cargar plantilla guardada
-    const selectPlantilla = document.getElementById('plantillaExportacionSelect');
-    if(selectPlantilla) {
-        selectPlantilla.addEventListener('change', function() {
-            if(!this.value) return; // Si selecciona vacio, no hace nada (deja como está)
-            
-            const estandar = JSON.parse(this.options[this.selectedIndex].getAttribute('data-estandar') || '[]');
-            const personalizadas = JSON.parse(this.options[this.selectedIndex].getAttribute('data-personalizadas') || '[]');
-            
-            // Desmarcar todo primero
-            document.querySelectorAll('input[name="columnas_estandar[]"]').forEach(cb => cb.checked = false);
-            document.querySelectorAll('input[name="columnas_personalizadas[]"]').forEach(cb => cb.checked = false);
-            
-            // Marcar las estándar guardadas
-            estandar.forEach(val => {
-                const cb = document.getElementById('col_est_' + val);
-                if(cb) cb.checked = true;
-            });
-            
-            // Marcar las personalizadas guardadas
-            personalizadas.forEach(val => {
-                const cb = document.getElementById('col_pers_' + val);
-                if(cb) cb.checked = true;
-            });
-        });
-    }
-
-    // Copiar filtros actuales de búsqueda al formulario de exportación
-    const formExportacion = document.getElementById('formExportacion');
-    if(formExportacion) {
-        formExportacion.addEventListener('submit', function(e) {
-            // Añadir campos ocultos con los valores de búsqueda actuales
-            const searchParams = new URLSearchParams(window.location.search);
-            
-            // Eliminar inputs ocultos previos si existen
-            formExportacion.querySelectorAll('.dynamic-filter').forEach(el => el.remove());
-
-            for(const [key, value] of searchParams.entries()) {
-                if(value && key !== 'page') {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = value;
-                    input.className = 'dynamic-filter';
-                    formExportacion.appendChild(input);
-                }
-            }
-            
-            // Cerrar modal después de un breve retraso para permitir la descarga
-            setTimeout(() => {
-                bootstrap.Modal.getInstance(document.getElementById('modalExportacion')).hide();
-            }, 1000);
-        });
-    }
 });
 </script>
 @endpush

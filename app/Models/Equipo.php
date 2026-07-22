@@ -79,6 +79,11 @@ class Equipo extends Model
         return $this->hasMany(Checklist::class);
     }
 
+    public function latestChecklist(): HasOne
+    {
+        return $this->hasOne(Checklist::class)->latestOfMany();
+    }
+
     public function asignaciones(): HasMany
     {
         return $this->hasMany(Asignacion::class)->orderByDesc('fecha_accion');
