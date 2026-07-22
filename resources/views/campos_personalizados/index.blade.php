@@ -110,7 +110,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Módulo *</label>
                             <select name="modulo" id="modulo" class="form-select" required>
-                                <option value="equipos">Equipos</option>
+                                <option value="equipos">Activos</option>
                                 <option value="licencias">Licencias</option>
                                 <option value="suscripciones">Suscripciones</option>
                                 <option value="vitalicias">Vitalicias</option>
