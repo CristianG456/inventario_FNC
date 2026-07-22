@@ -59,7 +59,9 @@ class LicenciasExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
             'CUPOS DISPONIBLES',
             'FECHA INICIO',
             'FECHA VENCIMIENTO',
-            'DESCRIPCIÓN',
+            'FECHA COMPRA',
+            'FECHA RENOVACIÓN',
+            'CORREO COMPRA',
             'OBSERVACIONES',
         ];
     }
@@ -76,7 +78,9 @@ class LicenciasExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
             $licencia->cupos_disponibles,
             $licencia->fecha_inicio ? $licencia->fecha_inicio->format('d/m/Y') : 'N/A',
             $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('d/m/Y') : 'N/A',
-            $licencia->descripcion,
+            $licencia->fecha_compra ? $licencia->fecha_compra->format('d/m/Y') : 'N/A',
+            $licencia->fecha_renovacion ? $licencia->fecha_renovacion->format('d/m/Y') : 'N/A',
+            $licencia->correo_compra ?: 'N/A',
             $licencia->observaciones,
         ];
     }

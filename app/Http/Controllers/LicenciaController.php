@@ -74,7 +74,7 @@ class LicenciaController extends Controller
                 $q->where('estado', 'Activa');
             },
         ]);
-        $licencia->load(['asignaciones.funcionario', 'asignaciones.equipo']);
+        $licencia->load(['asignaciones.funcionario', 'asignaciones.equipo', 'asignaciones.serial', 'seriales']);
         $historial = LicenciaHistorial::where('licencia_nombre', $licencia->nombre)->orderBy('fecha', 'desc')->get();
 
         return view('licencias.show', compact('licencia', 'historial'));

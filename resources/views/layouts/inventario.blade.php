@@ -73,21 +73,36 @@
             </li>
             @endcan
             
-            @can('configuracion.editar')
+            @canany(['configuracion.editar', 'campos_personalizados.ver'])
             <li class="nav-item">
-                <a href="{{ route('tipo-recursos.index') }}" class="nav-link {{ request()->routeIs('tipo-recursos.*') ? 'active' : '' }}">
-                    <i class="bi bi-tags"></i> Categorías
+                @php
+                    $isConfigActive = request()->routeIs('tipo-recursos.*', 'campos-personalizados.*');
+                @endphp
+                <a class="nav-link {{ $isConfigActive ? 'active' : '' }}" href="#menuConfiguracion" data-bs-toggle="collapse" role="button" aria-expanded="{{ $isConfigActive ? 'true' : 'false' }}" aria-controls="menuConfiguracion">
+                    <i class="bi bi-gear"></i> <span>Configuración</span>
+                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem; transition: transform 0.3s;"></i>
                 </a>
+                <div class="collapse {{ $isConfigActive ? 'show' : '' }}" id="menuConfiguracion" style="visibility: visible;">
+                    <ul class="nav flex-column" style="padding-left: 1rem; margin-top: 4px; margin-bottom: 4px;">
+                        @can('configuracion.editar')
+                        <li class="nav-item">
+                            <a href="{{ route('tipo-recursos.index') }}" class="nav-link {{ request()->routeIs('tipo-recursos.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
+                                <i class="bi bi-tags"></i> <span>Categorías</span>
+                            </a>
+                        </li>
+                        @endcan
+                        
+                        @can('campos_personalizados.ver')
+                        <li class="nav-item">
+                            <a href="{{ route('campos-personalizados.index') }}" class="nav-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
+                                <i class="bi bi-ui-checks-grid"></i> <span>Campos Personalizados</span>
+                            </a>
+                        </li>
+                        @endcan
+                    </ul>
+                </div>
             </li>
-            @endcan
-            
-            @can('campos_personalizados.ver')
-            <li class="nav-item">
-                <a href="{{ route('campos-personalizados.index') }}" class="nav-link {{ request()->routeIs('campos-personalizados.*') ? 'active' : '' }}">
-                    <i class="bi bi-ui-checks-grid"></i> Campos Personalizados
-                </a>
-            </li>
-            @endcan
+            @endcanany
             
             @can('licencias.ver')
             <li class="nav-item">
@@ -97,18 +112,7 @@
             </li>
             @endcan
 
-            <li class="nav-item">
-                <a href="{{ route('suscripciones.index') }}" class="nav-link {{ request()->routeIs('suscripciones.*') || request()->routeIs('suscripcion-asignaciones.*') ? 'active' : '' }}">
-                    <i class="bi bi-calendar-check"></i> Suscripciones
-                </a>
-            </li>
 
-            <li class="nav-item">
-                <a href="{{ route('vitalicias.index') }}" class="nav-link {{ request()->routeIs('vitalicias.*') || request()->routeIs('vitalicia-asignaciones.*') ? 'active' : '' }}">
-                    <i class="bi bi-award"></i> Vitalicias
-                </a>
-            </li>
-            
             @can('dashboard.ver')
             <li class="nav-item">
                 <a href="{{ route('reportes.index') }}" class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}">

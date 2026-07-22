@@ -13,6 +13,7 @@ use App\Http\Controllers\FuncionarioController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\LicenciaController;
+use App\Http\Controllers\LicenciaSerialController;
 use App\Http\Controllers\LicenciaAsignacionController;
 use App\Http\Controllers\LicenciaHistorialController;
 use Illuminate\Support\Facades\Route;
@@ -160,15 +161,15 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::get('/licencias/exportar', [LicenciaController::class, 'exportar'])->name('licencias.exportar')->middleware('permission:licencias.exportar');
     Route::get('/licencias/historial', [LicenciaHistorialController::class, 'index'])->name('licencias.historial')->middleware('permission:licencias.ver');
     Route::resource('licencias', LicenciaController::class)->middleware('permission:licencias.ver');
-    Route::resource('licencia-asignaciones', LicenciaAsignacionController::class)->middleware('permission:licencias.editar');
+    Route::resource('licencias.seriales', LicenciaSerialController::class)->only(['store', 'update', 'destroy'])->middleware('permission:licencias.editar');
+    Route::resource('licencia-asignaciones', LicenciaAsignacionController::class)
+        ->parameters(['licencia-asignaciones' => 'licencia_asignacion'])
+        ->middleware('permission:licencias.editar');
 
-    // ── Suscripciones (Nuevo Módulo) ──────────────────────────────────────────
-    Route::resource('suscripciones', App\Http\Controllers\SuscripcionController::class)->middleware('permission:licencias.ver');
-    Route::resource('suscripcion-asignaciones', App\Http\Controllers\SuscripcionAsignacionController::class)->middleware('permission:licencias.editar');
+    // ── Suscripciones y Vitalicias (Redirigen al módulo unificado) ────────────
+    Route::redirect('/suscripciones', '/licencias');
+    Route::redirect('/vitalicias', '/licencias');
 
-    // ── Vitalicias (Nuevo Módulo) ─────────────────────────────────────────────
-    Route::resource('vitalicias', App\Http\Controllers\VitaliciaController::class)->middleware('permission:licencias.ver');
-    Route::resource('vitalicia-asignaciones', App\Http\Controllers\VitaliciaAsignacionController::class)->middleware('permission:licencias.editar');
 
     Route::get('/test-logo', function() {
         $pngPath = public_path('imagenes/federacion cafeteros logo.png');

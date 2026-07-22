@@ -104,13 +104,21 @@
                                 {{ $licencia->tipo_licencia }}
                             </td>
                             <td>
-                                <span class="badge {{ $licencia->cupos_disponibles > 0 ? 'bg-success' : 'bg-danger' }}">
-                                    {{ $licencia->cupos_asignados }} / {{ $licencia->cantidad_maxima }} Asignados
-                                </span>
+                                @if($licencia->tipo_licencia === 'Vitalicia')
+                                    <span class="text-muted">N/A</span>
+                                @else
+                                    <span class="badge {{ $licencia->cupos_disponibles > 0 ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $licencia->cupos_asignados }} / {{ $licencia->cantidad_maxima }} Asignados
+                                    </span>
+                                @endif
                             </td>
                             <td>
-                                <small class="text-muted">Inicio:</small> {{ $licencia->fecha_inicio ? $licencia->fecha_inicio->format('d/m/Y') : 'N/A' }}<br>
-                                <small class="text-muted">Vence:</small> <strong class="{{ $licencia->fecha_vencimiento && $licencia->fecha_vencimiento->isPast() ? 'text-danger' : '' }}">{{ $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('d/m/Y') : 'N/A' }}</strong>
+                                @if($licencia->tipo_licencia === 'Vitalicia')
+                                    <span class="text-muted">Ilimitado</span>
+                                @else
+                                    <small class="text-muted">Inicio:</small> {{ $licencia->fecha_inicio ? $licencia->fecha_inicio->format('d/m/Y') : 'N/A' }}<br>
+                                    <small class="text-muted">Vence:</small> <strong class="{{ $licencia->fecha_vencimiento && $licencia->fecha_vencimiento->isPast() ? 'text-danger' : '' }}">{{ $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('d/m/Y') : 'N/A' }}</strong>
+                                @endif
                             </td>
                             <td>
                                 <span class="badge bg-{{ $licencia->estado === 'Activa' ? 'success' : ($licencia->estado === 'Suspendida' ? 'warning' : 'danger') }}">

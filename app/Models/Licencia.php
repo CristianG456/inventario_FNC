@@ -13,13 +13,17 @@ class Licencia extends Model
 
     protected $fillable = [
         'nombre',
-        'descripcion',
         'tipo_licencia',
         'cantidad_maxima',
         'fecha_inicio',
         'fecha_vencimiento',
+        'fecha_compra',
+        'fecha_renovacion',
+        'correo_compra',
         'estado',
         'observaciones',
+        'requiere_correo',
+        'correo_asociado',
         'created_by',
         'updated_by',
     ];
@@ -27,8 +31,15 @@ class Licencia extends Model
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_vencimiento' => 'date',
+        'fecha_compra' => 'date',
+        'fecha_renovacion' => 'date',
         'cantidad_maxima' => 'integer',
     ];
+
+    public function seriales(): HasMany
+    {
+        return $this->hasMany(LicenciaSerial::class, 'licencia_id');
+    }
 
     public function asignaciones(): HasMany
     {

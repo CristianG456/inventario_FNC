@@ -28,16 +28,19 @@
                             </option>
                         @endforeach
                     </select>
+                    <div class="form-text text-primary mt-1">
+                        <i class="bi bi-info-circle me-1"></i> El sistema asignará automáticamente el primer serial disponible (si aplica).
+                    </div>
                     @error('licencia_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label fw-medium">Funcionario <span class="text-danger">*</span></label>
-                    <select name="funcionario_id" class="form-select @error('funcionario_id') is-invalid @enderror" required>
-                        <option value="">Seleccione un funcionario...</option>
+                    <select name="funcionario_id" id="funcionario_id" class="form-select @error('funcionario_id') is-invalid @enderror" required>
+                        <option value="" data-identificacion="">Seleccione un funcionario...</option>
                         @foreach($funcionarios as $funcionario)
-                            <option value="{{ $funcionario->id }}" {{ old('funcionario_id') == $funcionario->id ? 'selected' : '' }}>
-                                {{ $funcionario->nombre_completo }} ({{ $funcionario->cedula }})
+                            <option value="{{ $funcionario->id }}" data-identificacion="{{ $funcionario->identificacion }}" {{ old('funcionario_id') == $funcionario->id ? 'selected' : '' }}>
+                                {{ $funcionario->nombre_completo }} ({{ $funcionario->identificacion }})
                             </option>
                         @endforeach
                     </select>
@@ -46,15 +49,22 @@
 
                 <div class="col-md-6">
                     <label class="form-label fw-medium">Equipo <span class="text-danger">*</span></label>
-                    <select name="equipo_id" class="form-select @error('equipo_id') is-invalid @enderror" required>
-                        <option value="">Seleccione un equipo...</option>
+                    <select name="equipo_id" id="equipo_id" class="form-select @error('equipo_id') is-invalid @enderror" required>
+                        <option value="" data-cedula="">Seleccione un equipo...</option>
                         @foreach($equipos as $equipo)
-                            <option value="{{ $equipo->id }}" {{ old('equipo_id') == $equipo->id ? 'selected' : '' }}>
+                            <option value="{{ $equipo->id }}" data-cedula="{{ $equipo->usuarioAsignado->cedula ?? '' }}" {{ old('equipo_id') == $equipo->id ? 'selected' : '' }}>
                                 {{ $equipo->nombre_equipo }} - Placa: {{ $equipo->activo_fijo ?? 'N/A' }} (Serial: {{ $equipo->serial ?? 'N/A' }})
                             </option>
                         @endforeach
                     </select>
                     @error('equipo_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                
+                <div class="col-md-12">
+                    <label class="form-label fw-medium">Correo de Activación</label>
+                    <input type="email" name="correo_activacion" class="form-control @error('correo_activacion') is-invalid @enderror" value="{{ old('correo_activacion') }}" placeholder="Correo al que fue entregada (si aplica)">
+                    <div class="form-text">Si la licencia se activó con un correo específico, ingréselo aquí.</div>
+                    @error('correo_activacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
                 <div class="col-md-4">
@@ -95,4 +105,62 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const funcionarioSelect = document.getElementById('funcionario_id');
+    const equipoSelect = document.getElementById('equipo_id');
+    
+    // Guardar todas las opciones originales de equipo
+    const todasLasOpcionesEquipo = Array.from(equipoSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.text,
+        cedula: opt.getAttribute('data-cedula') || '',
+        selected: opt.selected,
+        isPlaceholder: opt.value === ''
+    }));
+
+    function filtrarEquipos() {
+        const funcionarioOption = funcionarioSelect.options[funcionarioSelect.selectedIndex];
+        const identificacionFuncionario = funcionarioOption ? (funcionarioOption.getAttribute('data-identificacion') || '') : '';
+        
+        // Limpiar el select actual
+        equipoSelect.innerHTML = '';
+        
+        // Si no hay funcionario seleccionado, mostrar todos
+        if (!identificacionFuncionario) {
+            todasLasOpcionesEquipo.forEach(opt => {
+                const newOption = new Option(opt.text, opt.value);
+                newOption.setAttribute('data-cedula', opt.cedula);
+                if (opt.selected) newOption.selected = true;
+                equipoSelect.add(newOption);
+            });
+            return;
+        }
+        
+        // Filtrar solo las opciones que correspondan a la cédula, y el placeholder
+        const opcionesFiltradas = todasLasOpcionesEquipo.filter(opt => 
+            opt.isPlaceholder || opt.cedula === identificacionFuncionario
+        );
+        
+        opcionesFiltradas.forEach(opt => {
+            const newOption = new Option(opt.text, opt.value);
+            newOption.setAttribute('data-cedula', opt.cedula);
+            if (opt.selected) newOption.selected = true;
+            equipoSelect.add(newOption);
+        });
+
+        // Autoseleccionar si solo hay 1 equipo (además del placeholder)
+        if (opcionesFiltradas.length === 2 && !opcionesFiltradas[1].selected) {
+            equipoSelect.value = opcionesFiltradas[1].value;
+        }
+    }
+
+    funcionarioSelect.addEventListener('change', filtrarEquipos);
+    
+    // Ejecutar al inicio por si ya hay un funcionario seleccionado (por old() input)
+    filtrarEquipos();
+});
+</script>
+@endpush
 @endsection

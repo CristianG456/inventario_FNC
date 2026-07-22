@@ -15,10 +15,12 @@ class LicenciaAsignacion extends Model
 
     protected $fillable = [
         'licencia_id',
+        'licencia_serial_id',
         'equipo_id',
         'funcionario_id',
         'fecha_asignacion',
         'fecha_vencimiento',
+        'correo_activacion',
         'estado',
         'observaciones',
         'created_by',
@@ -43,5 +45,10 @@ class LicenciaAsignacion extends Model
     public function funcionario(): BelongsTo
     {
         return $this->belongsTo(Funcionario::class);
+    }
+
+    public function serial(): BelongsTo
+    {
+        return $this->belongsTo(LicenciaSerial::class, 'licencia_serial_id');
     }
 }

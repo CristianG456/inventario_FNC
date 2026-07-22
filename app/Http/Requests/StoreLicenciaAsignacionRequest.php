@@ -20,6 +20,7 @@ class StoreLicenciaAsignacionRequest extends FormRequest
             'licencia_id' => 'nullable|exists:licencias,id',
             'fecha_asignacion' => 'required|date',
             'fecha_vencimiento' => 'nullable|date|after_or_equal:fecha_asignacion',
+            'correo_activacion' => 'nullable|email|max:255',
             'estado' => 'required|in:Activa,Vencida,Retirada,Suspendida',
             'observaciones' => 'nullable|string',
         ];
