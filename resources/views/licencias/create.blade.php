@@ -18,13 +18,13 @@
             @csrf
             
             <div class="row g-4">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-medium">Nombre de Licencia <span class="text-danger">*</span></label>
                     <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required>
                     @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-medium">Tipo <span class="text-danger">*</span></label>
                     <select name="tipo_licencia" id="tipo_licencia" class="form-select @error('tipo_licencia') is-invalid @enderror" required>
                         <option value="Suscripción" {{ old('tipo_licencia') == 'Suscripción' ? 'selected' : '' }}>Suscripción</option>
@@ -33,7 +33,7 @@
                     @error('tipo_licencia') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-medium">Estado <span class="text-danger">*</span></label>
                     <select name="estado" class="form-select @error('estado') is-invalid @enderror" required>
                         <option value="Activa" {{ old('estado') == 'Activa' ? 'selected' : '' }}>Activa</option>
@@ -44,25 +44,25 @@
                 </div>
 
                 <!-- Campos de Suscripción -->
-                <div class="col-md-4 campo-suscripcion">
+                <div class="col-12 col-md-4 campo-suscripcion">
                     <label class="form-label fw-medium">Cantidad Máxima de Cupos <span class="text-danger">*</span></label>
                     <input type="number" name="cantidad_maxima" id="cantidad_maxima" class="form-control @error('cantidad_maxima') is-invalid @enderror" value="{{ old('cantidad_maxima', 1) }}" min="1">
                     @error('cantidad_maxima') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-4 campo-suscripcion">
+                <div class="col-12 col-md-4 campo-suscripcion">
                     <label class="form-label fw-medium">Fecha de Inicio</label>
                     <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control @error('fecha_inicio') is-invalid @enderror" value="{{ old('fecha_inicio') }}">
                     @error('fecha_inicio') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 
-                <div class="col-md-4 campo-suscripcion">
+                <div class="col-12 col-md-4 campo-suscripcion">
                     <label class="form-label fw-medium">Fecha de Vencimiento</label>
                     <input type="date" name="fecha_vencimiento" id="fecha_vencimiento" class="form-control @error('fecha_vencimiento') is-invalid @enderror" value="{{ old('fecha_vencimiento') }}">
                     @error('fecha_vencimiento') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="col-md-6 campo-suscripcion">
+                <div class="col-12 col-md-6 campo-suscripcion">
                     <label class="form-label fw-medium">¿Requiere correo electrónico? <span class="text-danger">*</span></label>
                     <select name="requiere_correo" id="requiere_correo" class="form-select @error('requiere_correo') is-invalid @enderror">
                         <option value="0" {{ old('requiere_correo') == '0' ? 'selected' : '' }}>No</option>
@@ -72,27 +72,27 @@
                 </div>
 
                 <!-- Campo compartido o condicional (Correo Compra) -->
-                <div class="col-md-6" id="container_correo_asociado" style="display: none;">
+                <div class="col-12 col-md-6" id="container_correo_asociado" style="display: none;">
                     <label class="form-label fw-medium">Correo de Compra <span class="text-danger">*</span></label>
                     <input type="email" name="correo_compra" id="correo_compra" class="form-control @error('correo_compra') is-invalid @enderror" value="{{ old('correo_compra') }}" placeholder="Correo con el que se adquirió">
                     @error('correo_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-medium">Fecha de Compra</label>
                     <input type="date" name="fecha_compra" class="form-control @error('fecha_compra') is-invalid @enderror" value="{{ old('fecha_compra') }}">
                     <div class="form-text">Informativa</div>
                     @error('fecha_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="col-md-3 campo-suscripcion">
+                <div class="col-12 col-md-3 campo-suscripcion">
                     <label class="form-label fw-medium">Fecha de Renovación</label>
                     <input type="date" name="fecha_renovacion" class="form-control @error('fecha_renovacion') is-invalid @enderror" value="{{ old('fecha_renovacion') }}">
                     @error('fecha_renovacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <!-- Campos de Vitalicia -->
-                <div class="col-md-6 campo-vitalicia" style="display: none;">
+                <div class="col-12 col-md-6 campo-vitalicia" style="display: none;">
                     <!-- Se ha eliminado usuario_asignado -->
                 </div>
 

@@ -11,7 +11,7 @@
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-12 col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
                 <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-info">
@@ -23,7 +23,7 @@
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-12 col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
                 <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-purple">
@@ -35,7 +35,7 @@
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-12 col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
                 <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-indigo">
@@ -47,7 +47,7 @@
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-12 col-md-3">
         <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
             <div class="d-flex align-items-center gap-3">
                 <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-success">
@@ -62,12 +62,12 @@
 
 <div class="card p-0">
     <div class="p-4 border-bottom border-light">
-        <form action="{{ route('historial-tecnico.index') }}" method="GET" class="d-flex gap-3 align-items-center">
-            <div class="search-bar flex-grow-1 maint-search-bar">
+        <form action="{{ route('historial-tecnico.index') }}" method="GET" class="d-flex flex-column flex-md-row gap-3 align-items-stretch align-items-md-center w-100">
+            <div class="search-bar flex-grow-1 maint-search-bar w-100">
                 <i class="bi bi-search text-muted"></i>
-                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por placa, descripción o caso...">
+                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por placa, descripción o caso..." class="w-100 border-0 outline-none">
             </div>
-            <button type="button" class="btn btn-outline-secondary rounded-pill px-4">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 text-nowrap">
                 <i class="bi bi-funnel me-1"></i> Más Filtros
             </button>
         </form>

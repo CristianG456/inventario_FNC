@@ -1,4 +1,4 @@
-﻿@extends('layouts.inventario')
+@extends('layouts.inventario')
 
 @section('title', 'Inicio')
 
@@ -96,7 +96,7 @@
 
 <div class="row g-4">
     {{-- Equipos por Tipo --}}
-    <div class="col-lg-5">
+    <div class="col-12 col-lg-5">
         <div class="card h-100">
             <div class="card-header bg-white fw-semibold border-0 pt-4 px-4">
                 <i class="bi bi-pie-chart me-2 text-primary"></i>Equipos por Tipo
@@ -122,7 +122,7 @@
     </div>
 
     {{-- Últimos equipos --}}
-    <div class="col-lg-7">
+    <div class="col-12 col-lg-7">
         <div class="card h-100">
             <div class="card-header bg-white fw-semibold border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-clock-history me-2 text-primary"></i>Últimos Equipos Registrados</span>

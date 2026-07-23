@@ -3,7 +3,7 @@
 @section('title', 'Tipos de Recurso')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0"><i class="bi bi-tags me-2 text-primary"></i>Tipos de Recurso</h4>
     <a href="{{ route('tipo-recursos.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>Nuevo Tipo

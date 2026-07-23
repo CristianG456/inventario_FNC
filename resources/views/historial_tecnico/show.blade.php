@@ -13,7 +13,7 @@
             {{ $historialTecnico->equipo?->nombre_equipo }} — {{ $historialTecnico->fecha_evento?->format('d/m/Y') }}
         </small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         @if($puedeModificarBitacora)
             <a href="{{ route('historial-tecnico.edit', $historialTecnico) }}" class="btn btn-warning text-white">
                 <i class="bi bi-pencil me-1"></i>Editar

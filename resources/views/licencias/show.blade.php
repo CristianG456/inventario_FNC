@@ -7,7 +7,7 @@
     <h4 class="fw-bold mb-0">
         <i class="bi bi-key text-primary me-2"></i>{{ $licencia->nombre }}
     </h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('licencias.edit', $licencia) }}" class="btn btn-warning">
             <i class="bi bi-pencil me-1"></i>Editar
         </a>
@@ -144,16 +144,16 @@
                 <div class="mb-3">
                     <form method="POST" action="{{ route('licencias.seriales.store', $licencia) }}" class="row g-2 align-items-center">
                         @csrf
-                        <div class="col-md-5">
+                        <div class="col-12 col-md-5">
                             <input type="text" name="serial" class="form-control form-control-sm" placeholder="Ingresar nuevo serial" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-12 col-md-3">
                             <select name="estado" class="form-select form-select-sm" required>
                                 <option value="Disponible">Disponible</option>
                                 <option value="Inactivo">Inactivo</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <button type="submit" class="btn btn-sm btn-primary w-100">
                                 <i class="bi bi-plus-circle me-1"></i>Agregar Serial
                             </button>
@@ -200,7 +200,7 @@
                             
                             <!-- Edit Serial Modal -->
                             <div class="modal fade" id="editSerialModal{{ $serialItem->id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down">
                                     <div class="modal-content">
                                         <form method="POST" action="{{ route('licencias.seriales.update', [$licencia, $serialItem]) }}">
                                             @csrf

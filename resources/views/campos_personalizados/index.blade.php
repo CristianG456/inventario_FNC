@@ -21,7 +21,7 @@
 @endpush
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0"><i class="bi bi-ui-checks-grid me-2 text-primary"></i>Campos Personalizados</h4>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCampo" onclick="openCreateModal()">
         <i class="bi bi-plus-lg me-1"></i>Nuevo Campo
@@ -96,7 +96,7 @@
 
 <!-- Modal Create/Edit -->
 <div class="modal fade" id="modalCampo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
         <form id="formCampo" method="POST" action="{{ route('campos-personalizados.store') }}">
             @csrf
             <input type="hidden" name="_method" id="methodCampo" value="POST">
@@ -107,7 +107,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Módulo *</label>
                             <select name="modulo" id="modulo" class="form-select" required>
                                 <option value="equipos">Activos</option>
@@ -117,7 +117,7 @@
                                 <option value="actas">Actas</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Tipo de Campo *</label>
                             <select name="tipo" id="tipo" class="form-select" required onchange="toggleOpciones()">
                                 <option value="texto">Texto corto</option>
@@ -133,12 +133,12 @@
                             </select>
                         </div>
                         
-                        <div class="col-md-12">
+                        <div class="col-12 col-md-12">
                             <label class="form-label">Nombre del Campo *</label>
                             <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Centro de Costos">
                         </div>
                         
-                        <div class="col-md-12 opciones-wrapper">
+                        <div class="col-12 col-md-12 opciones-wrapper">
                             <label class="form-label text-primary">Opciones de la Lista</label>
                             <textarea name="opciones" id="opciones" class="form-control" rows="3" placeholder="Opción A, Opción B, Opción C... (Separadas por comas)"></textarea>
                             <small class="text-muted">Ingresa las opciones separadas por comas.</small>
@@ -146,43 +146,43 @@
                         
                         <div class="col-12"><hr></div>
                         
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" name="obligatorio" id="obligatorio" value="1">
                                 <label class="form-check-label" for="obligatorio">Obligatorio</label>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" name="visible" id="visible" value="1" checked>
                                 <label class="form-check-label" for="visible">Visible</label>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" name="editable" id="editable" value="1" checked>
                                 <label class="form-check-label" for="editable">Editable</label>
                             </div>
                         </div>
-                        <div class="col-md-4 mt-3">
+                        <div class="col-12 col-md-4 mt-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" name="importable" id="importable" value="1" checked>
                                 <label class="form-check-label" for="importable">Importable CMDB</label>
                             </div>
                         </div>
-                        <div class="col-md-4 mt-3">
+                        <div class="col-12 col-md-4 mt-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" name="exportable" id="exportable" value="1" checked>
                                 <label class="form-check-label" for="exportable">Exportable Excel</label>
                             </div>
                         </div>
-                        <div class="col-md-4 mt-3">
+                        <div class="col-12 col-md-4 mt-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" name="exportar_por_defecto" id="exportar_por_defecto" value="1">
                                 <label class="form-check-label" for="exportar_por_defecto">Exportar por defecto</label>
                             </div>
                         </div>
-                        <div class="col-md-4 mt-3">
+                        <div class="col-12 col-md-4 mt-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch" name="activo" id="activo" value="1" checked>
                                 <label class="form-check-label" for="activo">Activo</label>

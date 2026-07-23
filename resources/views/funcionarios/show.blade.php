@@ -8,7 +8,7 @@
         <h4 class="fw-bold mb-0">Detalle de Funcionario</h4>
         <small class="text-muted">Información general y activos asignados</small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('funcionarios.edit', $funcionario) }}" class="btn btn-warning text-white">
             <i class="bi bi-pencil me-1"></i>Editar
         </a>
@@ -61,7 +61,7 @@
                 <i class="bi bi-bar-chart me-2 text-info"></i>Resumen
             </div>
             <div class="card-body">
-                <div class="d-flex gap-3 mb-3">
+                <div class="d-flex gap-3 flex-wrap mb-3">
                     <span class="badge bg-primary fs-6">Activos: {{ $funcionario->equipos_asignados_count }}</span>
                     <span class="badge bg-success fs-6">Autorizaciones totales: {{ $funcionario->autorizaciones_activos_count }}</span>
                 </div>

@@ -17,17 +17,39 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     @vite(['resources/css/app.css'])
+    <style>
+        /* Responsive Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            #sidebar {
+                z-index: 1000;
+            }
+        }
+    </style>
     @stack('styles')
 </head>
 <body>
 
+<div id="sidebar-overlay" class="sidebar-overlay d-md-none"></div>
+
 <nav id="sidebar">
     <div class="sidebar-brand">
-        <img src="{{ asset('imagenes/federacion cafeteros logo.png') }}" alt="Logo FNC">
-        <div class="brand-text">
-            <span class="brand-title">Inventario TIC</span>
-            <span class="brand-subtitle">Tolima</span>
-        </div>
+        <img src="{{ asset('imagenes/logo_comite_tolima.png') }}" alt="Logo Comité Tolima">
     </div>
     
     <div class="nav-menu">
@@ -186,13 +208,13 @@
 
 <div class="main-content">
     <div class="topbar">
-        <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-light d-md-none" onclick="document.getElementById('sidebar').classList.toggle('show')">
+        <div class="d-flex align-items-center gap-3 overflow-hidden">
+            <button class="btn btn-light d-md-none" id="sidebarToggleBtn">
                 <i class="bi bi-list"></i>
             </button>
-            <div class="topbar-title">
-                <h5>Sistema Inventario</h5>
-                <span>FEDERACIÓN NACIONAL DE CAFETEROS - TOLIMA</span>
+            <div class="topbar-title text-truncate">
+                <h5 class="mb-0 text-truncate">Sistema Inventario</h5>
+                <span class="d-none d-sm-block text-truncate" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2px; color: var(--primary-color);">FEDERACIÓN NACIONAL DE CAFETEROS - TOLIMA</span>
             </div>
         </div>
         
@@ -225,6 +247,33 @@
         );
 
         const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+
+        function toggleSidebar() {
+            if (sidebar) sidebar.classList.toggle('show');
+            if (sidebarOverlay) sidebarOverlay.classList.toggle('show');
+        }
+
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.addEventListener('click', toggleSidebar);
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+        }
+
+        // Auto-cerrar sidebar en móvil al seleccionar opción
+        if (sidebar && window.matchMedia('(max-width: 768px)').matches) {
+            const navLinks = sidebar.querySelectorAll('.nav-link:not([data-bs-toggle="collapse"])');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebar.classList.remove('show');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('show');
+                });
+            });
+        }
+
         if (sidebar && window.matchMedia('(min-width: 769px)').matches) {
             sidebar.classList.remove('is-expanded');
 

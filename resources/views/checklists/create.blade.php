@@ -7,7 +7,7 @@
     $equipoBackId = old('equipo_id', request('equipo_id'));
     $volverUrl = $equipoBackId ? route('equipos.edit', $equipoBackId) : route('checklists.index');
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-plus-circle me-2 text-primary"></i>Nuevo Checklist Técnico
     </h4>
@@ -21,7 +21,7 @@
     @php $checklist = new \App\Models\Checklist(); @endphp
     @include('checklists._form')
 
-    <div class="d-flex justify-content-end gap-2">
+    <div class="d-flex justify-content-end gap-2 flex-wrap">
         <a href="{{ $volverUrl }}" class="btn btn-secondary" id="btnCancelarChecklist">Cancelar</a>
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-floppy me-1"></i>Guardar

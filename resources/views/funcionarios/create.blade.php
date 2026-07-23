@@ -26,18 +26,18 @@
             </h6>
 
             <div class="row mb-4">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-semibold text-dark">Identificación (Cédula) <span class="text-danger">*</span></label>
                     <input type="text" name="identificacion" class="form-control" required value="{{ old('identificacion') }}">
                 </div>
             </div>
 
             <div class="row mb-4">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-semibold text-dark">Nombres <span class="text-danger">*</span></label>
                     <input type="text" name="nombres" class="form-control" required value="{{ old('nombres') }}">
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-semibold text-dark">Apellidos</label>
                     <input type="text" name="apellidos" class="form-control" value="{{ old('apellidos') }}">
                 </div>
@@ -48,26 +48,26 @@
             </h6>
 
             <div class="row mb-4">
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-semibold text-dark">Cargo</label>
                     <input type="text" name="cargo" class="form-control" value="{{ old('cargo') }}">
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <label class="form-label fw-semibold text-dark">Área / Gestión</label>
                     <input type="text" name="area" class="form-control" value="{{ old('area') }}">
                 </div>
             </div>
             
             <div class="row mb-5">
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-semibold text-dark">Departamento</label>
                     <input type="text" name="departamento" class="form-control" value="{{ old('departamento') }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-semibold text-dark">Ciudad</label>
                     <input type="text" name="ciudad" class="form-control" value="{{ old('ciudad') }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-semibold text-dark">Estado <span class="text-danger">*</span></label>
                     <select name="estado" class="form-select" required>
                         <option value="Activo">Activo</option>

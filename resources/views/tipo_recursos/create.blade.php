@@ -3,7 +3,7 @@
 @section('title', 'Nuevo Tipo de Recurso')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-plus-circle me-2 text-primary"></i>Nuevo Tipo de Recurso
     </h4>
@@ -27,7 +27,7 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('tipo-recursos.index') }}" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-floppy me-1"></i>Guardar

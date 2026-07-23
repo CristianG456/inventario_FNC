@@ -17,13 +17,13 @@
 
 <div class="card p-0">
     <div class="p-4 border-bottom border-light">
-        <form action="{{ route('tickets.index') }}" method="GET" class="d-flex gap-3 align-items-center">
-            <div class="search-bar flex-grow-1 ticket-search-bar">
+        <form action="{{ route('tickets.index') }}" method="GET" class="d-flex flex-column flex-md-row gap-3 align-items-stretch align-items-md-center w-100">
+            <div class="search-bar flex-grow-1 ticket-search-bar w-100">
                 <i class="bi bi-search text-muted"></i>
-                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por título, funcionario o ID...">
+                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por título, funcionario o ID..." class="w-100 border-0 outline-none">
             </div>
             
-            <div class="search-bar ticket-status-filter">
+            <div class="search-bar ticket-status-filter w-100">
                 <select name="estado" class="form-select border-0 bg-transparent text-muted" onchange="this.form.submit()">
                     <option value="">Cualquier Estado</option>
                     <option value="Abierto" {{ request('estado') == 'Abierto' ? 'selected' : '' }}>Abierto</option>

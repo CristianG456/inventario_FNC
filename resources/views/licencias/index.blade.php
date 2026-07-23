@@ -5,7 +5,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-key me-2 text-primary"></i>Gestión de Licencias</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         @can('licencias.exportar')
         <a href="{{ route('licencias.exportar', request()->query()) }}" class="btn btn-success">
             <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
@@ -48,7 +48,7 @@
 <div class="card mb-4">
     <div class="card-body py-3">
         <form method="GET" action="{{ route('licencias.index') }}" class="row g-2 align-items-end">
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <label class="form-label fw-medium small mb-1">Buscar</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -56,7 +56,7 @@
                            class="form-control" placeholder="Nombre, tipo, estado...">
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium small mb-1">Estado</label>
                 <select name="estado" class="form-select">
                     <option value="">Todos</option>
@@ -65,7 +65,7 @@
                     <option value="Vencida" {{ request('estado') === 'Vencida' ? 'selected' : '' }}>Vencida</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-2">
+            <div class="col-12 col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary flex-fill">
                     <i class="bi bi-funnel me-1"></i>Filtrar
                 </button>

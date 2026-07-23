@@ -7,7 +7,7 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Tipo de Recurso <span class="text-danger">*</span></label>
                 <select name="tipo_recurso_id"
                         class="form-select @error('tipo_recurso_id') is-invalid @enderror"
@@ -25,7 +25,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Serial</label>
                 <input type="text" name="serial" id="serialInput"
                        class="form-control @error('serial') is-invalid @enderror"
@@ -42,7 +42,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Activo Fijo</label>
                 <input type="text" name="activo_fijo"
                        class="form-control @error('activo_fijo') is-invalid @enderror"
@@ -53,7 +53,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Placa</label>
                 <input type="text" name="placa"
                        class="form-control @error('placa') is-invalid @enderror"
@@ -64,7 +64,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Marca <span class="text-danger">*</span></label>
                 <input type="text" name="marca"
                        class="form-control @error('marca') is-invalid @enderror"
@@ -75,7 +75,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Modelo <span class="text-danger">*</span></label>
                 <input type="text" name="modelo"
                        class="form-control @error('modelo') is-invalid @enderror"
@@ -86,7 +86,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Nombre del Equipo <span class="text-danger">*</span></label>
                 <input type="text" name="nombre_equipo"
                        class="form-control @error('nombre_equipo') is-invalid @enderror"
@@ -97,7 +97,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Estado Operativo <span class="text-danger">*</span></label>
                 <select name="estado_operativo"
                         class="form-select @error('estado_operativo') is-invalid @enderror"
@@ -114,7 +114,7 @@
                 @enderror
             </div>
 
-            <div class="col-md-8 {{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'activo'), ['mantenimiento','baja']) ? '' : 'd-none' }}" id="razonEstadoWrap">
+            <div class="col-12 col-md-8 {{ in_array(old('estado_operativo', $equipo->estado_operativo ?? 'activo'), ['mantenimiento','baja']) ? '' : 'd-none' }}" id="razonEstadoWrap">
                 <label class="form-label fw-medium">Razón del Estado</label>
                 <textarea name="razon_estado"
                           class="form-control @error('razon_estado') is-invalid @enderror"
@@ -134,7 +134,7 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Procesador</label>
                 <input type="text" name="procesador"
                        class="form-control @error('procesador') is-invalid @enderror"
@@ -142,7 +142,7 @@
                        maxlength="150">
                 @error('procesador') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">RAM</label>
                 <input type="text" name="ram"
                        class="form-control @error('ram') is-invalid @enderror"
@@ -150,7 +150,7 @@
                        placeholder="Ej: 16 GB" maxlength="50">
                 @error('ram') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Disco</label>
                 <input type="text" name="disco"
                        class="form-control @error('disco') is-invalid @enderror"
@@ -158,7 +158,7 @@
                        placeholder="Ej: 512 GB SSD" maxlength="50">
                 @error('disco') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Sistema Operativo</label>
                 <input type="text" name="sistema_operativo"
                        class="form-control @error('sistema_operativo') is-invalid @enderror"
@@ -166,21 +166,21 @@
                        maxlength="100">
                 @error('sistema_operativo') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Fecha de Compra</label>
                 <input type="date" name="fecha_compra"
                        class="form-control @error('fecha_compra') is-invalid @enderror"
                        value="{{ old('fecha_compra', isset($equipo->fecha_compra) ? $equipo->fecha_compra->format('Y-m-d') : '') }}">
                 @error('fecha_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Fin de Garantía</label>
                 <input type="date" name="fin_garantia"
                        class="form-control @error('fin_garantia') is-invalid @enderror"
                        value="{{ old('fin_garantia', isset($equipo->fin_garantia) ? $equipo->fin_garantia->format('Y-m-d') : '') }}">
                 @error('fin_garantia') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Tiempo de Uso</label>
                 <input type="text" name="tiempo_uso"
                        class="form-control @error('tiempo_uso') is-invalid @enderror"
@@ -205,7 +205,7 @@
             </div>
         @endif
         <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Empresa Propietaria del Equipo</label>
                 <input type="text" name="usuario_empresa_propietaria"
                        class="form-control @error('usuario_empresa_propietaria') is-invalid @enderror"
@@ -213,7 +213,7 @@
                        maxlength="150">
                 @error('usuario_empresa_propietaria') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Dependencia</label>
                 <input type="text" name="usuario_dependencia"
                        class="form-control @error('usuario_dependencia') is-invalid @enderror"
@@ -221,7 +221,7 @@
                        maxlength="150">
                 @error('usuario_dependencia') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Fuente de Recurso</label>
                 <input type="text" name="usuario_fuente_recurso"
                        class="form-control @error('usuario_fuente_recurso') is-invalid @enderror"
@@ -229,7 +229,7 @@
                        maxlength="150">
                 @error('usuario_fuente_recurso') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Empresa Funcionario</label>
                 <input type="text" name="usuario_empresa_funcionario"
                        class="form-control @error('usuario_empresa_funcionario') is-invalid @enderror"
@@ -237,7 +237,7 @@
                        maxlength="150">
                 @error('usuario_empresa_funcionario') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Empleado o Contratista</label>
                 <input type="text" name="usuario_tipo_vinculacion"
                        class="form-control @error('usuario_tipo_vinculacion') is-invalid @enderror"
@@ -245,7 +245,7 @@
                        maxlength="100">
                 @error('usuario_tipo_vinculacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Shortname</label>
                 <input type="text" name="usuario_shortname"
                        class="form-control @error('usuario_shortname') is-invalid @enderror"
@@ -253,7 +253,7 @@
                        maxlength="100">
                 @error('usuario_shortname') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                   <label class="form-label fw-medium">Nombre</label>
                 <input type="text" name="usuario_nombre"
                        class="form-control @error('usuario_nombre') is-invalid @enderror"
@@ -261,7 +261,7 @@
                       maxlength="150">
                 @error('usuario_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                   <label class="form-label fw-medium">Cédula</label>
                 <input type="text" name="usuario_cedula"
                        class="form-control @error('usuario_cedula') is-invalid @enderror"
@@ -269,7 +269,7 @@
                       maxlength="20">
                 @error('usuario_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Ciudad</label>
                 <input type="text" name="usuario_ciudad"
                        class="form-control @error('usuario_ciudad') is-invalid @enderror"
@@ -277,7 +277,7 @@
                        maxlength="100">
                 @error('usuario_ciudad') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Departamento</label>
                 <input type="text" name="usuario_departamento"
                        class="form-control @error('usuario_departamento') is-invalid @enderror"
@@ -285,7 +285,7 @@
                        maxlength="100">
                 @error('usuario_departamento') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Cargo</label>
                 <input type="text" name="usuario_cargo"
                        class="form-control @error('usuario_cargo') is-invalid @enderror"
@@ -293,7 +293,7 @@
                        maxlength="100">
                 @error('usuario_cargo') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Área</label>
                 <input type="text" name="usuario_area"
                        class="form-control @error('usuario_area') is-invalid @enderror"
@@ -301,7 +301,7 @@
                        maxlength="100">
                 @error('usuario_area') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Piso</label>
                 <input type="text" name="usuario_piso"
                        class="form-control @error('usuario_piso') is-invalid @enderror"
@@ -309,7 +309,7 @@
                        maxlength="20">
                 @error('usuario_piso') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Distrito</label>
                 <input type="text" name="usuario_distrito"
                        class="form-control @error('usuario_distrito') is-invalid @enderror"
@@ -317,7 +317,7 @@
                        maxlength="150">
                 @error('usuario_distrito') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Seccional</label>
                 <input type="text" name="usuario_seccional"
                        class="form-control @error('usuario_seccional') is-invalid @enderror"
@@ -349,7 +349,7 @@
         @else
             {{-- EDIT: Mostrar campos editables --}}
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-medium">Cédula</label>
                     <input type="text" name="responsable_cedula"
                            class="form-control @error('responsable_cedula') is-invalid @enderror"
@@ -357,7 +357,7 @@
                            maxlength="20">
                     @error('responsable_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <label class="form-label fw-medium">Nombre</label>
                     <input type="text" name="responsable_nombre"
                            class="form-control @error('responsable_nombre') is-invalid @enderror"
@@ -365,7 +365,7 @@
                            maxlength="150">
                     @error('responsable_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-medium">Cargo</label>
                     <input type="text" name="responsable_cargo"
                            class="form-control @error('responsable_cargo') is-invalid @enderror"
@@ -373,7 +373,7 @@
                            maxlength="100">
                     @error('responsable_cargo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-medium">Ciudad</label>
                     <input type="text" name="responsable_ciudad"
                            class="form-control @error('responsable_ciudad') is-invalid @enderror"
@@ -381,7 +381,7 @@
                            maxlength="100">
                     @error('responsable_ciudad') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-medium">Área</label>
                     <input type="text" name="responsable_area"
                            class="form-control @error('responsable_area') is-invalid @enderror"
@@ -389,7 +389,7 @@
                            maxlength="100">
                     @error('responsable_area') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-medium">Tipo de Recurso</label>
                     <input type="text" name="responsable_tipo_recurso"
                            class="form-control @error('responsable_tipo_recurso') is-invalid @enderror"
@@ -397,14 +397,14 @@
                            maxlength="100">
                     @error('responsable_tipo_recurso') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-medium">Fecha Inicio</label>
                     <input type="date" name="fecha_inicio_responsable"
                            class="form-control @error('fecha_inicio_responsable') is-invalid @enderror"
                            value="{{ old('fecha_inicio_responsable', isset($equipo->fecha_inicio_responsable) ? $equipo->fecha_inicio_responsable->format('Y-m-d') : '') }}">
                     @error('fecha_inicio_responsable') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-medium">Fecha Fin</label>
                     <input type="date" name="fecha_fin_responsable"
                            class="form-control @error('fecha_fin_responsable') is-invalid @enderror"
@@ -423,7 +423,7 @@
     </div>
     <div class="card-body">
         <div class="row g-3">
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Teléfono Fijo</label>
                 <input type="text" name="periferico_telefono"
                        class="form-control @error('periferico_telefono') is-invalid @enderror"
@@ -431,7 +431,7 @@
                        maxlength="100">
                 @error('periferico_telefono') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Teclado</label>
                 <input type="text" name="periferico_teclado"
                        class="form-control @error('periferico_teclado') is-invalid @enderror"
@@ -439,7 +439,7 @@
                        maxlength="100">
                 @error('periferico_teclado') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Mouse</label>
                 <input type="text" name="periferico_mouse"
                        class="form-control @error('periferico_mouse') is-invalid @enderror"
@@ -447,7 +447,7 @@
                        maxlength="100">
                 @error('periferico_mouse') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium">Cámara</label>
                 <input type="text" name="periferico_camara"
                        class="form-control @error('periferico_camara') is-invalid @enderror"
@@ -477,7 +477,7 @@
                     $valorOld = old("campos_personalizados.{$campo->id}", $valorActual);
                 @endphp
                 
-                <div class="col-md-4">
+                <div class="col-12 col-md-4">
                     <label class="form-label fw-medium">{{ $campo->nombre }} {!! $campo->obligatorio ? '<span class="text-danger">*</span>' : '' !!}</label>
                     
                     @if($campo->tipo === 'texto')

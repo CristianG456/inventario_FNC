@@ -18,7 +18,7 @@
 <div class="card mb-4">
     <div class="card-body py-3">
         <form method="GET" action="{{ route('equipos.index') }}" class="row g-2 align-items-end">
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <label class="form-label fw-medium small mb-1">Buscar</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -26,7 +26,7 @@
                            class="form-control" placeholder="Serial, nombre, marca, activo fijo, usuario...">
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-12 col-md-2">
                 <label class="form-label fw-medium small mb-1">Tipo</label>
                 <select name="tipo" class="form-select">
                     <option value="">Todos los tipos</option>
@@ -37,7 +37,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-12 col-md-2">
                 <label class="form-label fw-medium small mb-1">Estado</label>
                 <select name="estado" class="form-select">
                     <option value="">Todos</option>
@@ -48,7 +48,7 @@
                     <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex justify-content-end">
+            <div class="col-12 col-md-2 d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary flex-fill">
                     <i class="bi bi-funnel me-1"></i>Filtrar
                 </button>
@@ -285,7 +285,7 @@
 
 {{-- ═══ MODAL: Acción con datos de usuario (préstamo / reemplazo) ══════════ --}}
 <div class="modal fade" id="modalAsignacion" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
         <div class="modal-content">
             <form id="formAsignacion" method="POST" action="{{ route('asignaciones.store') }}" enctype="multipart/form-data">
                 @csrf
@@ -358,7 +358,7 @@
 
 {{-- ═══ MODAL: Selector de funcionarios elegibles ══════════════════════════ --}}
 <div class="modal fade" id="modalSelectorFuncionario" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-people me-2"></i>Funcionarios elegibles</h5>
@@ -393,7 +393,7 @@
 
 {{-- ═══ MODAL: Acción simple (retiro, baja, mantenimiento) ════════════════ --}}
 <div class="modal fade" id="modalSimple" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down">
         <div class="modal-content">
             <form id="formSimple" method="POST" action="{{ route('asignaciones.store') }}">
                 @csrf

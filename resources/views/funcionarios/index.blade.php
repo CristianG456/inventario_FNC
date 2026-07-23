@@ -15,12 +15,12 @@
 
 <div class="card p-0">
     <div class="p-4 border-bottom border-light">
-        <form action="{{ route('funcionarios.index') }}" method="GET" class="d-flex gap-3 align-items-center">
-            <div class="search-bar flex-grow-1 funcionario-search-bar">
+        <form action="{{ route('funcionarios.index') }}" method="GET" class="d-flex flex-column flex-md-row gap-3 align-items-stretch align-items-md-center w-100">
+            <div class="search-bar flex-grow-1 funcionario-search-bar w-100">
                 <i class="bi bi-search text-muted"></i>
-                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por nombre, cédula, cargo...">
+                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Busca por nombre, cédula, cargo..." class="w-100 border-0 outline-none">
             </div>
-            <button type="button" class="btn btn-outline-secondary rounded-pill px-4">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 text-nowrap">
                 <i class="bi bi-funnel me-1"></i> Más Filtros
             </button>
         </form>
@@ -67,22 +67,24 @@
                         </span>
                     </td>
                     <td class="text-end pe-4">
-                        <a href="{{ route('funcionarios.show', $func) }}" class="btn btn-sm btn-light rounded-circle" title="Ver funcionario">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a href="{{ route('funcionarios.edit', $func) }}" class="btn btn-sm btn-light rounded-circle" title="Editar funcionario">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <button type="button"
-                                class="btn btn-sm btn-outline-primary rounded-circle ms-1 btn-subir-autorizacion"
-                                data-funcionario-id="{{ $func->id }}"
-                                data-funcionario-nombre="{{ $func->nombres }} {{ $func->apellidos }}"
-                                data-funcionario-cedula="{{ $func->identificacion }}"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Subir autorización de {{ trim($func->nombres . ' ' . $func->apellidos) }}">
-                            <i class="bi bi-upload"></i>
-                        </button>
+                        <div class="d-flex gap-1 justify-content-end flex-wrap">
+                            <a href="{{ route('funcionarios.show', $func) }}" class="btn btn-sm btn-light rounded-circle" title="Ver funcionario">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ route('funcionarios.edit', $func) }}" class="btn btn-sm btn-light rounded-circle" title="Editar funcionario">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary rounded-circle btn-subir-autorizacion"
+                                    data-funcionario-id="{{ $func->id }}"
+                                    data-funcionario-nombre="{{ $func->nombres }} {{ $func->apellidos }}"
+                                    data-funcionario-cedula="{{ $func->identificacion }}"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Subir autorización de {{ trim($func->nombres . ' ' . $func->apellidos) }}">
+                                <i class="bi bi-upload"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -103,7 +105,7 @@
 </div>
 
 <div class="modal fade" id="modalAutorizacionFuncionario" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down">
         <div class="modal-content">
             <form id="formAutorizacionFuncionario" method="POST" enctype="multipart/form-data">
                 @csrf

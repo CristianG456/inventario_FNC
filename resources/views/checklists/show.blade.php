@@ -3,11 +3,11 @@
 @section('title', 'Detalle Checklist')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-clipboard-check me-2 text-info"></i>Detalle de Checklist
     </h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('checklists.edit', $checklist) }}" class="btn btn-warning text-white">
             <i class="bi bi-pencil me-1"></i>Editar
         </a>

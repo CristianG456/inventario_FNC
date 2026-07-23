@@ -3,7 +3,7 @@
 @section('title', 'Checklists Técnicos')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0"><i class="bi bi-clipboard-check me-2 text-primary"></i>Checklists Técnicos</h4>
     <a href="{{ route('checklists.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>Nuevo Checklist
