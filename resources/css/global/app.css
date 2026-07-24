@@ -361,7 +361,7 @@
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
-            border-radius: 50px;
+            border-radius: 8px;
             padding: 8px 20px;
             font-weight: 500;
         }
@@ -374,7 +374,7 @@
         .search-bar {
             background: var(--white);
             border: 1px solid var(--border-color);
-            border-radius: 50px;
+            border-radius: 8px;
             padding: 8px 20px;
             display: flex;
             align-items: center;

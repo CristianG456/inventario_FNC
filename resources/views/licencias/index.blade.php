@@ -3,7 +3,7 @@
 @section('title', 'Licencias')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-key me-2 text-primary"></i>Gestión de Licencias</h4>
     <div class="d-flex gap-2 flex-wrap">
         @can('licencias.exportar')

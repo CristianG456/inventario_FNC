@@ -3,9 +3,9 @@
 @section('title', 'Asignaciones de Licencias')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Asignaciones de Licencias</h4>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Catálogo de Licencias
         </a>

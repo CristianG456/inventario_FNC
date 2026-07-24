@@ -73,7 +73,7 @@ class HistorialTecnicoController extends Controller
     {
         $registros   = $equipo->historialTecnico()->with('registradoPor')->get();
         $tiposEvento = HistorialTecnico::TIPOS_EVENTO_FORM;
-        $volverUrl   = route('historial-tecnico.index');
+        $volverUrl   = route('equipos.show', $equipo);
 
         $returnTo = $request->query('return_to');
         if (is_string($returnTo) && $returnTo !== '') {

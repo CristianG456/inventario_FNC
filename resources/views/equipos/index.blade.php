@@ -22,8 +22,8 @@
                 <label class="form-label fw-medium small mb-1">Buscar</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="buscar" value="{{ request('buscar') }}"
-                           class="form-control" placeholder="Serial, nombre, marca, activo fijo, usuario...">
+                    <input type="text" name="buscar" id="buscadorEquipos" value="{{ request('buscar') }}"
+                           class="form-control" placeholder="Marca, tipo, modelo, serial, placa, usuario..." autocomplete="off">
                 </div>
             </div>
             <div class="col-12 col-md-2">
@@ -80,8 +80,10 @@
                         <tr>
                             <td class="text-muted small">{{ $equipo->id }}</td>
                             <td>
-                                <span class="fw-medium">{{ $equipo->nombre_equipo }}</span>
-                                <br><small class="text-muted font-monospace">{{ $equipo->serial }}</small>
+                                <span class="fw-bold fs-6">{{ $equipo->identificador_interno }}</span>
+                                <br>
+                                <span class="fw-medium text-dark">{{ $equipo->nombre_equipo }}</span>
+                                <br><small class="text-muted">Serial: <span class="{{ $equipo->serial_visual === 'Sin serial' ? 'fst-italic' : 'font-monospace' }}">{{ $equipo->serial_visual }}</span></small>
                             </td>
                             <td>
                                 @if($equipo->placa || $equipo->activo_fijo)
@@ -624,6 +626,11 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.set('q', termino.trim());
         }
 
+        const equipoIdAsig = document.getElementById('asig_equipo_id')?.value;
+        if (equipoIdAsig) {
+            url.searchParams.set('equipo_id', equipoIdAsig);
+        }
+
         fetch(url.toString(), {
             headers: {
                 'Accept': 'application/json',
@@ -783,5 +790,73 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 });
+
+// ====== FILTRO EN VIVO DE LA TABLA ======
+let searchTimeoutId;
+const searchInput = document.getElementById('buscadorEquipos');
+const formFiltros = searchInput ? searchInput.closest('form') : null;
+const tablaContainer = document.querySelector('.table-responsive');
+const footerContainer = document.querySelector('.card-footer') ? document.querySelector('.card-footer').parentElement : null;
+
+if (searchInput && formFiltros && tablaContainer) {
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeoutId);
+        
+        searchTimeoutId = setTimeout(() => {
+            // Mostrar indicador de carga visualmente
+            tablaContainer.style.opacity = '0.5';
+            
+            // Construir la URL con todos los filtros actuales del formulario
+            const formData = new FormData(formFiltros);
+            const params = new URLSearchParams(formData);
+            const url = `${formFiltros.action}?${params.toString()}`;
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+                // Parsear el HTML devuelto
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Extraer el nuevo tbody
+                const newTbody = doc.querySelector('.table-responsive tbody');
+                const currentTbody = tablaContainer.querySelector('tbody');
+                
+                if (newTbody && currentTbody) {
+                    currentTbody.innerHTML = newTbody.innerHTML;
+                }
+                
+                // Extraer e inyectar la paginación (card-footer)
+                const newFooter = doc.querySelector('.card-footer');
+                const currentFooter = document.querySelector('.card-footer');
+                
+                if (newFooter && footerContainer) {
+                    if (currentFooter) {
+                        currentFooter.outerHTML = newFooter.outerHTML;
+                    } else {
+                        footerContainer.appendChild(newFooter);
+                    }
+                } else if (!newFooter && currentFooter) {
+                    currentFooter.remove();
+                }
+
+                // Restaurar opacidad
+                tablaContainer.style.opacity = '1';
+                
+                // Actualizar la URL del navegador sin recargar (para que al recargar mantenga el filtro)
+                window.history.pushState({}, '', url);
+            })
+            .catch(err => {
+                console.error(err);
+                tablaContainer.style.opacity = '1';
+            });
+        }, 400); // 400ms de retraso para evitar sobrecargar el servidor
+    });
+}
+
 </script>
 @endpush

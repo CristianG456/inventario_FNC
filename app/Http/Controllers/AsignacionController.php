@@ -72,6 +72,19 @@ class AsignacionController extends Controller
     public function funcionariosElegibles(Request $request): JsonResponse
     {
         $termino = trim((string) $request->query('q', ''));
+        $equipoId = $request->query('equipo_id');
+
+        $esEquipoTecnologico = false;
+        if ($equipoId) {
+            $equipo = Equipo::with('tipoRecurso')->find($equipoId);
+            if ($equipo && $equipo->tipoRecurso) {
+                $tipoNombre = mb_strtolower(trim($equipo->tipoRecurso->nombre));
+                $tiposTecnologicos = ['equipo escritorio', 'equipo portatil', 'equipo todo en uno', 'equipo micro'];
+                if (in_array($tipoNombre, $tiposTecnologicos)) {
+                    $esEquipoTecnologico = true;
+                }
+            }
+        }
 
         $funcionarios = Funcionario::query()
             ->where('estado', 'Activo')
@@ -85,7 +98,11 @@ class AsignacionController extends Controller
                 });
             })
             ->withCount([
-                'equiposAsignados as activos_count',
+                'equiposAsignados as activos_count' => function ($query) {
+                    $query->whereHas('equipo.tipoRecurso', function ($q) {
+                        $q->whereRaw('LOWER(nombre) IN (?, ?, ?, ?)', ['equipo escritorio', 'equipo portatil', 'equipo todo en uno', 'equipo micro']);
+                    });
+                },
                 'autorizacionesActivos as autorizaciones_disponibles_count' => fn ($q) =>
                     $q->where('estado', AutorizacionActivo::ESTADO_CARGADA),
             ])
@@ -93,10 +110,17 @@ class AsignacionController extends Controller
             ->limit(200)
             ->get();
 
-        $enriquecidos = $funcionarios->map(function ($f) {
+        $enriquecidos = $funcionarios->map(function ($f) use ($esEquipoTecnologico) {
             $activos = (int) $f->activos_count;
             $autorizacionesDisponibles = (int) $f->autorizaciones_disponibles_count;
-            $esElegible = $activos === 0 || $autorizacionesDisponibles >= 1;
+            
+            if ($esEquipoTecnologico) {
+                $esElegible = $activos === 0 || $autorizacionesDisponibles >= 1;
+                $autorizacionesFaltantes = $activos > 0 && $autorizacionesDisponibles < 1 ? 1 : 0;
+            } else {
+                $esElegible = true;
+                $autorizacionesFaltantes = 0;
+            }
 
             return [
                 'id' => $f->id,
@@ -111,7 +135,7 @@ class AsignacionController extends Controller
                 'activos_count' => $activos,
                 'autorizaciones_count' => $autorizacionesDisponibles,
                 'es_elegible' => $esElegible,
-                'autorizaciones_faltantes' => $activos > 0 && $autorizacionesDisponibles < 1 ? 1 : 0,
+                'autorizaciones_faltantes' => $autorizacionesFaltantes,
             ];
         });
 

@@ -142,6 +142,8 @@ class FuncionarioController extends Controller
             'cargo' => 'nullable|string|max:100',
             'area' => 'nullable|string|max:100',
             'departamento' => 'nullable|string|max:100',
+            'seccional' => 'nullable|string|max:100',
+            'distrito' => 'nullable|string|max:100',
             'ciudad' => 'nullable|string|max:100',
             'empresa_funcionario' => 'nullable|string|max:150',
             'tipo_vinculacion' => 'nullable|string|max:100',

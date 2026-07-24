@@ -148,4 +148,26 @@ class Equipo extends Model
             default         => 'secondary',
         };
     }
+
+    /**
+     * Identificador interno estandarizado generado dinámicamente.
+     */
+    public function getIdentificadorInternoAttribute(): string
+    {
+        $prefijo = $this->tipoRecurso ? $this->tipoRecurso->prefijo : 'ACT';
+        // Formatea el ID rellenando con ceros a la izquierda hasta 4 dígitos (Ej. LAP-0015)
+        return $prefijo . '-' . str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Devuelve "Sin serial" si el serial en BD es generado automáticamente.
+     */
+    public function getSerialVisualAttribute(): string
+    {
+        $serialReal = (string) $this->serial;
+        if (str_starts_with($serialReal, 'SIN_SERIAL_') || trim($serialReal) === '') {
+            return 'Sin serial';
+        }
+        return $serialReal;
+    }
 }

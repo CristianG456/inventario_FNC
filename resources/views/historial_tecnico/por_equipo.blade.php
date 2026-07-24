@@ -13,7 +13,7 @@
         </h4>
         <small class="text-muted">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('historial-tecnico.create', ['equipo_id' => $equipo->id, 'return_to' => request()->fullUrl()]) }}"
            class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nuevo Evento
@@ -59,14 +59,14 @@
                     <div class="card border-{{ $registro->tipo_evento_color }} border-opacity-25 shadow-sm">
                         <div class="card-body py-3 px-3">
                             {{-- Header --}}
-                            <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-2 gap-2">
                                 <div>
                                     <span class="badge bg-{{ $registro->tipo_evento_color }} me-2">
                                         {{ $registro->tipo_evento_label }}
                                     </span>
                                     <strong>{{ $registro->observaciones ?: $registro->descripcion }}</strong>
                                 </div>
-                                <small class="text-muted text-nowrap ms-2">
+                                <small class="text-muted ms-sm-2">
                                     <i class="bi bi-calendar2 me-1"></i>
                                     {{ $registro->fecha_evento?->format('d \d\e F \d\e Y') }}
                                 </small>
@@ -106,7 +106,7 @@
                             @endif
 
                             {{-- Acciones --}}
-                            <div class="d-flex gap-2 mt-2">
+                            <div class="d-flex gap-2 mt-2 flex-wrap">
                                 <a href="{{ route('historial-tecnico.show', $registro) }}"
                                    class="btn btn-sm btn-outline-info">
                                     <i class="bi bi-eye me-1"></i>Ver

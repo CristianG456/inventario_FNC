@@ -44,6 +44,12 @@
                     <dt class="col-sm-5 text-muted">Ciudad</dt>
                     <dd class="col-sm-7">{{ $funcionario->ciudad ?? '—' }}</dd>
 
+                    <dt class="col-sm-5 text-muted">Distrito</dt>
+                    <dd class="col-sm-7">{{ $funcionario->distrito ?? '—' }}</dd>
+
+                    <dt class="col-sm-5 text-muted">Seccional</dt>
+                    <dd class="col-sm-7">{{ $funcionario->seccional ?? '—' }}</dd>
+
                     <dt class="col-sm-5 text-muted">Estado</dt>
                     <dd class="col-sm-7">
                         <span class="badge {{ $funcionario->estado === 'Activo' ? 'bg-success' : 'bg-secondary' }}">

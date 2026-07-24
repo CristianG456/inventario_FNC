@@ -11,68 +11,14 @@
         </h4>
         <small class="text-muted">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</small>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
         <a href="{{ route('equipos.show', $equipo) }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Volver al equipo
         </a>
     </div>
 </div>
 
-{{-- Resumen en tarjetas --}}
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-success bg-opacity-15 d-flex align-items-center justify-content-center equipo-historial-icon">
-                    <i class="bi bi-person-fill text-success fs-5"></i>
-                </div>
-                <div>
-                    <div class="fw-bold fs-5">{{ $eventos->where('tipo', 'asignacion')->count() }}</div>
-                    <div class="text-muted small">Eventos de préstamo</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-warning bg-opacity-15 d-flex align-items-center justify-content-center equipo-historial-icon">
-                    <i class="bi bi-tools text-warning fs-5"></i>
-                </div>
-                <div>
-                    <div class="fw-bold fs-5">{{ $eventos->where('tipo', 'tecnico')->count() }}</div>
-                    <div class="text-muted small">Eventos técnicos</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-info bg-opacity-15 d-flex align-items-center justify-content-center equipo-historial-icon">
-                    <i class="bi bi-shield-check text-info fs-5"></i>
-                </div>
-                <div>
-                    <div class="fw-bold fs-5">{{ $eventos->where('tipo', 'administrativo')->count() }}</div>
-                    <div class="text-muted small">Cambios administrativos</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm border-start border-info border-3">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-info bg-opacity-15 d-flex align-items-center justify-content-center equipo-historial-icon">
-                    <i class="bi bi-person-badge text-info fs-5"></i>
-                </div>
-                <div>
-                    <div class="fw-bold fs-5">{{ $eventos->where('subtipo', 'cambio_responsable')->count() }}</div>
-                    <div class="text-muted small">Cambios de responsable</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 {{-- Timeline --}}
 <div class="card border-0 shadow-sm">
@@ -110,7 +56,7 @@
                 <div class="flex-grow-1">
                     <div class="card border-{{ $evento['color'] }} border-opacity-25 shadow-sm">
                         <div class="card-body py-3 px-3">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-1 gap-2">
                                 <div>
                                     @if($evento['tipo'] === 'administrativo' && $evento['subtipo'] === 'cambio_responsable')
                                         <span class="badge bg-info bg-opacity-75 me-2 border border-info">
@@ -123,7 +69,7 @@
                                         <strong class="fs-6">{{ $evento['titulo'] }}</strong>
                                     @endif
                                 </div>
-                                <small class="text-muted text-nowrap ms-2">
+                                <small class="text-muted ms-sm-2">
                                     <i class="bi bi-calendar2 me-1"></i>
                                     {{ $fecha->format('d/m/Y') }}
                                     @if($evento['tipo'] === 'administrativo' || $evento['tipo'] === 'asignacion')

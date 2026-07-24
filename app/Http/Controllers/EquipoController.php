@@ -55,8 +55,12 @@ class EquipoController extends Controller
                     $sub->where('serial', 'like', $termino)
                         ->orWhere('nombre_equipo', 'like', $termino)
                         ->orWhere('marca', 'like', $termino)
+                        ->orWhere('modelo', 'like', $termino)
                         ->orWhere('activo_fijo', 'like', $termino)
-                        ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino));
+                        ->orWhere('placa', 'like', $termino)
+                        ->orWhere('estado_operativo', 'like', $termino)
+                        ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
+                        ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
                 });
             })
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
@@ -68,6 +72,39 @@ class EquipoController extends Controller
         $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
 
         return view('equipos.index', compact('equipos', 'tipoRecursos'));
+    }
+
+    /**
+     * Autocompletado en tiempo real para búsqueda de equipos.
+     */
+    public function searchAutocomplete(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $buscar = trim((string) $request->input('q', ''));
+        if ($buscar === '') {
+            return response()->json([]);
+        }
+        
+        $termino = '%' . $buscar . '%';
+        $equipos = Equipo::select(['id', 'nombre_equipo', 'serial', 'marca', 'modelo', 'tipo_recurso_id', 'estado_operativo', 'placa', 'responsable_nombre'])
+            ->with([
+                'tipoRecurso:id,nombre',
+                'usuarioAsignado:id,equipo_id,nombre'
+            ])
+            ->where(function ($sub) use ($termino) {
+                $sub->where('serial', 'like', $termino)
+                    ->orWhere('nombre_equipo', 'like', $termino)
+                    ->orWhere('marca', 'like', $termino)
+                    ->orWhere('modelo', 'like', $termino)
+                    ->orWhere('activo_fijo', 'like', $termino)
+                    ->orWhere('placa', 'like', $termino)
+                    ->orWhere('estado_operativo', 'like', $termino)
+                    ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
+                    ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
+            })
+            ->limit(10)
+            ->get();
+            
+        return response()->json($equipos);
     }
 
     /**
@@ -496,6 +533,8 @@ class EquipoController extends Controller
                 'ciudad'              => $request->usuario_ciudad,
                 'empresa_funcionario' => $request->usuario_empresa_funcionario,
                 'tipo_vinculacion'    => $request->usuario_tipo_vinculacion,
+                'seccional'           => $request->usuario_seccional,
+                'distrito'            => $request->usuario_distrito,
                 'estado'              => 'Activo',
             ]
         );

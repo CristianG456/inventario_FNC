@@ -27,12 +27,20 @@
 
             <div class="col-12 col-md-4">
                 <label class="form-label fw-medium">Serial</label>
+                @php
+                    $isSinSerial = false;
+                    $serialValue = old('serial', $equipo->serial ?? '');
+                    if (str_starts_with((string)$serialValue, 'SIN_SERIAL_') || old('sin_serial_fisico')) {
+                        $isSinSerial = true;
+                        $serialValue = ''; // Limpiar visualmente si es autogenerado
+                    }
+                @endphp
                 <input type="text" name="serial" id="serialInput"
                        class="form-control @error('serial') is-invalid @enderror"
-                       value="{{ old('serial', $equipo->serial ?? '') }}"
+                       value="{{ $serialValue }}"
                        maxlength="100">
                 <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" name="sin_serial_fisico" id="sinSerialCheck" value="true" {{ old('sin_serial_fisico') ? 'checked' : '' }}>
+                    <input class="form-check-input" type="checkbox" name="sin_serial_fisico" id="sinSerialCheck" value="true" {{ $isSinSerial ? 'checked' : '' }}>
                     <label class="form-check-label text-muted small" for="sinSerialCheck">
                         Este equipo no posee serial físico
                     </label>

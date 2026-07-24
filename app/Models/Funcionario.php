@@ -21,6 +21,8 @@ class Funcionario extends Model
         'empresa_funcionario',
         'tipo_vinculacion',
         'estado',
+        'seccional',
+        'distrito',
     ];
 
     public function getNombreCompletoAttribute()

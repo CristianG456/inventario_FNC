@@ -423,13 +423,32 @@ class AsignacionService
             return false;
         }
 
-        $activosActuales = UsuarioAsignado::query()
+        // Verificar si el equipo a asignar es tecnológico
+        $equipo->loadMissing('tipoRecurso');
+        $esTecnologico = false;
+        if ($equipo->tipoRecurso) {
+            $tipoNombre = mb_strtolower(trim($equipo->tipoRecurso->nombre));
+            $tiposTecnologicos = ['equipo escritorio', 'equipo portatil', 'equipo todo en uno', 'equipo micro'];
+            if (in_array($tipoNombre, $tiposTecnologicos)) {
+                $esTecnologico = true;
+            }
+        }
+
+        // Si el equipo que se va a asignar no es tecnológico, no consume autorización
+        if (!$esTecnologico) {
+            return false;
+        }
+
+        $activosActualesTecnologicos = UsuarioAsignado::query()
             ->where('cedula', $cedula)
             ->where('equipo_id', '!=', $equipo->id)
+            ->whereHas('equipo.tipoRecurso', function ($query) {
+                $query->whereRaw('LOWER(nombre) IN (?, ?, ?, ?)', ['equipo escritorio', 'equipo portatil', 'equipo todo en uno', 'equipo micro']);
+            })
             ->count();
 
-        // Primer activo: no requiere autorización
-        if ($activosActuales === 0) {
+        // Primer activo tecnológico: no requiere autorización
+        if ($activosActualesTecnologicos === 0) {
             return false;
         }
 
@@ -440,7 +459,7 @@ class AsignacionService
 
         if ($autorizacionesDisponibles < 1) {
             throw ValidationException::withMessages([
-                'cedula' => 'Este funcionario ya tiene activos asignados y no cuenta con autorización disponible. Debes cargar una autorización en el módulo de funcionarios.',
+                'cedula' => 'Este funcionario ya tiene activos tecnológicos asignados y no cuenta con autorización disponible. Debes cargar una autorización en el módulo de funcionarios.',
             ]);
         }
 

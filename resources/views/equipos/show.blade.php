@@ -3,9 +3,9 @@
 @section('title', 'Detalle del Equipo')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
-        <i class="bi bi-info-circle me-2 text-info"></i>{{ $equipo->nombre_equipo }}
+        <i class="bi bi-info-circle me-2 text-info"></i>{{ $equipo->identificador_interno }} - {{ $equipo->nombre_equipo }}
         <span class="badge bg-{{ $equipo->estado_badge }} ms-2 fs-6">{{ $equipo->estado_label }}</span>
     </h4>
     <div class="d-flex gap-2 flex-wrap">
@@ -38,8 +38,12 @@
                 <dl class="row mb-0">
                     <dt class="col-sm-5 text-muted">Tipo</dt>
                     <dd class="col-sm-7">{{ $equipo->tipoRecurso?->nombre ?? '—' }}</dd>
+                    <dt class="col-sm-5 text-muted">ID Sistema</dt>
+                    <dd class="col-sm-7 fw-bold">{{ $equipo->identificador_interno }}</dd>
                     <dt class="col-sm-5 text-muted">Serial</dt>
-                    <dd class="col-sm-7 font-monospace">{{ $equipo->serial }}</dd>
+                    <dd class="col-sm-7">
+                        <span class="{{ $equipo->serial_visual === 'Sin serial' ? 'fst-italic' : 'font-monospace' }}">{{ $equipo->serial_visual }}</span>
+                    </dd>
                     <dt class="col-sm-5 text-muted">Activo Fijo</dt>
                     <dd class="col-sm-7 font-monospace fw-bold text-dark">{{ $equipo->activo_fijo ?? '—' }}</dd>
                     <dt class="col-sm-5 text-muted">Placa</dt>
