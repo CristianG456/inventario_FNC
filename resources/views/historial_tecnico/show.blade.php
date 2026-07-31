@@ -120,8 +120,13 @@
                     <dt class="col-5 text-muted">Nombre</dt>
                     <dd class="col-7 fw-bold">{{ $historialTecnico->equipo?->nombre_equipo }}</dd>
                     <dt class="col-5 text-muted">Serial</dt>
-                    <dd class="col-7 font-monospace">{{ $historialTecnico->equipo?->serial }}</dd>
-                    @if($historialTecnico->equipo?->activo_fijo)
+                    <dd class="col-7 font-monospace">{{ $historialTecnico->equipo?->serial_visual }}</dd>
+                    @php
+                        $invalidos = ['PENDIENTE', 'N/A', 'NA', 'NO TIENE', 'SIN PLACA', 'SIN REGISTRO'];
+                        $activoFijoStr = strtoupper(trim((string) $historialTecnico->equipo?->activo_fijo));
+                        $activoValido = !empty($historialTecnico->equipo?->activo_fijo) && !in_array($activoFijoStr, $invalidos, true);
+                    @endphp
+                    @if($activoValido)
                     <dt class="col-5 text-muted">Activo Fijo</dt>
                     <dd class="col-7">{{ $historialTecnico->equipo->activo_fijo }}</dd>
                     @endif

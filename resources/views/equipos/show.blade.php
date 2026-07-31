@@ -42,12 +42,19 @@
                     <dd class="col-sm-7 fw-bold">{{ $equipo->identificador_interno }}</dd>
                     <dt class="col-sm-5 text-muted">Serial</dt>
                     <dd class="col-sm-7">
-                        <span class="{{ $equipo->serial_visual === 'Sin serial' ? 'fst-italic' : 'font-monospace' }}">{{ $equipo->serial_visual }}</span>
+                        <span class="font-monospace">{{ $equipo->serial_visual }}</span>
                     </dd>
                     <dt class="col-sm-5 text-muted">Activo Fijo</dt>
-                    <dd class="col-sm-7 font-monospace fw-bold text-dark">{{ $equipo->activo_fijo ?? '—' }}</dd>
+                    <dd class="col-sm-7 font-monospace fw-bold text-dark">
+                        @php
+                            $invalidos = ['PENDIENTE', 'N/A', 'NA', 'NO TIENE', 'SIN PLACA', 'SIN REGISTRO'];
+                            $activoFijoStr = strtoupper(trim((string) $equipo->activo_fijo));
+                            $activoValido = !empty($equipo->activo_fijo) && !in_array($activoFijoStr, $invalidos, true);
+                        @endphp
+                        {{ $activoValido ? $equipo->activo_fijo : '—' }}
+                    </dd>
                     <dt class="col-sm-5 text-muted">Placa</dt>
-                    <dd class="col-sm-7">{{ $equipo->placa ?? '—' }}</dd>
+                    <dd class="col-sm-7 font-monospace">{{ $equipo->placa_visual }}</dd>
                     <dt class="col-sm-5 text-muted">Marca</dt>
                     <dd class="col-sm-7">{{ $equipo->marca }}</dd>
                     <dt class="col-sm-5 text-muted">Modelo</dt>
@@ -75,46 +82,6 @@
         </div>
     </div>
 
-    {{-- Campos Personalizados --}}
-    @if($equipo->camposPersonalizadosValores->isNotEmpty())
-    <div class="col-lg-6">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-header bg-dark bg-opacity-10 fw-semibold border-0 py-3">
-                <i class="bi bi-ui-checks-grid me-2 text-dark"></i>Información Adicional
-            </div>
-            <div class="card-body">
-                <dl class="row mb-0">
-                    @foreach($equipo->camposPersonalizadosValores as $cv)
-                        @if($cv->campoPersonalizado && $cv->campoPersonalizado->visible)
-                            <dt class="col-sm-5 text-muted">{{ $cv->campoPersonalizado->nombre }}</dt>
-                            <dd class="col-sm-7">
-                                @if($cv->campoPersonalizado->tipo === 'boolean')
-                                    <span class="badge bg-{{ $cv->valor == '1' ? 'success' : 'secondary' }}">
-                                        {{ $cv->valor == '1' ? 'Sí' : 'No' }}
-                                    </span>
-                                @elseif($cv->campoPersonalizado->tipo === 'url' && filter_var($cv->valor, FILTER_VALIDATE_URL))
-                                    <a href="{{ $cv->valor }}" target="_blank" class="text-break"><i class="bi bi-link-45deg"></i> Ver Enlace</a>
-                                @elseif($cv->campoPersonalizado->tipo === 'multiselect')
-                                    @php
-                                        $valores = is_string($cv->valor) ? json_decode($cv->valor, true) : $cv->valor;
-                                    @endphp
-                                    @if(is_array($valores))
-                                        {{ implode(', ', $valores) }}
-                                    @else
-                                        {{ $cv->valor ?: '—' }}
-                                    @endif
-                                @else
-                                    {{ $cv->valor ?: '—' }}
-                                @endif
-                            </dd>
-                        @endif
-                    @endforeach
-                </dl>
-            </div>
-        </div>
-    </div>
-    @endif
-    
     {{-- Usuario en préstamo --}}
     <div class="col-lg-6">
         <div class="card mb-4 border-0 shadow-sm">
@@ -226,7 +193,53 @@
                 @endif
             </div>
         </div>
+        </div>
     </div>
+
+    {{-- Campos Personalizados (Información Adicional) --}}
+    @if($equipo->camposPersonalizadosValores->isNotEmpty())
+    <div class="col-lg-6">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-dark bg-opacity-10 fw-semibold border-0 py-3">
+                <i class="bi bi-ui-checks-grid me-2 text-dark"></i>Información Adicional
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    @foreach($equipo->camposPersonalizadosValores as $cv)
+                        @if($cv->campoPersonalizado && $cv->campoPersonalizado->visible)
+                            <dt class="col-sm-5 text-muted">{{ $cv->campoPersonalizado->nombre }}</dt>
+                            <dd class="col-sm-7">
+                                @if($cv->campoPersonalizado->tipo === 'boolean')
+                                    <span class="badge bg-{{ $cv->valor == '1' ? 'success' : 'secondary' }}">
+                                        {{ $cv->valor == '1' ? 'Sí' : 'No' }}
+                                    </span>
+                                @elseif($cv->campoPersonalizado->tipo === 'url' && filter_var($cv->valor, FILTER_VALIDATE_URL))
+                                    <a href="{{ $cv->valor }}" target="_blank" class="text-break"><i class="bi bi-link-45deg"></i> Ver Enlace</a>
+                                @elseif($cv->campoPersonalizado->tipo === 'multiselect')
+                                    @php
+                                        $valores = is_string($cv->valor) ? json_decode($cv->valor, true) : $cv->valor;
+                                    @endphp
+                                    @if(is_array($valores))
+                                        {{ implode(', ', $valores) }}
+                                    @else
+                                        {{ $cv->valor ?: '—' }}
+                                    @endif
+                                @else
+                                    {{ $cv->valor ?: '—' }}
+                                @endif
+                            </dd>
+                        @endif
+                    @endforeach
+                </dl>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Complementos del Activo --}}
+    @if($equipo->complementos->isNotEmpty() || auth()->user()->can('equipos.editar'))
+        @include('equipos._complementos_show')
+    @endif
 
     {{-- Últimos préstamos --}}
     @if($equipo->asignaciones->isNotEmpty())

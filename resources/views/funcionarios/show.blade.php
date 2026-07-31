@@ -163,7 +163,7 @@
                             @forelse($funcionario->equiposAsignados as $asignado)
                                 <tr>
                                     <td>{{ $asignado->equipo?->nombre_equipo ?? '—' }}</td>
-                                    <td class="font-monospace">{{ $asignado->equipo?->serial ?? '—' }}</td>
+                                    <td class="font-monospace">{{ $asignado->equipo?->serial_visual ?? '—' }}</td>
                                     <td>{{ $asignado->equipo?->estado_label ?? '—' }}</td>
                                     <td class="text-end pe-3">
                                         @if($asignado->equipo)

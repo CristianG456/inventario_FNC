@@ -55,7 +55,7 @@ class GarantiasExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
             $estadoGarantia = 'Próxima a vencer';
         }
 
-        return [
+        $row = [
             $equipo->tipoRecurso?->nombre ?? 'N/A',
             $equipo->serial,
             $equipo->placa ?? $equipo->activo_fijo,
@@ -67,6 +67,10 @@ class GarantiasExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
             $estadoGarantia,
             $equipo->proveedor_compra ?? '' // Si no existe, dejar en blanco
         ];
+
+        return array_map(function($item) {
+            return is_string($item) ? mb_strtoupper($item, 'UTF-8') : $item;
+        }, $row);
     }
 
     public function styles(Worksheet $sheet): array

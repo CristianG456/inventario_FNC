@@ -37,6 +37,10 @@ class HistorialAdministrativo extends Model
         'asignacion'       => 'Préstamo de usuario',
         'retiro'           => 'Retiro definitivo de usuario',
         'cambio_responsable' => 'Cambio de Responsable del Activo',
+        'complemento_agregado'      => 'Complemento Agregado',
+        'complemento_eliminado'     => 'Complemento Eliminado',
+        'complemento_editado'       => 'Complemento Editado',
+        'transferencia_complemento' => 'Transferencia de Complemento',
         'otro'             => 'Otro cambio',
     ];
 
@@ -71,6 +75,10 @@ class HistorialAdministrativo extends Model
             'restauracion'  => 'success',
             'asignacion'    => 'primary',
             'retiro'        => 'secondary',
+            'complemento_agregado'      => 'success',
+            'complemento_eliminado'     => 'danger',
+            'complemento_editado'       => 'primary',
+            'transferencia_complemento' => 'info',
             default         => 'secondary',
         };
     }

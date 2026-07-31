@@ -113,8 +113,8 @@
                                 <td>{{ $asignacion->funcionario ? $asignacion->funcionario->nombre_completo : 'N/A' }}</td>
                                 <td>
                                     @if($asignacion->equipo)
-                                        <a href="{{ route('equipos.show', $asignacion->equipo) }}" class="fw-medium text-decoration-none">{{ $asignacion->equipo->placa ?? $asignacion->equipo->nombre_equipo ?? 'Ver Equipo' }}</a><br>
-                                        <span class="text-muted small">Equipo SN: {{ $asignacion->equipo->serial ?? 'N/A' }}</span>
+                                        <a href="{{ route('equipos.show', $asignacion->equipo) }}" class="fw-medium text-decoration-none">{{ $asignacion->equipo->placa_visual ?? $asignacion->equipo->nombre_equipo ?? 'Ver Equipo' }}</a><br>
+                                        <span class="text-muted small">Equipo SN: {{ $asignacion->equipo->serial_visual ?? 'N/A' }}</span>
                                     @else
                                         N/A
                                     @endif

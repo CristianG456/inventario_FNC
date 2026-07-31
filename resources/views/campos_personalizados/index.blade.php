@@ -106,90 +106,174 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    @if ($errors->any())
+                        <div class="alert alert-danger mb-4">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
                             <label class="form-label">Módulo *</label>
                             <select name="modulo" id="modulo" class="form-select" required>
-                                <option value="equipos">Activos</option>
-                                <option value="licencias">Licencias</option>
-                                <option value="suscripciones">Suscripciones</option>
-                                <option value="vitalicias">Vitalicias</option>
-                                <option value="actas">Actas</option>
+                                <option value="equipos" {{ old('modulo') == 'equipos' ? 'selected' : '' }}>Activos</option>
+                                <option value="licencias" {{ old('modulo') == 'licencias' ? 'selected' : '' }}>Licencias</option>
+                                <option value="suscripciones" {{ old('modulo') == 'suscripciones' ? 'selected' : '' }}>Suscripciones</option>
+                                <option value="vitalicias" {{ old('modulo') == 'vitalicias' ? 'selected' : '' }}>Vitalicias</option>
+                                <option value="actas" {{ old('modulo') == 'actas' ? 'selected' : '' }}>Actas</option>
                             </select>
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label">Tipo de Campo *</label>
                             <select name="tipo" id="tipo" class="form-select" required onchange="toggleOpciones()">
-                                <option value="texto">Texto corto</option>
-                                <option value="textarea">Texto largo (Textarea)</option>
-                                <option value="numero">Número</option>
-                                <option value="fecha">Fecha</option>
-                                <option value="correo">Correo Electrónico</option>
-                                <option value="telefono">Teléfono</option>
-                                <option value="boolean">Sí / No (Boolean)</option>
-                                <option value="select">Selección Única (Select)</option>
-                                <option value="multiselect">Selección Múltiple (Multiselect)</option>
-                                <option value="url">URL</option>
+                                <option value="texto" {{ old('tipo') == 'texto' ? 'selected' : '' }}>Texto corto</option>
+                                <option value="textarea" {{ old('tipo') == 'textarea' ? 'selected' : '' }}>Texto largo (Textarea)</option>
+                                <option value="numero" {{ old('tipo') == 'numero' ? 'selected' : '' }}>Número</option>
+                                <option value="fecha" {{ old('tipo') == 'fecha' ? 'selected' : '' }}>Fecha</option>
+                                <option value="correo" {{ old('tipo') == 'correo' ? 'selected' : '' }}>Correo Electrónico</option>
+                                <option value="telefono" {{ old('tipo') == 'telefono' ? 'selected' : '' }}>Teléfono</option>
+                                <option value="boolean" {{ old('tipo') == 'boolean' ? 'selected' : '' }}>Sí / No (Boolean)</option>
+                                <option value="select" {{ old('tipo') == 'select' ? 'selected' : '' }}>Selección Única (Select)</option>
+                                <option value="multiselect" {{ old('tipo') == 'multiselect' ? 'selected' : '' }}>Selección Múltiple (Multiselect)</option>
+                                <option value="url" {{ old('tipo') == 'url' ? 'selected' : '' }}>URL</option>
                             </select>
                         </div>
                         
                         <div class="col-12 col-md-12">
                             <label class="form-label">Nombre del Campo *</label>
-                            <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Centro de Costos">
+                            <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Centro de Costos" value="{{ old('nombre') }}">
                         </div>
                         
                         <div class="col-12 col-md-12 opciones-wrapper">
                             <label class="form-label text-primary">Opciones de la Lista</label>
-                            <textarea name="opciones" id="opciones" class="form-control" rows="3" placeholder="Opción A, Opción B, Opción C... (Separadas por comas)"></textarea>
+                            <textarea name="opciones" id="opciones" class="form-control" rows="3" placeholder="Opción A, Opción B, Opción C... (Separadas por comas)">{{ old('opciones') }}</textarea>
                             <small class="text-muted">Ingresa las opciones separadas por comas.</small>
                         </div>
                         
-                        <div class="col-12"><hr></div>
-                        
-                        <div class="col-12 col-md-4">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="obligatorio" id="obligatorio" value="1">
-                                <label class="form-check-label" for="obligatorio">Obligatorio</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="visible" id="visible" value="1" checked>
-                                <label class="form-check-label" for="visible">Visible</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="editable" id="editable" value="1" checked>
-                                <label class="form-check-label" for="editable">Editable</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4 mt-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="importable" id="importable" value="1" checked>
-                                <label class="form-check-label" for="importable">Importable CMDB</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4 mt-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="exportable" id="exportable" value="1" checked>
-                                <label class="form-check-label" for="exportable">Exportable Excel</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4 mt-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="exportar_por_defecto" id="exportar_por_defecto" value="1">
-                                <label class="form-check-label" for="exportar_por_defecto">Exportar por defecto</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4 mt-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="activo" id="activo" value="1" checked>
-                                <label class="form-check-label" for="activo">Activo</label>
+                        <div class="col-12 mt-4">
+                            <div class="card border-0 shadow-sm border-top border-primary border-3">
+                                <div class="card-header bg-white">
+                                    <h6 class="mb-0 text-primary fw-bold">
+                                        <i class="bi bi-gear-fill me-2"></i> Configuración Avanzada
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                        <div class="row g-3">
+                                            <!-- Switches Básicos -->
+                                            <div class="col-12 col-md-4">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="obligatorio" id="obligatorio" value="1" {{ old('obligatorio') ? 'checked' : '' }}>
+                                                    <label class="form-check-label fw-bold text-danger" for="obligatorio">Obligatorio</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="editable" id="editable" value="1" {{ old('editable', '1') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="editable">Editable</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="activo" id="activo" value="1" {{ old('activo', '1') ? 'checked' : '' }}>
+                                                    <label class="form-check-label text-success fw-bold" for="activo">Activo</label>
+                                                </div>
+                                            </div>
+
+                                            <!-- Configuración de Participación de Campo -->
+                                            <div class="col-12"><hr></div>
+                                            <h6 class="text-primary mb-3">Participación del Campo</h6>
+                                            <div class="col-12 col-md-4">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="visible" id="visible" value="1" {{ old('visible', '1') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="visible">Mostrar en Formularios</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="mostrar_en_grilla" id="mostrar_en_grilla" value="1" {{ old('mostrar_en_grilla') ? 'checked' : '' }}>
+                                                    <label class="form-check-label fw-bold" for="mostrar_en_grilla">Mostrar en CMDB Principal</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-md-4">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="participa_exportacion_completa" id="participa_exportacion_completa" value="1" {{ old('participa_exportacion_completa', '1') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="participa_exportacion_completa">Participar en Exportación Completa</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="participa_exportacion_cmdb" id="participa_exportacion_cmdb" value="1" onchange="toggleExcel()" {{ old('participa_exportacion_cmdb', '1') ? 'checked' : '' }}>
+                                                    <label class="form-check-label fw-bold" for="participa_exportacion_cmdb">Participar en Exportación CMDB</label>
+                                                </div>
+                                                <div id="excel_opciones" style="display: none;" class="ms-4 mb-3">
+                                                    <label class="form-label text-muted small mb-1">Exportar después de:</label>
+                                                    <select name="exportar_excel_despues_de" id="exportar_excel_despues_de" class="form-select form-select-sm">
+                                                        <option value="">(Al final por defecto)</option>
+                                                        @if(isset($columnasCMDB))
+                                                            @foreach($columnasCMDB as $key => $label)
+                                                                <option value="{{ $key }}">{{ $label }}</option>
+                                                            @endforeach
+                                                        @endif
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-md-4">
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="participa_reportes" id="participa_reportes" value="1" {{ old('participa_reportes', '1') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="participa_reportes">Participar en Reportes</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="importable" id="importable" value="1" {{ old('importable', '1') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="importable">Participar en Importaciones</label>
+                                                </div>
+                                                <div class="form-check form-switch mb-2">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="participa_filtros" id="participa_filtros" value="1" {{ old('participa_filtros') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="participa_filtros">Participar en Filtros del Sistema</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12" id="divisor_asignacion" style="display: none;"><hr></div>
+
+                                            <!-- Asignación Masiva (Solo Select) -->
+                                            <div class="col-12" id="asignacion_masiva_wrapper" style="display: none;">
+                                                <h6 class="text-danger mb-3">Valor inicial para equipos existentes</h6>
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="asignar_valor_inicial" id="asignar_valor_inicial" value="1" onchange="toggleAsignacion()">
+                                                    <label class="form-check-label fw-bold text-danger" for="asignar_valor_inicial">Asignar un valor masivamente a los equipos existentes</label>
+                                                </div>
+                                                <div id="asignacion_opciones" style="display: none;" class="p-3 bg-light rounded border border-danger">
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-3 mb-md-0">
+                                                            <label class="form-label fw-bold text-dark small mb-2">Selecciona el valor inicial:</label>
+                                                            <select name="valor_inicial_masivo" id="valor_inicial_masivo" class="form-select">
+                                                                <option value="">-- Escribe opciones arriba primero --</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label fw-bold text-dark small mb-2">Modo de asignación:</label>
+                                                            <div class="form-check mb-2">
+                                                                <input class="form-check-input" type="radio" name="modo_asignacion_masiva" id="modo_solo_vacios" value="solo_vacios" checked onchange="toggleWarning()">
+                                                                <label class="form-check-label text-success" for="modo_solo_vacios">
+                                                                    Solo asignar a equipos sin valor (Seguro)
+                                                                </label>
+                                                            </div>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="radio" name="modo_asignacion_masiva" id="modo_sobrescribir" value="sobrescribir_todos" onchange="toggleWarning()">
+                                                                <label class="form-check-label text-danger fw-bold" for="modo_sobrescribir">
+                                                                    Sobrescribir todos los equipos
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Guardar Campo</button>
@@ -206,12 +290,96 @@
     function toggleOpciones() {
         const tipo = document.getElementById('tipo').value;
         const wrapper = document.querySelector('.opciones-wrapper');
+        const modulo = document.getElementById('modulo').value;
+        const divisorAsignacion = document.getElementById('divisor_asignacion');
+        const asignacionWrapper = document.getElementById('asignacion_masiva_wrapper');
+        
         if (tipo === 'select' || tipo === 'multiselect') {
             wrapper.style.display = 'block';
+            if (modulo === 'equipos') {
+                divisorAsignacion.style.display = 'block';
+                asignacionWrapper.style.display = 'block';
+            } else {
+                divisorAsignacion.style.display = 'none';
+                asignacionWrapper.style.display = 'none';
+            }
         } else {
             wrapper.style.display = 'none';
+            divisorAsignacion.style.display = 'none';
+            asignacionWrapper.style.display = 'none';
+            document.getElementById('asignar_valor_inicial').checked = false;
+            if (document.getElementById('participa_exportacion_cmdb').checked) {
+                document.getElementById('excel_opciones').style.display = 'block';
+            } else {
+                document.getElementById('excel_opciones').style.display = 'none';
+                document.getElementById('exportar_excel_despues_de').value = '';
+            }
         }
     }
+
+    function toggleExcel() {
+        const isChecked = document.getElementById('participa_exportacion_cmdb').checked;
+        document.getElementById('excel_opciones').style.display = isChecked ? 'block' : 'none';
+    }
+
+    function toggleAsignacion() {
+        const isChecked = document.getElementById('asignar_valor_inicial').checked;
+        document.getElementById('asignacion_opciones').style.display = isChecked ? 'block' : 'none';
+        updateValoresIniciales();
+    }
+
+    function toggleWarning() {
+        if (document.getElementById('modo_sobrescribir').checked) {
+            Swal.fire({
+                title: '¡Advertencia de Sobrescritura!',
+                text: "Estás a punto de sobrescribir y eliminar la información existente de este campo en todos los activos. ¿Estás seguro de querer continuar con esta opción destructiva?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, entiendo el riesgo',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    document.getElementById('modo_solo_vacios').checked = true;
+                }
+            });
+        }
+    }
+
+    function updateValoresIniciales() {
+        const opcionesRaw = document.getElementById('opciones').value;
+        const selectValor = document.getElementById('valor_inicial_masivo');
+        
+        selectValor.innerHTML = '';
+        
+        if (!opcionesRaw.trim()) {
+            selectValor.innerHTML = '<option value="">-- Escribe opciones arriba primero --</option>';
+            return;
+        }
+
+        // Soporta opciones separadas por coma o por salto de línea
+        const opciones = opcionesRaw.split(/[,|\n]+/).map(o => o.trim()).filter(o => o);
+        
+        if (opciones.length === 0) {
+            selectValor.innerHTML = '<option value="">-- Escribe opciones arriba primero --</option>';
+            return;
+        }
+
+        selectValor.innerHTML = '<option value="">-- Selecciona el valor --</option>';
+        opciones.forEach(opcion => {
+            const opt = document.createElement('option');
+            opt.value = opcion;
+            opt.textContent = opcion;
+            selectValor.appendChild(opt);
+        });
+    }
+
+    document.getElementById('opciones').addEventListener('input', function() {
+        if (document.getElementById('asignar_valor_inicial').checked) {
+            updateValoresIniciales();
+        }
+    });
 
     function openCreateModal() {
         document.getElementById('formCampo').reset();
@@ -219,6 +387,8 @@
         document.getElementById('methodCampo').value = "POST";
         document.getElementById('modalTitle').innerText = "Nuevo Campo Personalizado";
         toggleOpciones();
+        toggleExcel();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCampo')).show();
     }
 
     function openEditModal(campo) {
@@ -231,12 +401,18 @@
         document.getElementById('nombre').value = campo.nombre;
         
         document.getElementById('obligatorio').checked = campo.obligatorio;
-        document.getElementById('visible').checked = campo.visible;
         document.getElementById('editable').checked = campo.editable;
+        document.getElementById('visible').checked = campo.visible;
         document.getElementById('importable').checked = campo.importable;
-        document.getElementById('exportable').checked = campo.exportable;
-        document.getElementById('exportar_por_defecto').checked = campo.exportar_por_defecto;
         document.getElementById('activo').checked = campo.activo;
+        
+        document.getElementById('mostrar_en_grilla').checked = campo.mostrar_en_grilla;
+        document.getElementById('participa_exportacion_cmdb').checked = campo.participa_exportacion_cmdb !== undefined ? campo.participa_exportacion_cmdb : campo.mostrar_en_grilla;
+        document.getElementById('participa_exportacion_completa').checked = campo.participa_exportacion_completa !== undefined ? campo.participa_exportacion_completa : true;
+        document.getElementById('participa_reportes').checked = campo.participa_reportes !== undefined ? campo.participa_reportes : true;
+        document.getElementById('participa_filtros').checked = campo.participa_filtros !== undefined ? campo.participa_filtros : false;
+        
+        document.getElementById('exportar_excel_despues_de').value = campo.exportar_excel_despues_de ? campo.exportar_excel_despues_de.toLowerCase() : '';
         
         if(campo.opciones && campo.opciones.length > 0) {
             const opcionesStr = campo.opciones.map(o => o.valor).join(', ');
@@ -246,7 +422,8 @@
         }
         
         toggleOpciones();
-        new bootstrap.Modal(document.getElementById('modalCampo')).show();
+        toggleExcel();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCampo')).show();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -302,6 +479,14 @@
                 });
             });
         });
+
+        @if($errors->any())
+            var errorModal = new bootstrap.Modal(document.getElementById('modalCampo'));
+            errorModal.show();
+            toggleOpciones();
+            toggleGrilla();
+            toggleExcel();
+        @endif
     });
 </script>
 @endpush

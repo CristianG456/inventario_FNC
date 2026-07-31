@@ -137,4 +137,34 @@ class HistorialService
 
         return $eventos->sortByDesc('fecha')->values();
     }
+
+    public function registrarTransferenciaComplemento(
+        Equipo $equipoOrigen,
+        Equipo $equipoDestino,
+        \App\Models\ActivoComplemento $complemento,
+        ?User $user = null,
+        ?string $observaciones = null
+    ): void {
+        $nombreComplemento = $complemento->nombre;
+
+        // Historial origen
+        $this->registrarCambio(
+            $equipoOrigen,
+            'transferencia_complemento',
+            $equipoOrigen->id,
+            $equipoDestino->id,
+            "Complemento '{$nombreComplemento}' transferido al activo {$equipoDestino->activo_fijo} (ID: {$equipoDestino->id}). " . $observaciones,
+            $user
+        );
+
+        // Historial destino
+        $this->registrarCambio(
+            $equipoDestino,
+            'transferencia_complemento',
+            $equipoOrigen->id,
+            $equipoDestino->id,
+            "Complemento '{$nombreComplemento}' recibido desde activo {$equipoOrigen->activo_fijo} (ID: {$equipoOrigen->id}). " . $observaciones,
+            $user
+        );
+    }
 }

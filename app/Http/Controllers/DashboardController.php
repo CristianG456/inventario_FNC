@@ -13,7 +13,6 @@ class DashboardController extends Controller
         $totalEquipos     = Equipo::count();
         $activos          = Equipo::where('estado_operativo', 'activo')->count();
         $disponibles      = Equipo::where('estado_operativo', 'disponible')->count();
-        $almacenados      = Equipo::where('estado_operativo', 'almacenado')->count();
         $enMantenimiento  = Equipo::where('estado_operativo', 'mantenimiento')->count();
         $deBaja           = Equipo::where('estado_operativo', 'baja')->count();
 
@@ -44,7 +43,6 @@ class DashboardController extends Controller
             'totalEquipos',
             'activos',
             'disponibles',
-            'almacenados',
             'enMantenimiento',
             'deBaja',
             'equiposPorTipo',

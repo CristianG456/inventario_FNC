@@ -10,55 +10,7 @@
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <div class="col-12 col-md-3">
-        <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-info">
-                    <i class="bi bi-file-earmark-plus fs-4"></i>
-                </div>
-                <div class="fw-bold text-muted small text-uppercase">Creados</div>
-            </div>
-            <div class="fs-3 fw-bold">{{ $conteoCreados }}</div>
-        </div>
-    </div>
-    
-    <div class="col-12 col-md-3">
-        <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-purple">
-                    <i class="bi bi-gear fs-4"></i>
-                </div>
-                <div class="fw-bold text-muted small text-uppercase">En Proceso</div>
-            </div>
-            <div class="fs-3 fw-bold">{{ $conteoProceso }}</div>
-        </div>
-    </div>
-    
-    <div class="col-12 col-md-3">
-        <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-indigo">
-                    <i class="bi bi-pause-circle fs-4"></i>
-                </div>
-                <div class="fw-bold text-muted small text-uppercase">Suspendidos</div>
-            </div>
-            <div class="fs-3 fw-bold">{{ $conteosSuspendidos }}</div>
-        </div>
-    </div>
-    
-    <div class="col-12 col-md-3">
-        <div class="card p-4 d-flex flex-row align-items-center justify-content-between h-100 shadow-sm border-0">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center maint-icon-wrapper maint-bg-success">
-                    <i class="bi bi-check-circle fs-4"></i>
-                </div>
-                <div class="fw-bold text-muted small text-uppercase">Finalizados</div>
-            </div>
-            <div class="fs-3 fw-bold">{{ $conteoFinalizados }}</div>
-        </div>
-    </div>
-</div>
+
 
 <div class="card p-0">
     <div class="p-4 border-bottom border-light">
@@ -90,7 +42,7 @@
                 <tr>
                     <td class="ps-4 fw-medium">
                         {{ $reg->equipo->nombre_equipo ?? 'N/A' }}
-                        <br><small class="text-muted">{{ $reg->equipo->serial ?? '' }}</small>
+                        <br><small class="text-muted">{{ $reg->equipo->serial_visual ?? '' }}</small>
                     </td>
                     <td>
                         <span class="badge bg-light text-dark border">{{ \Str::title(str_replace('_', ' ', $reg->tipo_evento)) }}</span><br>

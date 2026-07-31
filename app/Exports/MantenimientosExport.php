@@ -46,7 +46,7 @@ class MantenimientosExport implements FromQuery, WithHeadings, WithMapping, Shou
     {
         $equipo = $historial->equipo;
 
-        return [
+        $row = [
             $historial->id,
             $historial->fecha_evento?->format('d/m/Y'),
             $historial->tipo_evento_label,
@@ -58,6 +58,10 @@ class MantenimientosExport implements FromQuery, WithHeadings, WithMapping, Shou
             $historial->observaciones ?? '',
             $historial->registradoPor?->name ?? 'N/A'
         ];
+
+        return array_map(function($item) {
+            return is_string($item) ? mb_strtoupper($item, 'UTF-8') : $item;
+        }, $row);
     }
 
     public function styles(Worksheet $sheet): array

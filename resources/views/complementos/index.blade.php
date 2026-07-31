@@ -1,0 +1,164 @@
+@extends('layouts.inventario')
+
+@section('title', 'Complementos del Activo - Administración Global')
+
+@section('content')
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-box-seam me-2 text-primary"></i>Complementos del Activo
+    </h4>
+</div>
+
+<!-- Dashboard de Complementos -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="card bg-primary text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Total</h6>
+                <h3 class="fw-bold mb-0">{{ $total }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card bg-success text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Disponibles</h6>
+                <h3 class="fw-bold mb-0">{{ $disponibles }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card bg-info text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Asignados a Activo</h6>
+                <h3 class="fw-bold mb-0">{{ $asignados }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card bg-danger text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Dañados / Extraviados</h6>
+                <h3 class="fw-bold mb-0">{{ $danados + $extraviados }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ route('equipos.complementos.global') }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small">Buscar (Serial, Marca, Equipo)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="buscar" class="form-control" value="{{ request('buscar') }}" placeholder="Término de búsqueda...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Tipo de Complemento</label>
+                <select name="catalogo_id" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach($catalogo as $cat)
+                        <option value="{{ $cat->id }}" {{ request('catalogo_id') == $cat->id ? 'selected' : '' }}>{{ $cat->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach(\App\Models\ActivoComplemento::ESTADOS as $est)
+                        <option value="{{ $est }}" {{ request('estado') == $est ? 'selected' : '' }}>{{ $est }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de Complementos -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Tipo / Nombre</th>
+                        <th>Compatible con</th>
+                        <th>Marca & Modelo</th>
+                        <th>Serial</th>
+                        <th>Estado</th>
+                        <th>Activo Asociado</th>
+                        <th>Fecha Reg.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($complementos as $comp)
+                        <tr>
+                            <td class="text-muted small">{{ $comp->id }}</td>
+                            <td class="fw-medium">
+                                {{ $comp->nombre }}
+                                @if($comp->cantidad > 1)
+                                    <span class="badge bg-secondary ms-1">x{{ $comp->cantidad }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($comp->catalogoComplemento && $comp->catalogoComplemento->tipoRecursos->count() > 0)
+                                    <span class="text-muted small">{{ $comp->catalogoComplemento->tipoRecursos->pluck('nombre')->join(', ') }}</span>
+                                @else
+                                    <span class="text-danger small">No definido</span>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $comp->marca ?: 'N/A' }} <br>
+                                <span class="text-muted small">{{ $comp->modelo ?: 'N/A' }}</span>
+                            </td>
+                            <td class="fw-medium font-monospace small">{{ $comp->serial ?: 'SIN SERIAL' }}</td>
+                            <td>
+                                @if(empty($comp->equipo_id) || $comp->estado == 'Disponible')
+                                    <span class="badge bg-success rounded-pill">Disponible</span>
+                                @elseif($comp->estado == 'Dañado' || $comp->estado == 'Malo')
+                                    <span class="badge bg-danger rounded-pill">{{ $comp->estado }}</span>
+                                @elseif($comp->estado == 'En reparación')
+                                    <span class="badge bg-warning text-dark rounded-pill">{{ $comp->estado }}</span>
+                                @else
+                                    <span class="badge bg-primary rounded-pill">{{ $comp->estado ?: 'Bueno' }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($comp->equipo)
+                                    <a href="{{ route('equipos.show', $comp->equipo->id) }}" class="text-decoration-none fw-semibold">
+                                        {{ $comp->equipo->placa ?: 'S/P' }}
+                                    </a><br>
+                                    <span class="text-muted small">{{ $comp->equipo->tipoRecurso->nombre ?? '' }}</span>
+                                @else
+                                    <span class="text-muted fst-italic">Sin asignar</span>
+                                @endif
+                            </td>
+                            <td class="text-muted small">{{ $comp->fecha_registro ? $comp->fecha_registro->format('Y-m-d') : $comp->created_at->format('Y-m-d') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                No hay complementos registrados.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if($complementos->hasPages())
+        <div class="card-footer bg-white border-0">
+            {{ $complementos->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
+</div>
+@endsection

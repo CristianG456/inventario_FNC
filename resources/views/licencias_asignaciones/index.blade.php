@@ -76,9 +76,9 @@
                             <td>
                                 @if($asignacion->equipo)
                                     <a href="{{ route('equipos.show', $asignacion->equipo) }}" class="text-decoration-none fw-medium">
-                                        {{ $asignacion->equipo->placa ?? $asignacion->equipo->nombre_equipo ?? 'Ver Equipo' }}
+                                        {{ $asignacion->equipo->placa_visual ?? $asignacion->equipo->nombre_equipo ?? 'Ver Equipo' }}
                                     </a><br>
-                                    <span class="text-muted small">Serial: {{ $asignacion->equipo->serial ?? 'N/A' }}</span>
+                                    <span class="text-muted small">Serial: {{ $asignacion->equipo->serial_visual ?? 'N/A' }}</span>
                                 @else
                                     <span class="text-muted">N/A</span>
                                 @endif

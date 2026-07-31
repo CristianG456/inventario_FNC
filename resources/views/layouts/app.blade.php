@@ -171,7 +171,9 @@
             const url = trigger.getAttribute('data-delete-url');
             const nombre = trigger.getAttribute('data-delete-name') || 'este registro';
 
-            Swal.fire({
+            const requiereConfirmacion = trigger.hasAttribute('data-delete-require-confirm');
+
+            let swalOptions = {
                 icon: 'warning',
                 title: '¿Estás seguro de eliminar este registro?',
                 text: 'Se eliminará ' + nombre + '. Esta acción no se puede deshacer.',
@@ -180,7 +182,22 @@
                 cancelButtonText: 'Cancelar',
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
-            }).then(function (result) {
+            };
+
+            if (requiereConfirmacion) {
+                swalOptions.title = 'ATENCIÓN: ELIMINACIÓN PERMANENTE';
+                swalOptions.html = '<p class="text-danger mb-3">Se eliminará permanentemente <strong>' + nombre + '</strong> y desaparecerá de todas las vistas.</p><p>Para proceder, escribe la palabra <strong>CONFIRMAR</strong> (en mayúsculas) en el cuadro de abajo:</p>';
+                swalOptions.text = undefined; // Quitar text para usar html
+                swalOptions.input = 'text';
+                swalOptions.inputPlaceholder = 'Escribe CONFIRMAR';
+                swalOptions.inputValidator = (value) => {
+                    if (value !== 'CONFIRMAR') {
+                        return 'Debes escribir la palabra CONFIRMAR exactamente en mayúsculas';
+                    }
+                };
+            }
+
+            Swal.fire(swalOptions).then(function (result) {
                 if (!result.isConfirmed || !url) return;
 
                 const form = document.createElement('form');

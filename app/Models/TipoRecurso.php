@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 
 class TipoRecurso extends Model
 {
@@ -17,6 +19,14 @@ class TipoRecurso extends Model
     public function equipos(): HasMany
     {
         return $this->hasMany(Equipo::class);
+    }
+
+    public function complementosDefinidos(): BelongsToMany
+    {
+        return $this->belongsToMany(CatalogoComplemento::class, 'tipo_recurso_complemento')
+                    ->withPivot('orden', 'obligatorio')
+                    ->withTimestamps()
+                    ->orderBy('tipo_recurso_complemento.orden');
     }
 
     /**
@@ -43,6 +53,7 @@ class TipoRecurso extends Model
             'router'             => 'ROU', // Router
             'camara'             => 'CAM',
             'escaner'            => 'ESN', // Escáner
+            'tv'                 => 'TLV', // TV
         ];
 
         if (isset($diccionario[$nombreLower])) {

@@ -65,9 +65,24 @@
             
             @can('equipos.ver')
             <li class="nav-item">
-                <a href="{{ route('equipos.index') }}" class="nav-link {{ request()->routeIs('equipos.*') ? 'active' : '' }}">
-                    <i class="bi bi-display"></i> Activos
+                <a class="nav-link {{ request()->routeIs('equipos.*') ? 'active' : '' }}" href="#menuEquipos" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('equipos.*') ? 'true' : 'false' }}" aria-controls="menuEquipos">
+                    <i class="bi bi-display"></i> <span>Activos</span>
+                    <i class="bi bi-chevron-down ms-auto" style="font-size: 0.75rem; transition: transform 0.3s;"></i>
                 </a>
+                <div class="collapse {{ request()->routeIs('equipos.*') ? 'show' : '' }}" id="menuEquipos" style="visibility: visible;">
+                    <ul class="nav flex-column" style="padding-left: 1rem; margin-top: 4px; margin-bottom: 4px;">
+                        <li class="nav-item">
+                            <a href="{{ route('equipos.index') }}" class="nav-link {{ request()->routeIs('equipos.index') || request()->routeIs('equipos.create') || request()->routeIs('equipos.show') || request()->routeIs('equipos.edit') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
+                                <i class="bi bi-pc-display"></i> <span>Inventario</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('equipos.complementos.global') }}" class="nav-link {{ request()->routeIs('equipos.complementos.global') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
+                                <i class="bi bi-box-seam"></i> <span>Complementos</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
             @endcan
             
@@ -236,7 +251,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="{{ asset('js/app-core.js') }}"></script>
+<script src="{{ asset('js/app-core.js') }}?v={{ time() }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         window.initAlerts(

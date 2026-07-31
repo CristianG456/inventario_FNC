@@ -53,7 +53,7 @@
                         <option value="" data-cedula="">Seleccione un equipo...</option>
                         @foreach($equipos as $equipo)
                             <option value="{{ $equipo->id }}" data-cedula="{{ $equipo->usuarioAsignado->cedula ?? '' }}" {{ old('equipo_id') == $equipo->id ? 'selected' : '' }}>
-                                {{ $equipo->nombre_equipo }} - Placa: {{ $equipo->activo_fijo ?? 'N/A' }} (Serial: {{ $equipo->serial ?? 'N/A' }})
+                                {{ $equipo->nombre_equipo }} - Placa: {{ $equipo->activo_fijo ?? 'N/A' }} (Serial: {{ $equipo->serial_visual ?? 'N/A' }})
                             </option>
                         @endforeach
                     </select>

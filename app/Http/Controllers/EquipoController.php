@@ -26,8 +26,20 @@ class EquipoController extends Controller
     /**
      * Listado de equipos con búsqueda y filtros.
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
+        // Retener filtros en sesión
+        if ($request->has('clear')) {
+            session()->forget('equipos_filtros');
+            return redirect()->route('equipos.index');
+        }
+
+        if (count($request->query()) > 0) {
+            session(['equipos_filtros' => $request->query()]);
+        } elseif (session()->has('equipos_filtros')) {
+            return redirect()->route('equipos.index', session('equipos_filtros'));
+        }
+
         $buscar = trim((string) $request->input('buscar', ''));
         $filtroFuncionario = trim((string) $request->input('funcionario', ''));
 
@@ -51,7 +63,12 @@ class EquipoController extends Controller
             ])
             ->when($buscar !== '', function ($q) use ($buscar) {
                 $termino = '%' . $buscar . '%';
-                $q->where(function ($sub) use ($termino) {
+                $parsedId = null;
+                if (preg_match('/^[a-zA-Z0-9]+-(?:[SP])?0*(\d+)$/i', trim($buscar), $matches)) {
+                    $parsedId = $matches[1];
+                }
+
+                $q->where(function ($sub) use ($termino, $parsedId) {
                     $sub->where('serial', 'like', $termino)
                         ->orWhere('nombre_equipo', 'like', $termino)
                         ->orWhere('marca', 'like', $termino)
@@ -61,6 +78,10 @@ class EquipoController extends Controller
                         ->orWhere('estado_operativo', 'like', $termino)
                         ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
                         ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
+                    
+                    if ($parsedId !== null) {
+                        $sub->orWhere('equipos.id', $parsedId);
+                    }
                 });
             })
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
@@ -68,10 +89,28 @@ class EquipoController extends Controller
             ->when($filtroFuncionario !== '', fn($q) => $q->whereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $filtroFuncionario . '%')))
             ->latest();
 
+        // Cargar campos personalizados que deben mostrarse en la grilla
+        $camposDinamicos = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
+            ->where('activo', true)
+            ->where('mostrar_en_grilla', true)
+            ->get();
+
+        $camposDinamicos->each(function($cd) {
+            if ($cd->posicion_grilla_despues_de) {
+                $cd->posicion_grilla_despues_de = \App\Http\Controllers\CampoPersonalizadoController::mapearCmdbAGrilla($cd->posicion_grilla_despues_de);
+            } else {
+                $cd->posicion_grilla_despues_de = 'estado_operativo'; // default
+            }
+        });
+
+        if ($camposDinamicos->isNotEmpty()) {
+            $query->with('camposPersonalizadosValores');
+        }
+
         $equipos      = $query->paginate(6)->withQueryString();
         $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
 
-        return view('equipos.index', compact('equipos', 'tipoRecursos'));
+        return view('equipos.index', compact('equipos', 'tipoRecursos', 'camposDinamicos'));
     }
 
     /**
@@ -90,7 +129,12 @@ class EquipoController extends Controller
                 'tipoRecurso:id,nombre',
                 'usuarioAsignado:id,equipo_id,nombre'
             ])
-            ->where(function ($sub) use ($termino) {
+            ->where(function ($sub) use ($termino, $buscar) {
+                $parsedId = null;
+                if (preg_match('/^[a-zA-Z0-9]+-(?:[SP])?0*(\d+)$/i', trim($buscar), $matches)) {
+                    $parsedId = $matches[1];
+                }
+
                 $sub->where('serial', 'like', $termino)
                     ->orWhere('nombre_equipo', 'like', $termino)
                     ->orWhere('marca', 'like', $termino)
@@ -100,6 +144,10 @@ class EquipoController extends Controller
                     ->orWhere('estado_operativo', 'like', $termino)
                     ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
                     ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
+                
+                if ($parsedId !== null) {
+                    $sub->orWhere('equipos.id', $parsedId);
+                }
             })
             ->limit(10)
             ->get();
@@ -125,7 +173,8 @@ class EquipoController extends Controller
                                 ->where('modulo', 'equipos')
                                 ->where('activo', true)
                                 ->orderBy('orden')->get();
-        return view('equipos.create', compact('tipoRecursos', 'camposPersonalizados'));
+        $catalogoComplementos = \App\Models\CatalogoComplemento::orderBy('nombre')->get();
+        return view('equipos.create', compact('tipoRecursos', 'camposPersonalizados', 'catalogoComplementos'));
     }
 
     /**
@@ -189,6 +238,24 @@ class EquipoController extends Controller
             }
         }
 
+        // Complementos del Activo
+        if ($request->has('complementos')) {
+            foreach ($request->complementos as $compData) {
+                if (!empty($compData['catalogo_complemento_id']) && !empty($compData['estado'])) {
+                    $equipo->complementos()->create([
+                        'catalogo_complemento_id' => $compData['catalogo_complemento_id'],
+                        'estado'                  => $compData['estado'],
+                        'marca'                   => $compData['marca'] ?? null,
+                        'modelo'                  => $compData['modelo'] ?? null,
+                        'serial'                  => $compData['serial'] ?? null,
+                        'observaciones'           => $compData['observaciones'] ?? null,
+                        'cantidad'                => $compData['cantidad'] ?? 1,
+                        'fecha_registro'          => now()->toDateString(),
+                    ]);
+                }
+            }
+        }
+
         $this->historialService->registrarCambio(
             $equipo,
             'creacion',
@@ -212,6 +279,7 @@ class EquipoController extends Controller
             'usuarioAsignado',
             'periferico',
             'checklists',
+            'complementos.catalogoComplemento',
             'licenciaAsignaciones.licencia',
             'camposPersonalizadosValores.campoPersonalizado',
             'asignaciones' => fn($q) => $q->latest('fecha_accion')->limit(5),
@@ -228,9 +296,11 @@ class EquipoController extends Controller
         $equipo->load([
             'usuarioAsignado:id,equipo_id,nombre,cedula,empresa_propietaria,dependencia,fuente_recurso,empresa_funcionario,tipo_vinculacion,shortname,departamento,ciudad,cargo,area,piso,distrito,seccional',
             'periferico:id,equipo_id,telefono,teclado,mouse,camara',
+            'complementos.catalogoComplemento',
             'camposPersonalizadosValores:id,entidad_id,campo_personalizado_id,valor',
         ]);
         $tipoRecursos = TipoRecurso::select('id', 'nombre')->orderBy('nombre')->get();
+        $catalogoComplementos = \App\Models\CatalogoComplemento::orderBy('nombre')->get();
         $camposPersonalizados = \App\Models\CampoPersonalizado::select([
                                     'id',
                                     'nombre',
@@ -243,7 +313,7 @@ class EquipoController extends Controller
                                 ->where('modulo', 'equipos')
                                 ->where('activo', true)
                                 ->orderBy('orden')->get();
-        return view('equipos.edit', compact('equipo', 'tipoRecursos', 'camposPersonalizados'));
+        return view('equipos.edit', compact('equipo', 'tipoRecursos', 'camposPersonalizados', 'catalogoComplementos'));
     }
 
     /**
@@ -375,8 +445,11 @@ class EquipoController extends Controller
      */
     public function exportar(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        $modoExportacion = (string) $request->input('modo_exportacion', 'personalizada');
-        $columnasEstandar = (array) $request->input('columnas_estandar', []);
+        $modoExportacion = strtolower((string) $request->input('modo_exportacion', 'personalizada'));
+        
+        \Log::info('INICIO EXPORTAR:', ['modo' => $modoExportacion, 'url' => $request->fullUrl()]);
+        
+        $columnasEstandar = array_map('strtolower', (array) $request->input('columnas_estandar', []));
         $columnasPersonalizadas = (array) $request->input('columnas_personalizadas', []);
         $baseCmdbPrincipal = $request->boolean('base_cmdb_principal');
 
@@ -384,26 +457,43 @@ class EquipoController extends Controller
 
         if (in_array($modoExportacion, ['cmdb', 'cmdb_principal'], true)) {
             $columnasEstandar = EquiposExport::columnasCmdbPrincipal();
-            $columnasPersonalizadas = [];
+            // Solo campos que el usuario marcó para participar en Exportación CMDB Y mostrar_en_grilla
+            $columnasPersonalizadas = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
+                ->where('mostrar_en_grilla', 1)
+                ->where('participa_exportacion_cmdb', 1)
+                ->pluck('id')
+                ->toArray();
+                
+            \Log::info('Campos CMDB encontrados en Controlador:', [
+                'campos' => \App\Models\CampoPersonalizado::whereIn('id', $columnasPersonalizadas)->pluck('nombre')->toArray(),
+                'ids' => $columnasPersonalizadas,
+                'modoExportacion' => $modoExportacion
+            ]);
+
             $nombreArchivo = 'cmdb_principal_' . date('Ymd_His') . '.xlsx';
         }
 
         if ($modoExportacion === 'completa') {
-            $columnasEstandar = EquiposExport::columnasCompletas();
+            // Se solicitó explícitamente "TODOS los Campos Personalizados" sin importar configuración
             $columnasPersonalizadas = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
-                ->where('exportable', true)
                 ->pluck('id')
                 ->toArray();
             $nombreArchivo = 'inventario_completo_' . date('Ymd_His') . '.xlsx';
+            
+            return Excel::download(
+                new \App\Exports\EquiposExport(['COMPLETA'], $columnasPersonalizadas, $request->all()), 
+                $nombreArchivo
+            );
         }
 
-        if ($modoExportacion === 'personalizada' && $baseCmdbPrincipal) {
-            $columnasEstandar = array_values(array_unique(array_merge(
-                EquiposExport::columnasCmdbPrincipal(),
-                $columnasEstandar
-            )));
+        if ($modoExportacion === 'personalizada') {
+            // El usuario pidió explícitamente que "si quiero exportar solo una columna no exporte la cmdb principal"
+            // Por lo tanto, se respetará ÚNICAMENTE lo que el usuario haya seleccionado en el modal.
+            // No se forzará la base CMDB.
+            
+            $nombreArchivo = 'inventario_personalizado_' . date('Ymd_His') . '.xlsx';
         }
-        
+
         // Guardar plantilla si se solicita
         if ($modoExportacion === 'personalizada' && $request->input('guardar_plantilla') && $request->filled('nombre_plantilla')) {
             \App\Models\PlantillaExportacion::create([
@@ -543,6 +633,153 @@ class EquipoController extends Controller
         if ($funcionario->trashed()) {
             $funcionario->restore();
         }
+    }
+
+    // ── Complementos del Activo ──────────────────────────────────────────────
+
+    public function getComplementosPorTipo(\App\Models\TipoRecurso $tipoRecurso)
+    {
+        $complementos = $tipoRecurso->complementosDefinidos()->select('catalogo_complementos.id', 'nombre', 'requiere_serial', 'usa_estado', 'cantidad_default')->get();
+        return response()->json($complementos);
+    }
+
+    public function storeComplemento(Request $request, Equipo $equipo, \App\Services\HistorialService $historialService)
+    {
+        \Illuminate\Support\Facades\Log::info('Store Complemento Payload:', $request->all());
+        $modo = $request->input('modo_ingreso', 'nuevo');
+
+        if ($modo === 'existente') {
+            $request->validate([
+                'complemento_existente_id' => 'required|exists:activo_complementos,id'
+            ]);
+
+            $complemento = \App\Models\ActivoComplemento::findOrFail($request->complemento_existente_id);
+            
+            // Reasignarlo a este equipo
+            $complemento->equipo_id = $equipo->id;
+            $complemento->estado = 'Asignado'; // Cambiar estado automáticamente a Asignado
+            $complemento->save();
+
+            $historialService->registrarCambio(
+                $equipo,
+                'complemento_agregado',
+                null,
+                $complemento->id,
+                "Complemento existente '{$complemento->nombre}' asignado desde la bolsa global.",
+                Auth::user()
+            );
+
+            return back()->with('success', 'Complemento existente asignado correctamente.');
+        }
+
+        // Modo nuevo
+        $request->validate([
+            'catalogo_complemento_id' => 'required|exists:catalogo_complementos,id',
+            'estado' => 'required|string|max:50',
+            'marca' => 'nullable|string|max:100',
+            'modelo' => 'nullable|string|max:100',
+            'serial' => 'nullable|string|max:100',
+            'observaciones' => 'nullable|string|max:500',
+        ]);
+
+        $data = $request->all();
+        $data['cantidad'] = 1; // Forzar a 1
+
+        $complemento = $equipo->complementos()->create($data);
+
+        $historialService->registrarCambio(
+            $equipo,
+            'complemento_agregado',
+            null,
+            $complemento->id,
+            "Complemento nuevo '{$complemento->nombre}' agregado.",
+            Auth::user()
+        );
+
+        return back()->with('success', 'Complemento nuevo registrado correctamente.');
+    }
+
+    public function updateComplemento(Request $request, Equipo $equipo, \App\Models\ActivoComplemento $complemento, \App\Services\HistorialService $historialService)
+    {
+        $request->validate([
+            'estado' => 'required|string|max:50',
+            'cantidad' => 'required|integer|min:1',
+            'marca' => 'nullable|string|max:100',
+            'modelo' => 'nullable|string|max:100',
+            'serial' => 'nullable|string|max:100',
+            'observaciones' => 'nullable|string|max:500',
+        ]);
+
+        $complemento->fill($request->all());
+        
+        if (in_array($complemento->estado, ['Disponible', 'Dañado'])) {
+            $complemento->equipo_id = null;
+        }
+
+        $complemento->save();
+
+        $historialService->registrarCambio(
+            $equipo,
+            'complemento_editado',
+            null,
+            $complemento->id,
+            "Complemento '{$complemento->nombre}' actualizado.",
+            Auth::user()
+        );
+
+        return back()->with('success', 'Complemento actualizado correctamente.');
+    }
+
+    public function destroyComplemento(Equipo $equipo, \App\Models\ActivoComplemento $complemento, \App\Services\HistorialService $historialService)
+    {
+        $nombre = $complemento->nombre;
+        $complemento->delete();
+
+        $historialService->registrarCambio(
+            $equipo,
+            'complemento_eliminado',
+            $complemento->id,
+            null,
+            "Complemento '{$nombre}' eliminado.",
+            Auth::user()
+        );
+
+        return back()->with('success', 'Complemento eliminado correctamente.');
+    }
+
+    public function transferirComplemento(Request $request, Equipo $equipo, \App\Models\ActivoComplemento $complemento, \App\Services\HistorialService $historialService)
+    {
+        $request->validate([
+            'equipo_destino_id' => 'required|exists:equipos,id',
+        ]);
+
+        if ($request->equipo_destino_id == $equipo->id) {
+            return back()->with('error', 'El activo destino no puede ser el mismo.');
+        }
+
+        $equipoDestino = Equipo::findOrFail($request->equipo_destino_id);
+        
+        $esCompatible = $equipoDestino->tipoRecurso
+            ->complementosDefinidos()
+            ->where('catalogo_complementos.id', $complemento->catalogo_complemento_id)
+            ->exists();
+
+        if (!$esCompatible) {
+            return back()->with('error', 'Este complemento no es compatible con el tipo de recurso del equipo destino.');
+        }
+
+        $historialService->registrarTransferenciaComplemento(
+            $equipo,
+            $equipoDestino,
+            $complemento,
+            Auth::user(),
+            $request->observaciones
+        );
+
+        $complemento->equipo_id = $equipoDestino->id;
+        $complemento->save();
+
+        return back()->with('success', 'Complemento transferido correctamente.');
     }
 
     /**

@@ -1,5 +1,13 @@
 @extends('layouts.inventario')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+    .ts-control { min-height: 38px; padding: 6px 12px; }
+    .ts-control > input { padding: 0 !important; }
+</style>
+@endpush
+
 @section('title', 'Equipos')
 
 @section('content')
@@ -8,7 +16,7 @@
     <div class="d-flex gap-2">
         @can('equipos.crear')
         <a href="{{ route('equipos.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i>Nuevo Equipo
+            <i class="bi bi-plus-lg me-1"></i>Nuevo Activo
         </a>
         @endcan
     </div>
@@ -18,7 +26,7 @@
 <div class="card mb-4">
     <div class="card-body py-3">
         <form method="GET" action="{{ route('equipos.index') }}" class="row g-2 align-items-end">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-5">
                 <label class="form-label fw-medium small mb-1">Buscar</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -26,9 +34,9 @@
                            class="form-control" placeholder="Marca, tipo, modelo, serial, placa, usuario..." autocomplete="off">
                 </div>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-medium small mb-1">Tipo</label>
-                <select name="tipo" class="form-select">
+                <select name="tipo" id="filtroTipo" class="form-select">
                     <option value="">Todos los tipos</option>
                     @foreach($tipoRecursos as $tipo)
                         <option value="{{ $tipo->id }}" {{ request('tipo') == $tipo->id ? 'selected' : '' }}>
@@ -39,19 +47,23 @@
             </div>
             <div class="col-12 col-md-2">
                 <label class="form-label fw-medium small mb-1">Estado</label>
-                <select name="estado" class="form-select">
+                <select name="estado" id="filtroEstado" class="form-select">
                     <option value="">Todos</option>
                     <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Asignado</option>
                     <option value="disponible" {{ request('estado') === 'disponible' ? 'selected' : '' }}>Disponible</option>
-                    <option value="almacenado" {{ request('estado') === 'almacenado' ? 'selected' : '' }}>Almacenado</option>
                     <option value="mantenimiento" {{ request('estado') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
                     <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
                 </select>
             </div>
-            <div class="col-12 col-md-2 d-flex justify-content-end">
+            <div class="col-12 col-md-2 d-flex justify-content-end gap-1">
                 <button type="submit" class="btn btn-primary flex-fill">
                     <i class="bi bi-funnel me-1"></i>Filtrar
                 </button>
+                @if(request()->query())
+                <a href="{{ route('equipos.index', ['clear' => 1]) }}" class="btn btn-outline-secondary" title="Limpiar Filtros">
+                    <i class="bi bi-eraser"></i>
+                </a>
+                @endif
             </div>
         </form>
     </div>
@@ -63,36 +75,76 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead>
+                    @php
+                        $renderHeader = function($posicion) use ($camposDinamicos) {
+                            if(!isset($camposDinamicos)) return '';
+                            $html = '';
+                            foreach($camposDinamicos->where('posicion_grilla_despues_de', $posicion) as $cd) {
+                                $html .= "<th class='text-primary border-primary border-bottom-2'>{$cd->nombre}</th>";
+                            }
+                            return $html;
+                        };
+                    @endphp
                     <tr>
                         <th>#</th>
+                        {!! $renderHeader('id') !!}
                         <th>Equipo / Serial</th>
+                        {!! $renderHeader('equipo') !!}
                         <th>Serial Interno / Placa</th>
+                        {!! $renderHeader('activo_fijo') !!}
                         <th>Tipo</th>
+                        {!! $renderHeader('tipo_recurso_id') !!}
                         <th>Marca / Modelo</th>
+                        {!! $renderHeader('marca') !!}
                         <th>Responsable</th>
+                        {!! $renderHeader('responsable_cedula') !!}
                         <th>Funcionario Asignado</th>
+                        {!! $renderHeader('funcionario_asignado') !!}
                         <th>Estado</th>
+                        {!! $renderHeader('estado_operativo') !!}
+                        {!! $renderHeader('') !!}
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($equipos as $equipo)
                         <tr>
+                            @php
+                                $renderValor = function($posicion) use ($camposDinamicos, $equipo) {
+                                    if(!isset($camposDinamicos)) return '';
+                                    $html = '';
+                                    foreach($camposDinamicos->where('posicion_grilla_despues_de', $posicion) as $cd) {
+                                        $valorObj = $equipo->camposPersonalizadosValores->where('campo_personalizado_id', $cd->id)->first();
+                                        $valor = $valorObj ? $valorObj->valor : '<span class="text-muted fst-italic">N/A</span>';
+                                        
+                                        // Formateo visual si es color o URL
+                                        if($cd->tipo === 'url' && $valorObj) {
+                                            $valor = "<a href='{$valor}' target='_blank' class='text-decoration-none text-primary'>Ver Link <i class='bi bi-box-arrow-up-right ms-1'></i></a>";
+                                        }
+                                        
+                                        $html .= "<td><span class='fw-medium text-dark'>{$valor}</span></td>";
+                                    }
+                                    return $html;
+                                };
+                            @endphp
                             <td class="text-muted small">{{ $equipo->id }}</td>
+                            {!! $renderValor('id') !!}
                             <td>
                                 <span class="fw-bold fs-6">{{ $equipo->identificador_interno }}</span>
                                 <br>
                                 <span class="fw-medium text-dark">{{ $equipo->nombre_equipo }}</span>
                                 <br><small class="text-muted">Serial: <span class="{{ $equipo->serial_visual === 'Sin serial' ? 'fst-italic' : 'font-monospace' }}">{{ $equipo->serial_visual }}</span></small>
                             </td>
+                            {!! $renderValor('equipo') !!}
                             <td>
-                                @if($equipo->placa || $equipo->activo_fijo)
-                                    <span class="badge bg-secondary bg-opacity-50 font-monospace">
-                                        {{ $equipo->placa ?? $equipo->activo_fijo }}
-                                    </span>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
+                                @php
+                                    $invalidos = ['PENDIENTE', 'N/A', 'NA', 'NO TIENE', 'SIN PLACA', 'SIN REGISTRO'];
+                                    $activoFijoStr = strtoupper(trim((string) $equipo->activo_fijo));
+                                    $activoValido = !empty($equipo->activo_fijo) && !in_array($activoFijoStr, $invalidos, true);
+                                @endphp
+                                <span class="badge bg-secondary bg-opacity-50 font-monospace">
+                                    {{ $equipo->placa ? $equipo->placa_visual : ($activoValido ? $equipo->activo_fijo : $equipo->placa_visual) }}
+                                </span>
                             </td>
                             <td>
                                 @php
@@ -118,10 +170,12 @@
                                     {{ $equipo->tipoRecurso?->nombre ?? '—' }}
                                 </span>
                             </td>
+                            {!! $renderValor('tipo_recurso_id') !!}
                             <td>
                                 {{ $equipo->marca }}
                                 <br><small class="text-muted">{{ $equipo->modelo }}</small>
                             </td>
+                            {!! $renderValor('marca') !!}
                             <td>
                                 @php
                                     $responsableNombre = trim((string) ($equipo->responsable_nombre ?? ''));
@@ -136,6 +190,7 @@
                                     <br><small class="text-muted">CC: {{ $responsableCedula }}</small>
                                 @endif
                             </td>
+                            {!! $renderValor('responsable_cedula') !!}
                             <td>
                                 @if($equipo->usuarioAsignado)
                                     @php
@@ -151,12 +206,13 @@
                                         <span class="fw-medium">{{ $nombreMostrar }}</span>
                                         <br><small class="text-muted">CC: {{ $cedulaAsignada }}</small>
                                     @else
-                                        <span class="text-muted fst-italic">Sin préstamo</span>
+                                        <span class="text-muted fst-italic">Sin Asignar</span>
                                     @endif
                                 @else
-                                    <span class="text-muted fst-italic">Sin préstamo</span>
+                                    <span class="text-muted fst-italic">Sin Asignar</span>
                                 @endif
                             </td>
+                            {!! $renderValor('funcionario_asignado') !!}
                             <td>
                                 @php
                                     $nombreAsignado = trim((string) ($equipo->usuarioAsignado->nombre ?? ''));
@@ -174,6 +230,8 @@
                                     {{ $estadoMostrado }}
                                 </span>
                             </td>
+                            {!! $renderValor('estado_operativo') !!}
+                            {!! $renderValor('') !!}
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
                                     {{-- Acciones siempre disponibles --}}
@@ -256,7 +314,8 @@
                                             class="btn btn-sm btn-outline-danger"
                                             title="Eliminar"
                                             data-delete-url="{{ route('equipos.destroy', $equipo) }}"
-                                            data-delete-name="{{ $equipo->nombre_equipo }}">
+                                            data-delete-name="{{ $equipo->nombre_equipo }}"
+                                            data-delete-require-confirm="true">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                     @endcan
@@ -858,5 +917,26 @@ if (searchInput && formFiltros && tablaContainer) {
     });
 }
 
+// Inicializar TomSelect en filtros
+document.addEventListener('DOMContentLoaded', function() {
+    new TomSelect('#filtroTipo', {
+        placeholder: 'Todos los tipos',
+        searchField: ['text'],
+        maxOptions: null,
+        onChange: function() {
+            if (formFiltros) formFiltros.submit();
+        }
+    });
+    
+    new TomSelect('#filtroEstado', {
+        placeholder: 'Todos',
+        searchField: ['text'],
+        onChange: function() {
+            if (formFiltros) formFiltros.submit();
+        }
+    });
+});
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 @endpush

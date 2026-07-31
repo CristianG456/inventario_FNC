@@ -5,6 +5,10 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
+
 class StoreCampoPersonalizadoRequest extends FormRequest
 {
     /**
@@ -20,9 +24,54 @@ class StoreCampoPersonalizadoRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
+    protected function prepareForValidation()
+    {
+        if ($this->has('tipo')) {
+            $this->merge([
+                'tipo' => strtolower($this->tipo),
+            ]);
+        }
+        if ($this->has('modulo')) {
+            $this->merge([
+                'modulo' => strtolower($this->modulo),
+            ]);
+        }
+        if ($this->has('posicion_grilla_despues_de') && $this->posicion_grilla_despues_de) {
+            $this->merge([
+                'posicion_grilla_despues_de' => strtolower($this->posicion_grilla_despues_de),
+            ]);
+        }
+        if ($this->has('exportar_excel_despues_de') && $this->exportar_excel_despues_de) {
+            $this->merge([
+                'exportar_excel_despues_de' => strtolower($this->exportar_excel_despues_de),
+            ]);
+        }
+        if ($this->has('modo_asignacion_masiva') && $this->modo_asignacion_masiva) {
+            $this->merge([
+                'modo_asignacion_masiva' => strtolower($this->modo_asignacion_masiva),
+            ]);
+        }
+
+        $tipo = strtolower($this->tipo ?? '');
+
+        // Si el tipo no es select/multiselect, eliminamos los campos de asignación masiva
+        if (!in_array($tipo, ['select', 'multiselect'])) {
+            $this->request->remove('modo_asignacion_masiva');
+            $this->request->remove('valor_inicial_masivo');
+            $this->request->remove('asignar_valor_inicial');
+            $this->request->remove('opciones');
+        } else {
+            // Si es select/multiselect pero NO se marcó "asignar_valor_inicial", eliminamos los valores que viajan ocultos
+            if (!$this->boolean('asignar_valor_inicial')) {
+                $this->request->remove('modo_asignacion_masiva');
+                $this->request->remove('valor_inicial_masivo');
+            }
+        }
+    }
+
     public function rules(): array
     {
-        return [
+        $rules = [
             'modulo'               => 'required|string|max:50',
             'nombre'               => 'required|string|max:150|unique:campos_personalizados,nombre',
             'descripcion'          => 'nullable|string',
@@ -35,6 +84,41 @@ class StoreCampoPersonalizadoRequest extends FormRequest
             'exportar_por_defecto' => 'boolean',
             'activo'               => 'boolean',
             'opciones'             => 'nullable|string', // Se enviará como cadena separada por comas desde la vista y se guardará en la tabla opciones
+            'mostrar_en_grilla'    => 'boolean',
+            'participa_exportacion_cmdb' => 'boolean',
+            'participa_exportacion_completa' => 'boolean',
+            'participa_reportes'   => 'boolean',
+            'participa_filtros'    => 'boolean',
+            'posicion_grilla_despues_de' => 'nullable|string',
+            'exportar_excel_despues_de'  => 'nullable|string',
+            'asignar_valor_inicial' => 'boolean',
+            'modo_asignacion_masiva' => ['nullable', 'string', \Illuminate\Validation\Rule::in(['solo_vacios', 'sobrescribir_todos'])],
+            'valor_inicial_masivo' => 'nullable|string',
         ];
+
+        $tipo = strtolower($this->tipo ?? '');
+
+        if (!in_array($tipo, ['select', 'multiselect'])) {
+            unset($rules['modo_asignacion_masiva']);
+            unset($rules['valor_inicial_masivo']);
+            unset($rules['opciones']);
+            unset($rules['asignar_valor_inicial']);
+        } else {
+            if (!$this->boolean('asignar_valor_inicial')) {
+                unset($rules['modo_asignacion_masiva']);
+                unset($rules['valor_inicial_masivo']);
+            }
+        }
+
+        return $rules;
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        Log::error('Validation Failed in StoreCampoPersonalizadoRequest', [
+            'input' => $this->all(),
+            'errors' => $validator->errors()->toArray()
+        ]);
+        parent::failedValidation($validator);
     }
 }

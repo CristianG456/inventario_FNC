@@ -68,7 +68,7 @@ class LicenciasExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
 
     public function map($licencia): array
     {
-        return [
+        $row = [
             $licencia->id,
             $licencia->nombre,
             $licencia->tipo_licencia,
@@ -83,6 +83,10 @@ class LicenciasExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
             $licencia->correo_compra ?: 'N/A',
             $licencia->observaciones,
         ];
+
+        return array_map(function($item) {
+            return is_string($item) ? mb_strtoupper($item, 'UTF-8') : $item;
+        }, $row);
     }
 
     public function styles(Worksheet $sheet): array

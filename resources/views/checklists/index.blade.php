@@ -35,7 +35,7 @@
                                        class="text-decoration-none fw-medium">
                                         {{ $checklist->equipo->nombre_equipo }}
                                     </a>
-                                    <br><small class="text-muted">{{ $checklist->equipo->serial }}</small>
+                                    <br><small class="text-muted">{{ $checklist->equipo->serial_visual }}</small>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif

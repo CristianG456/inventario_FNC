@@ -50,9 +50,16 @@
                     <dt class="col-sm-5 text-muted">Equipo</dt>
                     <dd class="col-sm-7 fw-bold">{{ $asignacion->equipo?->nombre_equipo }}</dd>
                     <dt class="col-sm-5 text-muted">Serial</dt>
-                    <dd class="col-sm-7 font-monospace">{{ $asignacion->equipo?->serial }}</dd>
+                    <dd class="col-sm-7 font-monospace">{{ $asignacion->equipo?->serial_visual }}</dd>
                     <dt class="col-sm-5 text-muted">Activo Fijo</dt>
-                    <dd class="col-sm-7">{{ $asignacion->equipo?->activo_fijo ?? '—' }}</dd>
+                    <dd class="col-sm-7">
+                        @php
+                            $invalidos = ['PENDIENTE', 'N/A', 'NA', 'NO TIENE', 'SIN PLACA', 'SIN REGISTRO'];
+                            $activoFijoStr = strtoupper(trim((string) $asignacion->equipo?->activo_fijo));
+                            $activoValido = !empty($asignacion->equipo?->activo_fijo) && !in_array($activoFijoStr, $invalidos, true);
+                        @endphp
+                        {{ $activoValido ? $asignacion->equipo->activo_fijo : '—' }}
+                    </dd>
                     <dt class="col-sm-5 text-muted">Tipo</dt>
                     <dd class="col-sm-7">{{ $asignacion->equipo?->tipoRecurso?->nombre ?? '—' }}</dd>
                     <dt class="col-sm-5 text-muted">Marca / Modelo</dt>

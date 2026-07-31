@@ -15,7 +15,7 @@
                     @foreach($equipos as $eq)
                         <option value="{{ $eq->id }}"
                             {{ old('equipo_id', $checklist->equipo_id ?? request('equipo_id')) == $eq->id ? 'selected' : '' }}>
-                            {{ $eq->nombre_equipo }} — {{ $eq->serial }}
+                            {{ $eq->nombre_equipo }} — {{ $eq->serial_visual }}
                         </option>
                     @endforeach
                 </select>

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -74,6 +76,16 @@ class Equipo extends Model
         return $this->hasOne(Periferico::class);
     }
 
+    public function asignaciones(): HasMany
+    {
+        return $this->hasMany(Asignacion::class);
+    }
+
+    public function complementos(): HasMany
+    {
+        return $this->hasMany(ActivoComplemento::class, 'equipo_id');
+    }
+
     public function checklists(): HasMany
     {
         return $this->hasMany(Checklist::class);
@@ -82,11 +94,6 @@ class Equipo extends Model
     public function latestChecklist(): HasOne
     {
         return $this->hasOne(Checklist::class)->latestOfMany();
-    }
-
-    public function asignaciones(): HasMany
-    {
-        return $this->hasMany(Asignacion::class)->orderByDesc('fecha_accion');
     }
 
     public function historialTecnico(): HasMany
@@ -126,7 +133,6 @@ class Equipo extends Model
             'activo'        => 'Asignado',
             'disponible'    => 'Disponible',
             'asignado'      => 'Asignado',
-            'almacenado'    => 'Almacenado',
             'mantenimiento' => 'Mantenimiento',
             'baja'          => 'Baja',
             default         => $this->estado_operativo,
@@ -142,7 +148,6 @@ class Equipo extends Model
             'activo'        => 'success',
             'disponible'    => 'primary',
             'asignado'      => 'success',
-            'almacenado'    => 'secondary',
             'mantenimiento' => 'warning',
             'baja'          => 'danger',
             default         => 'secondary',
@@ -159,15 +164,32 @@ class Equipo extends Model
         return $prefijo . '-' . str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Devuelve "Sin serial" si el serial en BD es generado automáticamente.
-     */
     public function getSerialVisualAttribute(): string
     {
-        $serialReal = (string) $this->serial;
-        if (str_starts_with($serialReal, 'SIN_SERIAL_') || trim($serialReal) === '') {
-            return 'Sin serial';
+        $serialReal = trim((string) $this->serial);
+        $invalidos = ['PENDIENTE', 'N/A', 'NA', 'NO TIENE', 'SIN SERIAL', 'SIN REGISTRO'];
+        
+        if ($serialReal === '' || str_starts_with(strtoupper($serialReal), 'SIN_SERIAL_') || in_array(strtoupper($serialReal), $invalidos, true)) {
+            $prefijo = $this->tipoRecurso ? $this->tipoRecurso->prefijo : 'ACT';
+            $codigo = str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
+            return "{$prefijo}-S{$codigo}";
         }
         return $serialReal;
+    }
+
+    /**
+     * Identificador visual inteligente para la placa.
+     */
+    public function getPlacaVisualAttribute(): string
+    {
+        $placaReal = trim((string) $this->placa);
+        $invalidos = ['PENDIENTE', 'N/A', 'NA', 'NO TIENE', 'SIN PLACA', 'SIN REGISTRO'];
+        
+        if ($placaReal === '' || in_array(strtoupper($placaReal), $invalidos, true)) {
+            $prefijo = $this->tipoRecurso ? $this->tipoRecurso->prefijo : 'ACT';
+            $codigo = str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
+            return "{$prefijo}-P{$codigo}";
+        }
+        return $placaReal;
     }
 }

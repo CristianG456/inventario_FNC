@@ -24,8 +24,13 @@ use App\Http\Controllers\AuditController;
 
 // Ruta raíz redirige a la pantalla principal (o al login si no está autenticado)
 Route::get('/', function () {
-    return redirect()->route('inicio');
+    return redirect()->route('login');
 });
+
+Route::get('/test-export', function() {
+    return \App\Models\CampoPersonalizado::select('id', 'nombre', 'mostrar_en_grilla', 'participa_exportacion_cmdb', 'exportar_excel_despues_de')->get();
+});
+
 
 // === Rutas protegidas por autenticación ===
 Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
@@ -69,12 +74,27 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     Route::get('/equipos/{equipo}/historial-vida', [EquipoController::class, 'historialVida'])
         ->name('equipos.historial-vida')->middleware('permission:equipos.ver');
 
+    // ── Complementos del Activo Global (Debe ir antes de resource equipos) ───
+    Route::get('/equipos/complementos-global', [\App\Http\Controllers\ComplementoGlobalController::class, 'index'])
+        ->name('equipos.complementos.global')->middleware('permission:equipos.ver');
+
     // Equipos (CRUD) con permisos por acción
     Route::resource('equipos', EquipoController::class)
         ->middlewareFor(['index', 'show'], 'permission:equipos.ver')
         ->middlewareFor(['create', 'store'], 'permission:equipos.crear')
         ->middlewareFor(['edit', 'update'], 'permission:equipos.editar')
         ->middlewareFor(['destroy'], 'permission:equipos.eliminar');
+
+    // ── Complementos del Activo ──────────────────────────────────────────────
+    Route::post('/equipos/{equipo}/complementos', [EquipoController::class, 'storeComplemento'])->name('equipos.complementos.store')->middleware('permission:equipos.crear');
+    Route::put('/equipos/{equipo}/complementos/{complemento}', [EquipoController::class, 'updateComplemento'])->name('equipos.complementos.update')->middleware('permission:equipos.editar');
+    Route::delete('/equipos/{equipo}/complementos/{complemento}', [EquipoController::class, 'destroyComplemento'])->name('equipos.complementos.destroy')->middleware('permission:equipos.eliminar');
+    Route::post('/equipos/{equipo}/complementos/{complemento}/transferir', [EquipoController::class, 'transferirComplemento'])->name('equipos.complementos.transferir')->middleware('permission:equipos.editar');
+    
+    // API interna para JS
+    Route::get('/tipo-recursos/{tipoRecurso}/complementos-definidos', [EquipoController::class, 'getComplementosPorTipo'])->name('tipo-recursos.complementos-definidos')->middleware('permission:equipos.ver');
+    Route::post('/catalogo-complementos', [TipoRecursoController::class, 'storeCatalogoComplemento'])->name('catalogo-complementos.store')->middleware('permission:equipos.crear');
+    Route::put('/catalogo-complementos/{catalogoComplemento}', [TipoRecursoController::class, 'updateCatalogoComplemento'])->name('catalogo-complementos.update')->middleware('permission:equipos.crear');
 
     // ── Asignaciones ──────────────────────────────────────────────────────────
     Route::get('/asignaciones', [AsignacionController::class, 'index'])
@@ -146,6 +166,12 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
         ->middleware('permission:usuarios.editar');
 
     // ── HelpDesk (Tickets) ────────────────────────────────────────────────────
+    Route::put('/tickets/{ticket}/estado', [TicketController::class, 'cambiarEstado'])->name('tickets.estado')->middleware('permission:mesaayuda.editar');
+    Route::put('/tickets/{ticket}/diagnostico', [TicketController::class, 'updateDiagnostico'])->name('tickets.diagnostico')->middleware('permission:mesaayuda.editar');
+    Route::post('/tickets/{ticket}/seguimiento', [TicketController::class, 'storeSeguimiento'])->name('tickets.seguimiento')->middleware('permission:mesaayuda.editar');
+    Route::put('/tickets/{ticket}/solucion', [TicketController::class, 'updateSolucion'])->name('tickets.solucion')->middleware('permission:mesaayuda.editar');
+    Route::post('/tickets/{ticket}/evidencia', [TicketController::class, 'uploadEvidencia'])->name('tickets.evidencia')->middleware('permission:mesaayuda.editar');
+    Route::get('/tickets/{ticket}/evidencia/{index}/descargar', [TicketController::class, 'descargarEvidencia'])->name('tickets.evidencia.descargar')->middleware('permission:mesaayuda.ver');
     Route::resource('tickets', TicketController::class)->middleware('permission:mesaayuda.ver');
 
     // ── Reportes ──────────────────────────────────────────────────────────────

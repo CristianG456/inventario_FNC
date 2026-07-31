@@ -46,7 +46,7 @@ class AsignacionesExport implements FromQuery, WithHeadings, WithMapping, Should
     {
         $equipo = $asignacion->equipo;
 
-        return [
+        $row = [
             $asignacion->id,
             $asignacion->fecha_accion?->format('d/m/Y H:i:s'),
             $asignacion->tipo_accion_label,
@@ -58,6 +58,10 @@ class AsignacionesExport implements FromQuery, WithHeadings, WithMapping, Should
             $asignacion->motivo,
             $asignacion->registradoPor?->name ?? 'N/A'
         ];
+
+        return array_map(function($item) {
+            return is_string($item) ? mb_strtoupper($item, 'UTF-8') : $item;
+        }, $row);
     }
 
     public function styles(Worksheet $sheet): array

@@ -12,6 +12,26 @@ class EquipoRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        $tipoId = $this->input('tipo_recurso_id');
+        if ($tipoId) {
+            $tipo = \App\Models\TipoRecurso::find($tipoId);
+            if ($tipo) {
+                $visibles = \App\Services\ConfiguracionActivosService::getCamposVisibles($tipo->prefijo);
+                
+                // Auto-generación semántica para cumplir la restricción NOT NULL de BD
+                // sin utilizar valores de relleno (aplica a activos simples que no usan hostname)
+                if (!in_array('nombre_equipo', $visibles) && empty($this->input('nombre_equipo'))) {
+                    $marca = $this->input('marca', 'Genérico');
+                    $modelo = $this->input('modelo', '');
+                    $nombreSemantico = mb_strtoupper(trim($tipo->nombre . ' ' . $marca . ' ' . $modelo));
+                    $this->merge(['nombre_equipo' => $nombreSemantico]);
+                }
+            }
+        }
+    }
+
     public function rules(): array
     {
         $equipoId = $this->route('equipo')?->id;
@@ -26,7 +46,7 @@ class EquipoRequest extends FormRequest
             'marca'            => ['required', 'string', 'max:100'],
             'modelo'           => ['required', 'string', 'max:100'],
             'nombre_equipo'    => ['required', 'string', 'max:150'],
-            'estado_operativo' => ['required', Rule::in(['activo', 'mantenimiento', 'baja', 'asignado', 'disponible', 'almacenado'])],
+            'estado_operativo' => ['required', Rule::in(['activo', 'mantenimiento', 'baja', 'asignado', 'disponible'])],
             'razon_estado'     => ['nullable', 'string', 'max:500'],
             'procesador'       => ['nullable', 'string', 'max:150'],
             'ram'              => ['nullable', 'string', 'max:50'],
@@ -63,11 +83,21 @@ class EquipoRequest extends FormRequest
             'usuario_distrito'     => ['nullable', 'string', 'max:150'],
             'usuario_seccional'    => ['nullable', 'string', 'max:150'],
 
-            // --- Periféricos ---
-            'periferico_telefono' => ['nullable', 'string', 'max:100'],
-            'periferico_teclado'  => ['nullable', 'string', 'max:100'],
-            'periferico_mouse'    => ['nullable', 'string', 'max:100'],
-            'periferico_camara'   => ['nullable', 'string', 'max:100'],
+            // Periféricos
+            'periferico_telefono' => 'nullable|string|max:100',
+            'periferico_teclado' => 'nullable|string|max:100',
+            'periferico_mouse' => 'nullable|string|max:100',
+            'periferico_camara' => 'nullable|string|max:100',
+
+            // Complementos del Activo (opcionales al crear/editar)
+            'complementos'                          => ['nullable', 'array'],
+            'complementos.*.catalogo_complemento_id'=> ['required', 'exists:catalogo_complementos,id'],
+            'complementos.*.estado'                 => ['required', 'string', 'max:50'],
+            'complementos.*.marca'                  => ['nullable', 'string', 'max:100'],
+            'complementos.*.modelo'                 => ['nullable', 'string', 'max:100'],
+            'complementos.*.serial'                 => ['nullable', 'string', 'max:100'],
+            'complementos.*.observaciones'          => ['nullable', 'string', 'max:500'],
+            'complementos.*.cantidad'               => ['nullable', 'integer', 'min:1'],
         ];
     }
 

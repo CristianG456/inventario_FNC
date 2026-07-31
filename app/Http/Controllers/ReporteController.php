@@ -18,7 +18,7 @@ class ReporteController extends Controller
     public function index()
     {
         $camposExportables = \App\Models\CampoPersonalizado::where('modulo', 'equipos')
-            ->where('exportable', true)
+            ->where('exportable', 1)
             ->select('id', 'nombre', 'exportar_por_defecto')
             ->orderBy('orden')
             ->get();
@@ -58,7 +58,7 @@ class ReporteController extends Controller
         $stats = [
             'total_equipos' => Equipo::count(),
             'equipos_activos' => Equipo::where('estado_operativo', 'activo')->count(),
-            'equipos_inactivos' => Equipo::whereIn('estado_operativo', ['almacenado', 'baja'])->count(),
+            'equipos_inactivos' => Equipo::whereIn('estado_operativo', ['baja'])->count(),
             'equipos_mantenimiento' => Equipo::where('estado_operativo', 'mantenimiento')->count(),
             'equipos_baja' => Equipo::where('estado_operativo', 'baja')->count(),
             'equipos_por_tipo' => Equipo::join('tipo_recursos', 'equipos.tipo_recurso_id', '=', 'tipo_recursos.id')

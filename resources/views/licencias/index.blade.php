@@ -26,7 +26,8 @@
 </div>
 
 {{-- Alertas --}}
-@if($alertasRojas > 0)
+@if($alertasRojas > 0 && !session('licencias_vencidas_alert_shown_index'))
+@php session()->put('licencias_vencidas_alert_shown_index', true); @endphp
 <div class="alert alert-danger d-flex align-items-center licencia-alerta" role="alert">
     <i class="bi bi-exclamation-octagon-fill fs-4 me-3"></i>
     <div>
@@ -35,7 +36,8 @@
 </div>
 @endif
 
-@if($alertasAmarillas > 0)
+@if($alertasAmarillas > 0 && !session('licencias_por_vencer_alert_shown_index'))
+@php session()->put('licencias_por_vencer_alert_shown_index', true); @endphp
 <div class="alert alert-warning d-flex align-items-center licencia-alerta" role="alert">
     <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
     <div>
@@ -177,6 +179,6 @@
             alerta.style.opacity = "0";
             setTimeout(() => alerta.remove(), 500);
         });
-    }, 40000);
+    }, 10000);
 </script>
 @endpush

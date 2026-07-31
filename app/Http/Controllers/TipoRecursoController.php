@@ -11,18 +11,29 @@ class TipoRecursoController extends Controller
 {
     public function index(): View
     {
-        $tipoRecursos = TipoRecurso::withCount('equipos')->orderBy('id', 'asc')->paginate(20);
-        return view('tipo_recursos.index', compact('tipoRecursos'));
+        $tipoRecursos = TipoRecurso::withCount('equipos')->with('complementosDefinidos')->orderBy('id', 'asc')->paginate(20);
+        $catalogoComplementos = \App\Models\CatalogoComplemento::orderBy('nombre')->get();
+        return view('tipo_recursos.index', compact('tipoRecursos', 'catalogoComplementos'));
     }
 
     public function create(): View
     {
-        return view('tipo_recursos.create');
+        $catalogoComplementos = \App\Models\CatalogoComplemento::orderBy('nombre')->get();
+        return view('tipo_recursos.create', compact('catalogoComplementos'));
     }
 
     public function store(TipoRecursoRequest $request): RedirectResponse
     {
-        TipoRecurso::create($request->validated());
+        $tipo = TipoRecurso::create($request->validated());
+
+        if ($request->has('complementos_ids')) {
+            // Asignar orden automáticamente
+            $syncData = [];
+            foreach ($request->complementos_ids as $index => $id) {
+                $syncData[$id] = ['orden' => $index + 1];
+            }
+            $tipo->complementosDefinidos()->sync($syncData);
+        }
 
         return redirect()->route('tipo-recursos.index')
             ->with('success', 'Tipo de recurso creado correctamente.');
@@ -30,12 +41,24 @@ class TipoRecursoController extends Controller
 
     public function edit(TipoRecurso $tipoRecurso): View
     {
-        return view('tipo_recursos.edit', compact('tipoRecurso'));
+        $tipoRecurso->load('complementosDefinidos');
+        $catalogoComplementos = \App\Models\CatalogoComplemento::orderBy('nombre')->get();
+        return view('tipo_recursos.edit', compact('tipoRecurso', 'catalogoComplementos'));
     }
 
     public function update(TipoRecursoRequest $request, TipoRecurso $tipoRecurso): RedirectResponse
     {
         $tipoRecurso->update($request->validated());
+
+        if ($request->has('complementos_ids')) {
+            $syncData = [];
+            foreach ($request->complementos_ids as $index => $id) {
+                $syncData[$id] = ['orden' => $index + 1];
+            }
+            $tipoRecurso->complementosDefinidos()->sync($syncData);
+        } else {
+            $tipoRecurso->complementosDefinidos()->sync([]);
+        }
 
         return redirect()->route('tipo-recursos.index')
             ->with('success', 'Tipo de recurso actualizado correctamente.');
@@ -53,5 +76,62 @@ class TipoRecursoController extends Controller
 
         return redirect()->route('tipo-recursos.index')
             ->with('success', 'Tipo de recurso eliminado correctamente.');
+    }
+
+    // ── Catálogo de Complementos ──────────────────────────────────────────────
+
+    public function storeCatalogoComplemento(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100|unique:catalogo_complementos',
+            'requiere_serial' => 'nullable|boolean',
+            'usa_estado' => 'nullable|boolean',
+            'activo' => 'nullable|boolean',
+            'tipo_recursos_ids' => 'required|array|min:1',
+            'tipo_recursos_ids.*' => 'exists:tipo_recursos,id',
+        ]);
+
+        $catalogo = \App\Models\CatalogoComplemento::create([
+            'nombre' => $request->nombre,
+            'requiere_serial' => $request->boolean('requiere_serial'),
+            'usa_estado' => $request->boolean('usa_estado', true),
+            'activo' => $request->has('activo') ? $request->boolean('activo') : true,
+        ]);
+
+        // Sync relationships with order
+        $syncData = [];
+        foreach ($request->tipo_recursos_ids as $index => $trId) {
+            $syncData[$trId] = ['orden' => $index + 1];
+        }
+        $catalogo->tipoRecursos()->sync($syncData);
+
+        return back()->with('success', 'Complemento agregado al catálogo maestro con sus compatibilidades.');
+    }
+
+    public function updateCatalogoComplemento(\Illuminate\Http\Request $request, \App\Models\CatalogoComplemento $catalogoComplemento)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100|unique:catalogo_complementos,nombre,' . $catalogoComplemento->id,
+            'requiere_serial' => 'nullable|boolean',
+            'usa_estado' => 'nullable|boolean',
+            'activo' => 'nullable|boolean',
+            'tipo_recursos_ids' => 'required|array|min:1',
+            'tipo_recursos_ids.*' => 'exists:tipo_recursos,id',
+        ]);
+
+        $catalogoComplemento->update([
+            'nombre' => $request->nombre,
+            'requiere_serial' => $request->boolean('requiere_serial'),
+            'usa_estado' => $request->boolean('usa_estado', true),
+            'activo' => $request->boolean('activo'),
+        ]);
+
+        $syncData = [];
+        foreach ($request->tipo_recursos_ids as $index => $trId) {
+            $syncData[$trId] = ['orden' => $index + 1];
+        }
+        $catalogoComplemento->tipoRecursos()->sync($syncData);
+
+        return back()->with('success', 'Complemento actualizado correctamente.');
     }
 }

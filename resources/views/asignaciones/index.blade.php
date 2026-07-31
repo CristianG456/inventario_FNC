@@ -66,7 +66,7 @@
                             <td class="text-muted small">{{ $asignacion->id }}</td>
                             <td>
                                 <span class="fw-medium">{{ $asignacion->equipo?->nombre_equipo ?? '—' }}</span>
-                                <br><small class="text-muted font-monospace">{{ $asignacion->equipo?->serial ?? '' }}</small>
+                                <br><small class="text-muted font-monospace">{{ $asignacion->equipo?->serial_visual ?? '' }}</small>
                             </td>
                             <td>
                                 @if($asignacion->usuario_nombre)

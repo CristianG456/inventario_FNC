@@ -55,7 +55,7 @@ class ActivosPorFuncionarioExport implements FromQuery, WithHeadings, WithMappin
     {
         $usuario = $equipo->usuarioAsignado;
 
-        return [
+        $row = [
             $usuario?->cedula,
             $usuario?->nombre,
             $usuario?->cargo,
@@ -72,6 +72,10 @@ class ActivosPorFuncionarioExport implements FromQuery, WithHeadings, WithMappin
             ucfirst($equipo->estado_operativo),
             $usuario?->created_at?->format('d/m/Y H:i:s')
         ];
+
+        return array_map(function($item) {
+            return is_string($item) ? mb_strtoupper($item, 'UTF-8') : $item;
+        }, $row);
     }
 
     public function styles(Worksheet $sheet): array

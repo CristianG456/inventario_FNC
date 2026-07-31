@@ -25,7 +25,14 @@ class CampoPersonalizado extends Model
         'exportable',
         'exportar_por_defecto',
         'orden',
-        'activo'
+        'activo',
+        'mostrar_en_grilla',
+        'participa_exportacion_cmdb',
+        'participa_exportacion_completa',
+        'participa_reportes',
+        'participa_filtros',
+        'posicion_grilla_despues_de',
+        'exportar_excel_despues_de'
     ];
 
     protected $casts = [
@@ -36,6 +43,11 @@ class CampoPersonalizado extends Model
         'exportable' => 'boolean',
         'exportar_por_defecto' => 'boolean',
         'activo' => 'boolean',
+        'mostrar_en_grilla' => 'boolean',
+        'participa_exportacion_cmdb' => 'boolean',
+        'participa_exportacion_completa' => 'boolean',
+        'participa_reportes' => 'boolean',
+        'participa_filtros' => 'boolean',
     ];
 
     public function opciones(): HasMany

@@ -26,7 +26,7 @@
                     <a href="{{ route('equipos.show', $checklist->equipo) }}">
                         {{ $checklist->equipo->nombre_equipo }}
                     </a>
-                    <span class="text-muted ms-2">({{ $checklist->equipo->serial }})</span>
+                    <span class="text-muted ms-2">({{ $checklist->equipo->serial_visual }})</span>
                 @else
                     —
                 @endif

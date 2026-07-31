@@ -27,6 +27,34 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-medium">Complementos Definidos</label>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body bg-light rounded">
+                        <p class="small text-muted mb-2">Seleccione los complementos que aplican para este tipo de recurso.</p>
+                        @if($catalogoComplementos->isEmpty())
+                            <div class="alert alert-warning mb-0 small">No hay complementos en el catálogo.</div>
+                        @else
+                            <div class="row g-2">
+                                @foreach($catalogoComplementos as $comp)
+                                    @php
+                                        $checked = $tipoRecurso->complementosDefinidos->contains('id', $comp->id) ? 'checked' : '';
+                                    @endphp
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="complementos_ids[]" value="{{ $comp->id }}" id="comp{{ $comp->id }}" {{ $checked }}>
+                                            <label class="form-check-label" for="comp{{ $comp->id }}">
+                                                {{ $comp->nombre }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
             <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('tipo-recursos.index') }}" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary">

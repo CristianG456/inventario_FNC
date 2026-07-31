@@ -18,6 +18,8 @@ class TipoRecursoRequest extends FormRequest
 
         return [
             'nombre' => ['required', 'string', 'max:100', Rule::unique('tipo_recursos', 'nombre')->ignore($tipoId)],
+            'complementos_ids'   => ['nullable', 'array'],
+            'complementos_ids.*' => ['exists:catalogo_complementos,id'],
         ];
     }
 

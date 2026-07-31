@@ -121,6 +121,7 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
             'periferico_teclado'         => 'Periférico (Teclado)',
             'periferico_mouse'           => 'Periférico (Mouse)',
             'periferico_camara'          => 'Periférico (Cámara)',
+            'complementos'               => 'Complementos del Activo',
         ];
     }
 
@@ -139,53 +140,18 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
 
     public static function columnasCompletas(): array
     {
-        return [
-            'id',
-            'nombre_equipo',
-            'serial',
-            'activo_fijo',
-            'placa',
-            'tipo',
-            'marca',
-            'modelo',
-            'estado',
-            'razon_estado',
-            'procesador',
-            'ram',
-            'disco',
-            'sistema_operativo',
-            'fecha_compra',
-            'fin_garantia',
-            'tiempo_uso',
-            'responsable_nombre',
-            'responsable_cedula',
-            'responsable_cargo',
-            'responsable_ciudad',
-            'responsable_area',
-            'responsable_tipo_recurso',
-            'fecha_inicio_responsable',
-            'fecha_fin_responsable',
-            'usuario_asignado',
-            'cedula_asignado',
-            'usuario_cargo',
-            'usuario_area',
-            'usuario_dependencia',
-            'usuario_empresa_propietaria',
-            'usuario_empresa_funcionario',
-            'usuario_tipo_vinculacion',
-            'usuario_ciudad',
-            'usuario_departamento',
-            'usuario_shortname',
-            'usuario_piso',
-            'usuario_distrito',
-            'usuario_seccional',
-            'usuario_fuente_recurso',
-            'periferico_telefono',
-            'periferico_teclado',
-            'periferico_mouse',
-            'periferico_camara',
-        ];
+        // Primero todas las columnas CMDB principal (en su orden institucional)
+        $columnas = self::columnasCmdbPrincipal();
+        
+        // Luego agregar todas las columnas estándar adicionales que NO están en la CMDB
+        $adicionales = array_keys(self::columnasAdicionalesSobreCmdbPrincipal());
+        
+        return array_merge($columnas, $adicionales);
     }
+
+    /** @var \App\Exports\Providers\EquipoExportProviderInterface[] */
+    private array $providers = [];
+    private bool $isCompleta = false;
 
     public function __construct(array $columnasEstandar = [], array $columnasPersonalizadas = [], array $filtros = [])
     {
@@ -193,21 +159,58 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
         $this->columnasPersonalizadas = $columnasPersonalizadas;
         $this->filtros = $filtros;
 
-        if (!empty($this->columnasPersonalizadas)) {
-            $this->camposInfo = CampoPersonalizado::whereIn('id', $this->columnasPersonalizadas)
+        if (count($this->columnasEstandar) === 1 && $this->columnasEstandar[0] === 'COMPLETA') {
+            $this->isCompleta = true;
+            $camposInfo = CampoPersonalizado::whereIn('id', $this->columnasPersonalizadas)
                                 ->orderBy('orden')
                                 ->get();
+            
+            $this->providers = [
+                new \App\Exports\Providers\GeneralProvider(),
+                new \App\Exports\Providers\DatosTecnicosProvider(),
+                new \App\Exports\Providers\AdministrativoProvider(),
+                new \App\Exports\Providers\ResponsableProvider(),
+                new \App\Exports\Providers\AsignacionProvider(),
+                new \App\Exports\Providers\PerifericosProvider(),
+                new \App\Exports\Providers\LicenciasProvider(),
+                new \App\Exports\Providers\HistorialProvider(),
+                new \App\Exports\Providers\ComplementosProvider(),
+                new \App\Exports\Providers\CamposPersonalizadosProvider($camposInfo),
+            ];
+            $this->camposInfo = collect(); // Not used directly in COMPLETA
         } else {
-            $this->camposInfo = collect();
+            if (!empty($this->columnasPersonalizadas)) {
+                $this->camposInfo = CampoPersonalizado::whereIn('id', $this->columnasPersonalizadas)
+                                    ->orderBy('orden')
+                                    ->get();
+                                    
+                \Log::info('EquiposExport recibe:', [
+                    'campos_nombres' => $this->camposInfo->pluck('nombre')->toArray(),
+                    'ids' => $this->columnasPersonalizadas
+                ]);
+            } else {
+                $this->camposInfo = collect();
+                \Log::info('EquiposExport recibe array vacío de IDs personalizados');
+            }
         }
     }
 
     /**
-     * Carga los equipos con sus relaciones (sin periféricos).
+     * Carga los equipos con sus relaciones.
      */
     public function query()
     {
-        return Equipo::with(['tipoRecurso', 'usuarioAsignado', 'periferico', 'latestChecklist', 'camposPersonalizadosValores'])
+        $relations = ['tipoRecurso', 'usuarioAsignado', 'periferico', 'latestChecklist', 'camposPersonalizadosValores', 'complementos.catalogoComplemento.tipoRecursos'];
+        
+        if ($this->isCompleta) {
+            $relations = [];
+            foreach ($this->providers as $provider) {
+                $relations = array_merge($relations, $provider->getRelations());
+            }
+            $relations = array_unique($relations);
+        }
+        
+        return Equipo::with($relations)
             ->when(!empty($this->filtros['buscar']), function ($q) {
                 $q->where(function ($sub) {
                     $buscar = $this->filtros['buscar'];
@@ -231,17 +234,39 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
 
     public function headings(): array
     {
-        $headings = [];
+        if ($this->isCompleta) {
+            $headings = [];
+            foreach ($this->providers as $provider) {
+                $headings = array_merge($headings, $provider->getHeadings());
+            }
+            return $headings;
+        }
 
+        $headings = [];
         $nombresEstandar = array_merge(self::columnasCmdbPrincipalEtiquetas(), self::columnasEstandarDisponibles());
 
         foreach ($this->columnasEstandar as $col) {
-               if (isset($nombresEstandar[$col])) {
+            if (isset($nombresEstandar[$col])) {
                 $headings[] = mb_strtoupper($nombresEstandar[$col]);
+            }
+            
+            // Inyectar campos personalizados configurados para ir después de esta columna
+            // Busca tanto por la clave exacta como por la clave CMDB equivalente
+            $camposEnPosicion = $this->camposEnPosicion($col);
+            foreach ($camposEnPosicion as $campo) {
+                $headings[] = mb_strtoupper($campo->nombre);
+                \Log::info('Agregando encabezado CMDB en posición:', ['columna_base' => $col, 'campo_inyectado' => $campo->nombre]);
             }
         }
 
-        foreach ($this->camposInfo as $campo) {
+        // Agregar los campos personalizados que no tienen posición específica (al final)
+        $camposConPosicion = collect();
+        foreach ($this->columnasEstandar as $col) {
+            $camposConPosicion = $camposConPosicion->merge($this->camposEnPosicion($col));
+        }
+        $idsCamposConPosicion = $camposConPosicion->pluck('id')->unique()->toArray();
+        
+        foreach ($this->camposInfo->whereNotIn('id', $idsCamposConPosicion) as $campo) {
             $headings[] = mb_strtoupper($campo->nombre);
         }
 
@@ -253,6 +278,14 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
      */
     public function map($equipo): array
     {
+        if ($this->isCompleta) {
+            $row = [];
+            foreach ($this->providers as $provider) {
+                $row = array_merge($row, $provider->map($equipo));
+            }
+            return $row;
+        }
+
         $row = [];
         
         foreach ($this->columnasEstandar as $col) {
@@ -379,6 +412,38 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
                     break;
                 case 'cmdb_marca_equipo':
                     $row[] = $equipo->marca ?? '';
+                    break;
+                case 'periferico_camara':
+                    $row[] = $equipo->periferico?->camara ?? '';
+                    break;
+                case 'complementos':
+                    $complementos = $equipo->complementos;
+                    if ($complementos->isEmpty()) {
+                        $row[] = '';
+                    } else {
+                        $lineas = [];
+                        foreach ($complementos as $comp) {
+                            $linea = $comp->nombre;
+                            if ($comp->estado) {
+                                $linea .= " ({$comp->estado})";
+                            }
+                            if ($comp->serial) {
+                                $linea .= " [SN: {$comp->serial}]";
+                            }
+                            if ($comp->cantidad > 1) {
+                                $linea .= " x{$comp->cantidad}";
+                            }
+                            if ($comp->catalogoComplemento && $comp->catalogoComplemento->tipoRecursos->count() > 0) {
+                                $compatibilidad = $comp->catalogoComplemento->tipoRecursos->pluck('nombre')->join(', ');
+                                $linea .= " [Compatible con: {$compatibilidad}]";
+                            }
+                            $lineas[] = $linea;
+                        }
+                        $row[] = implode(', ', $lineas);
+                    }
+                    break;
+                default:
+                    $row[] = '';
                     break;
                 case 'id': 
                     $row[] = $equipo->id; 
@@ -513,24 +578,92 @@ class EquiposExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoS
                     $row[] = $equipo->periferico?->camara ?? '';
                     break;
             }
-        }
 
-        foreach ($this->camposInfo as $campo) {
-            $valorRelacion = $equipo->camposPersonalizadosValores->where('campo_personalizado_id', $campo->id)->first();
-            $valor = $valorRelacion ? $valorRelacion->valor : '';
-            
-            if ($campo->tipo === 'multiselect' && !empty($valor)) {
-                $decodificado = is_string($valor) ? json_decode($valor, true) : $valor;
-                if (is_array($decodificado)) {
-                    $valor = implode(', ', $decodificado);
-                }
-            } else if ($campo->tipo === 'boolean' && $valor !== '') {
-                $valor = $valor == '1' ? 'Sí' : 'No';
+            // Inyectar valores de campos personalizados configurados para ir después de esta columna
+            $camposEnPosicion = $this->camposEnPosicion($col);
+            foreach ($camposEnPosicion as $campo) {
+                $valor = $this->obtenerValorCampoPersonalizado($equipo, $campo);
+                $row[] = $valor;
+                \Log::info('Agregando valor en map CMDB:', ['columna_base' => $col, 'campo_nombre' => $campo->nombre, 'valor' => $valor]);
             }
-            $row[] = $valor;
         }
 
-        return $row;
+        // Agregar valores de campos personalizados que no tienen posición específica (al final)
+        $camposConPosicion = collect();
+        foreach ($this->columnasEstandar as $col) {
+            $camposConPosicion = $camposConPosicion->merge($this->camposEnPosicion($col));
+        }
+        $idsCamposConPosicion = $camposConPosicion->pluck('id')->unique()->toArray();
+        
+        foreach ($this->camposInfo->whereNotIn('id', $idsCamposConPosicion) as $campo) {
+            $row[] = $this->obtenerValorCampoPersonalizado($equipo, $campo);
+        }
+
+        return array_map(function($item) {
+            return is_string($item) ? mb_strtoupper($item, 'UTF-8') : $item;
+        }, $row);
+    }
+
+    /**
+     * Obtiene los campos personalizados que deben insertarse después de la columna dada.
+     * Maneja la equivalencia entre claves CMDB (cmdb_modelo) y estándar (modelo).
+     */
+    private function camposEnPosicion(string $col): \Illuminate\Support\Collection
+    {
+        // Mapeo de claves estándar a sus equivalentes CMDB
+        $estandarACmdb = [
+            'modelo' => 'cmdb_modelo',
+            'marca' => 'cmdb_marca',
+            'estado' => 'cmdb_estado_operativo',
+            'razon_estado' => 'cmdb_razon_estado',
+            'procesador' => 'cmdb_procesador',
+            'ram' => 'cmdb_memoria_ram',
+            'disco' => 'cmdb_tamano_disco_duro',
+            'sistema_operativo' => 'cmdb_sistema_operativo',
+            'fecha_compra' => 'cmdb_fecha_compra',
+            'fin_garantia' => 'cmdb_fin_garantia',
+            'tiempo_uso' => 'cmdb_tiempo_uso_anos',
+            'tipo' => 'cmdb_tipo',
+            'serial' => 'cmdb_serial',
+            'placa' => 'cmdb_placa',
+            'nombre_equipo' => 'cmdb_nombre_equipo',
+        ];
+
+        // Buscar directamente por la clave
+        $campos = $this->camposInfo->where('exportar_excel_despues_de', $col);
+        
+        // Si la columna es estándar, buscar también por su equivalente CMDB
+        if (isset($estandarACmdb[$col])) {
+            $campos = $campos->merge(
+                $this->camposInfo->where('exportar_excel_despues_de', $estandarACmdb[$col])
+            );
+        }
+        
+        // Si la columna es CMDB, buscar también por su equivalente estándar
+        $cmdbAEstandar = array_flip($estandarACmdb);
+        if (isset($cmdbAEstandar[$col])) {
+            $campos = $campos->merge(
+                $this->camposInfo->where('exportar_excel_despues_de', $cmdbAEstandar[$col])
+            );
+        }
+        
+        return $campos->unique('id');
+    }
+
+    private function obtenerValorCampoPersonalizado($equipo, $campo)
+    {
+        $valorRelacion = $equipo->camposPersonalizadosValores->where('campo_personalizado_id', $campo->id)->first();
+        $valor = $valorRelacion ? $valorRelacion->valor : '';
+        
+        if ($campo->tipo === 'multiselect' && !empty($valor)) {
+            $decodificado = is_string($valor) ? json_decode($valor, true) : $valor;
+            if (is_array($decodificado)) {
+                $valor = implode(', ', $decodificado);
+            }
+        } else if ($campo->tipo === 'boolean' && $valor !== '') {
+            $valor = $valor == '1' ? 'Sí' : 'No';
+        }
+        return $valor;
     }
 
     public function styles(Worksheet $sheet): array

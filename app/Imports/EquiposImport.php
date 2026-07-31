@@ -171,6 +171,8 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
 
                 // 1. Resolver tipo_recurso
                 $tipoId = $this->resolverTipoRecurso($tipoNombre);
+                $tipoModelo = \App\Models\TipoRecurso::find($tipoId);
+                $visibles = \App\Services\ConfiguracionActivosService::getCamposVisibles($tipoModelo->prefijo);
 
                 // 2. Resolver serial (autogenerar si no existe)
                 $serialFinal = $this->resolverSerial($serial);
@@ -182,24 +184,35 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
                     $responsableNombre = $this->responsableInstitucional;
                 }
 
-                // 4. Crear o actualizar equipo
+                $marca = $this->mapper->getOrDefault($row, 'marca');
+                $modelo = $this->mapper->getOrDefault($row, 'modelo');
+                $nombreEquipo = $this->mapper->getOrDefault($row, 'nombre_equipo');
+
+                // Si no requiere nombre de equipo (ej. Cajón), auto-generarlo semánticamente para DB
+                if (!in_array('nombre_equipo', $visibles) && empty($nombreEquipo)) {
+                    $nombreEquipo = mb_strtoupper(trim($tipoModelo->nombre . ' ' . $marca . ' ' . $modelo));
+                }
+
+                // 4. Crear o actualizar equipo filtrando por la matriz central
                 $equipo = Equipo::updateOrCreate(
                     ['serial' => $serialFinal],
                     [
                         'tipo_recurso_id'   => $tipoId,
                         'placa'             => $this->mapper->get($row, 'placa'),
-                        'marca'             => $this->mapper->getOrDefault($row, 'marca'),
-                        'modelo'            => $this->mapper->getOrDefault($row, 'modelo'),
-                        'nombre_equipo'     => $this->mapper->getOrDefault($row, 'nombre_equipo'),
+                        'marca'             => $marca,
+                        'modelo'            => $modelo,
+                        'nombre_equipo'     => $nombreEquipo,
                         'estado_operativo'  => $this->mapearEstadoOperativo($this->mapper->get($row, 'estado_operativo')),
                         'razon_estado'      => $this->mapper->get($row, 'razon_estado'),
-                        'procesador'        => $this->mapper->get($row, 'procesador'),
-                        'ram'               => $this->mapper->get($row, 'ram'),
-                        'disco'             => $this->mapper->get($row, 'disco'),
-                        'sistema_operativo' => $this->mapper->get($row, 'sistema_operativo'),
-                        'fecha_compra'      => $this->mapper->getDate($row, 'fecha_compra'),
-                        'fin_garantia'      => $this->mapper->getDate($row, 'fin_garantia'),
-                        'tiempo_uso'        => $this->mapper->get($row, 'tiempo_uso'),
+                        // Filtrado estricto por matriz
+                        'procesador'        => in_array('procesador', $visibles) ? $this->mapper->get($row, 'procesador') : null,
+                        'ram'               => in_array('ram', $visibles) ? $this->mapper->get($row, 'ram') : null,
+                        'disco'             => in_array('disco', $visibles) ? $this->mapper->get($row, 'disco') : null,
+                        'sistema_operativo' => in_array('sistema_operativo', $visibles) ? $this->mapper->get($row, 'sistema_operativo') : null,
+                        'fecha_compra'      => in_array('fecha_compra', $visibles) ? $this->mapper->getDate($row, 'fecha_compra') : null,
+                        'fin_garantia'      => in_array('fin_garantia', $visibles) ? $this->mapper->getDate($row, 'fin_garantia') : null,
+                        'tiempo_uso'        => in_array('tiempo_uso', $visibles) ? $this->mapper->get($row, 'tiempo_uso') : null,
+                        // Responsable
                         'responsable_cedula'=> $this->mapper->get($row, 'responsable_cedula'),
                         'responsable_nombre'=> $responsableNombre,
                         'responsable_cargo' => $this->mapper->get($row, 'responsable_cargo'),
@@ -374,7 +387,7 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
             return 'disponible';
         }
         if (str_contains($e, 'almacenado') || str_contains($e, 'almacen')) {
-            return 'almacenado';
+            return 'disponible';
         }
         if (str_contains($e, 'mantenimiento') || str_contains($e, 'alistamiento')) {
             return 'mantenimiento';
@@ -389,7 +402,7 @@ class EquiposImport implements ToModel, WithHeadingRow, WithChunkReading, SkipsO
             return 'baja';
         }
         if (str_contains($e, 'pendiente')) {
-            return 'almacenado';
+            return 'disponible';
         }
 
         return 'disponible';
