@@ -93,6 +93,50 @@
     </div>
 </div>
 
+{{-- Indicadores de Asignación Bajo Responsabilidad --}}
+@if(isset($respActivas))
+<div class="dashboard-summary-panel mb-4 mt-4">
+    <div class="dashboard-summary-header">
+        <h2 class="dashboard-summary-title text-info">
+            <i class="bi bi-person-badge"></i> ASIGNACIONES BAJO RESPONSABILIDAD
+        </h2>
+        <p class="dashboard-summary-subtitle">Estado actual de préstamos temporales / contratistas</p>
+    </div>
+    
+    <div class="dashboard-summary-divider border-info"></div>
+    
+    <div class="dashboard-summary-states">
+        <div class="dashboard-state-item" style="border: 1px solid #17a2b8;">
+            <div class="dashboard-state-icon text-info" style="background-color: rgba(23, 162, 184, 0.1);">
+                <i class="bi bi-person-check-fill fs-4"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label text-info fw-bold text-uppercase" style="font-size: 0.8rem;">Activas</div>
+                <div class="dashboard-state-value text-info fw-bolder fs-4">{{ $respActivas }}</div>
+            </div>
+        </div>
+        <div class="dashboard-state-item" style="border: 1px solid #6c757d;">
+            <div class="dashboard-state-icon text-secondary" style="background-color: rgba(108, 117, 125, 0.1);">
+                <i class="bi bi-person-x-fill fs-4"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label text-secondary fw-bold text-uppercase" style="font-size: 0.8rem;">Finalizadas</div>
+                <div class="dashboard-state-value text-secondary fw-bolder fs-4">{{ $respFinalizadas }}</div>
+            </div>
+        </div>
+        <div class="dashboard-state-item" style="border: 1px solid #ffc107;">
+            <div class="dashboard-state-icon text-warning" style="background-color: rgba(255, 193, 7, 0.1);">
+                <i class="bi bi-exclamation-circle-fill fs-4"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label text-warning fw-bold text-uppercase" style="font-size: 0.8rem;">Por Vencer (< 15 días)</div>
+                <div class="dashboard-state-value text-warning fw-bolder fs-4">{{ $respPorVencer }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="row g-4">
     {{-- Panel Dinámico de Equipos por Tipo --}}
     <div class="col-12 col-lg-5">

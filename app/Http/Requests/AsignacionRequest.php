@@ -13,6 +13,15 @@ class AsignacionRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->has('tipo_accion')) {
+            $this->merge([
+                'tipo_accion' => strtolower($this->tipo_accion),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         $accion = $this->tipo_accion;

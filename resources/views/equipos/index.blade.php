@@ -178,8 +178,13 @@
                             {!! $renderValor('marca') !!}
                             <td>
                                 @php
-                                    $responsableNombre = trim((string) ($equipo->responsable_nombre ?? ''));
-                                    $responsableCedula = trim((string) ($equipo->responsable_cedula ?? ''));
+                                    if ($equipo->asignacionResponsabilidadActiva && !empty($equipo->asignacionResponsabilidadActiva->responsable_nombre)) {
+                                        $responsableNombre = trim((string) $equipo->asignacionResponsabilidadActiva->responsable_nombre);
+                                        $responsableCedula = trim((string) $equipo->asignacionResponsabilidadActiva->responsable_cedula);
+                                    } else {
+                                        $responsableNombre = trim((string) ($equipo->responsable_nombre ?? ''));
+                                        $responsableCedula = trim((string) ($equipo->responsable_cedula ?? ''));
+                                    }
                                 @endphp
                                 @if($responsableNombre !== '')
                                     <span class="fw-medium">{{ $responsableNombre }}</span>
@@ -208,6 +213,26 @@
                                     @else
                                         <span class="text-muted fst-italic">Sin Asignar</span>
                                     @endif
+                                @elseif($equipo->asignacionResponsabilidadActiva)
+                                    <span class="fw-medium text-info"><i class="bi bi-person-badge"></i> {{ $equipo->asignacionResponsabilidadActiva->nombre_usuario }}</span>
+                                    <br><small class="text-muted">Doc: {{ $equipo->asignacionResponsabilidadActiva->documento ?? 'N/A' }} | {{ $equipo->asignacionResponsabilidadActiva->tipo_usuario ?? 'Temp.' }}</small>
+                                    @if($equipo->asignacionResponsabilidadActiva->proyecto)
+                                        <br><small class="text-primary" style="font-size: 0.75rem;"><i class="bi bi-briefcase me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->proyecto }}</small>
+                                    @endif
+                                    
+                                    @php
+                                        $asignacionTemp = $equipo->asignacionResponsabilidadActiva;
+                                        if ($asignacionTemp->fecha_final_estimada) {
+                                            $diasRestantes = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
+                                            if ($diasRestantes < 0) {
+                                                echo '<br><span class="badge bg-danger mt-1">Vencida (' . abs($diasRestantes) . ' días)</span>';
+                                            } elseif ($diasRestantes <= 3) {
+                                                echo '<br><span class="badge bg-danger mt-1">Vence en ' . $diasRestantes . ' días</span>';
+                                            } elseif ($diasRestantes <= 7) {
+                                                echo '<br><span class="badge bg-warning text-dark mt-1">Vence en ' . $diasRestantes . ' días</span>';
+                                            }
+                                        }
+                                    @endphp
                                 @else
                                     <span class="text-muted fst-italic">Sin Asignar</span>
                                 @endif
@@ -222,11 +247,16 @@
                                         !in_array(strtoupper($nombreAsignado), $placeholdersAsignacion, true);
 
                                     $estadoMostrado = $equipo->estado_label;
-                                    if ($equipo->estado_operativo === 'mantenimiento' && !$tieneFuncionarioReal) {
+                                    $badgeClass = $equipo->estado_badge;
+                                    
+                                    if ($equipo->asignacionResponsabilidadActiva) {
+                                        $estadoMostrado = 'Asignado Bajo Responsabilidad';
+                                        $badgeClass = 'info text-white';
+                                    } elseif ($equipo->estado_operativo === 'mantenimiento' && !$tieneFuncionarioReal) {
                                         $estadoMostrado = 'Disponible / Mantenimiento';
                                     }
                                 @endphp
-                                <span class="badge bg-{{ $equipo->estado_badge }}">
+                                <span class="badge bg-{{ $badgeClass }}">
                                     {{ $estadoMostrado }}
                                 </span>
                             </td>
@@ -246,16 +276,20 @@
                                     </a>
                                     @endcan
 
-                                    {{-- Botones dinámicos según estado de préstamo --}}
                                     @can('equipos.crear')
-                                    @if(!$equipo->usuarioAsignado)
+                                    @if(!$equipo->usuarioAsignado && !$equipo->asignacionResponsabilidadActiva)
                                         {{-- Sin préstamo: mostrar botón Registrar préstamo solo si está activo --}}
                                         @if(in_array($equipo->estado_operativo, ['activo', 'disponible'], true))
                                         <button type="button"
                                                 class="btn btn-sm btn-success"
-                                            title="Registrar préstamo"
+                                            title="Asignar Funcionario"
                                                 onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')">
                                             <i class="bi bi-person-plus"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm btn-outline-info" title="Asignación Bajo Responsabilidad"
+                                            onclick="abrirModalResponsabilidad({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}')">
+                                            <i class="bi bi-person-badge"></i>
                                         </button>
                                         @else
                                         <button type="button"
@@ -265,12 +299,17 @@
                                             <i class="bi bi-arrow-repeat"></i>
                                         </button>
                                         @endif
-                                    @else
-                                        {{-- Ya asignado: opciones de gestión y ACTA --}}
+                                    @elseif($equipo->asignacionResponsabilidadActiva)
+                                        <button type="button" class="btn btn-sm btn-info text-white" title="Gestionar Asignación Bajo Responsabilidad"
+                                            onclick="abrirModalResponsabilidadEdit({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', {{ json_encode($equipo->asignacionResponsabilidadActiva) }})">
+                                            <i class="bi bi-person-badge-fill"></i>
+                                        </button>
+                                    @elseif($equipo->usuarioAsignado)
+                                        {{-- Ya asignado normalmente: opciones de gestión y ACTA --}}
                                         @if(in_array($equipo->estado_operativo, ['activo', 'asignado'], true))
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-primary"
-                                                title="Reemplazar préstamo"
+                                                title="Reemplazar Funcionario"
                                                 onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')">
                                             <i class="bi bi-arrow-left-right"></i>
                                         </button>
@@ -355,7 +394,7 @@
                 <input type="hidden" name="return_to" id="asig_return_to" value="{{ request()->fullUrl() }}">
 
                 <div class="modal-header equipo-modal-header">
-                    <h5 class="modal-title" id="modalAsignacionTitulo">Registrar Préstamo</h5>
+                    <h5 class="modal-title" id="modalAsignacionTitulo">Registrar Asignación</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -492,13 +531,165 @@
     </div>
 </div>
 
+{{-- ═══ MODAL: Asignación Bajo Responsabilidad ════════════════ --}}
+<div class="modal fade" id="modalResponsabilidad" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
+        <form id="formResponsabilidad" method="POST" action="" class="modal-content">
+            @csrf
+            <input type="hidden" name="_method" id="resp_method" value="POST">
+                <div class="modal-header bg-info bg-opacity-10">
+                    <h5 class="modal-title text-info" id="modalResponsabilidadTitulo"><i class="bi bi-person-badge me-2"></i>Asignación Bajo Responsabilidad</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-laptop me-1"></i>
+                        Equipo: <strong id="resp_nombre_equipo"></strong>
+                    </p>
+                    <div class="row g-3">
+                        {{-- SECCIÓN: RESPONSABLE ADMINISTRATIVO --}}
+                        <div class="col-12 border-bottom pb-3 mb-2">
+                            <h6 class="text-primary"><i class="bi bi-person-check me-2"></i>Responsable Administrativo</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">
+                                    Quien responde oficialmente por el activo. Obligatorio.
+                                </small>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAbrirSelectorResponsable">
+                                    <i class="bi bi-search me-1"></i>Buscar Responsable
+                                </button>
+                            </div>
+                            <input type="hidden" name="responsable_id" id="resp_responsable_id" required>
+                            <input type="hidden" name="responsable_nombre" id="resp_responsable_nombre" required>
+                            <input type="hidden" name="responsable_cedula" id="resp_responsable_cedula" required>
+                            <div class="border rounded p-3 bg-light" id="resumenResponsableSeleccionado">
+                                <div class="text-muted">Aún no has seleccionado un responsable.</div>
+                            </div>
+                        </div>
+
+                        {{-- SECCIÓN: USUARIO QUE UTILIZARÁ EL ACTIVO --}}
+                        <div class="col-12">
+                            <h6 class="text-info"><i class="bi bi-person-badge me-2"></i>Usuario que utilizará el activo</h6>
+                            <small class="text-muted mb-3 d-block">Este NO es responsable administrativo. Es simplemente quien utilizará el equipo.</small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Tipo de usuario <span class="text-danger">*</span></label>
+                            <select name="tipo_usuario" id="resp_tipo_usuario" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Temporal">Temporal</option>
+                                <option value="Contratista">Contratista</option>
+                                <option value="Practicante">Practicante</option>
+                                <option value="Consultor">Consultor</option>
+                                <option value="Visitante">Visitante</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Nombre de Usuario <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre_usuario" id="resp_nombre_usuario" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Documento</label>
+                            <input type="text" name="documento" id="resp_documento" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Empresa</label>
+                            <input type="text" name="empresa" id="resp_empresa" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Cargo</label>
+                            <input type="text" name="cargo" id="resp_cargo" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Proyecto</label>
+                            <input type="text" name="proyecto" id="resp_proyecto" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Área</label>
+                            <input type="text" name="area" id="resp_area" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Correo</label>
+                            <input type="email" name="correo" id="resp_correo" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Teléfono</label>
+                            <input type="text" name="telefono" id="resp_telefono" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Fecha de Inicio <span class="text-danger">*</span></label>
+                            <input type="date" name="fecha_inicio" id="resp_fecha_inicio" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Fecha Final Estimada</label>
+                            <input type="date" name="fecha_final_estimada" id="resp_fecha_final_estimada" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-danger d-none" id="btnFinalizarResponsabilidad">
+                        <i class="bi bi-x-circle me-1"></i>Finalizar Asignación
+                    </button>
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-info text-white"><i class="bi bi-check-lg me-1"></i>Guardar</button>
+                    </div>
+                </div>
+            </form>
+            
+            <form id="formFinalizarResponsabilidad" method="POST" class="d-none">
+                @csrf
+                @method('DELETE')
+        </form>
+    </div>
+</div>
+
+{{-- ═══ MODAL: Finalizar Asignación Bajo Responsabilidad ════════════════ --}}
+<div class="modal fade" id="modalFinalizarResponsabilidad" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form id="formFinalizarRespReal" method="POST" action="">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-person-x-fill me-2"></i>Finalizar Asignación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Fecha Final Real <span class="text-danger">*</span></label>
+                        <input type="date" name="fecha_final_real" class="form-control" value="{{ date('Y-m-d') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Motivo de Finalización <span class="text-danger">*</span></label>
+                        <select name="motivo_finalizacion" class="form-select" required>
+                            <option value="">Seleccione un motivo...</option>
+                            <option value="Devolución por fin de contrato">Devolución por fin de contrato</option>
+                            <option value="Reasignación a otro usuario">Reasignación a otro usuario</option>
+                            <option value="Renuncia / Retiro">Renuncia / Retiro</option>
+                            <option value="Daño / Pérdida del equipo">Daño / Pérdida del equipo</option>
+                            <option value="Cambio de proyecto">Cambio de proyecto</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-check2-circle me-2"></i>Confirmar Finalización</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
 const LABELS_ACCION = {
-    asignacion:    'Registrar Préstamo',
-    reemplazo:     'Reemplazar Usuario',
+    asignacion:    'Registrar Asignación',
+    reemplazo:     'Reemplazar Funcionario',
     retiro:        'Retiro de funcionario',
     mantenimiento: 'Pasar a Mantenimiento',
     restauracion:  'Restaurar Equipo',
@@ -526,6 +717,25 @@ function poblarFormularioFuncionario(funcionario) {
         if (input) input.value = value ?? '';
     };
 
+    if (window.selectorTarget === 'responsable') {
+        setHidden('resp_responsable_id', funcionario.id);
+        setHidden('resp_responsable_nombre', funcionario.nombre);
+        setHidden('resp_responsable_cedula', funcionario.identificacion);
+
+        const resumenResp = document.getElementById('resumenResponsableSeleccionado');
+        if (resumenResp) {
+            resumenResp.innerHTML = `
+                <div class="fw-semibold text-primary"><i class="bi bi-person-check me-2"></i>${funcionario.nombre || '—'}</div>
+                <div class="small text-muted">
+                    <i class="bi bi-card-text me-1"></i>CC: ${funcionario.identificacion || '—'} |
+                    <i class="bi bi-building me-1"></i>${funcionario.cargo || '—'}
+                </div>
+            `;
+        }
+        return; // Termina aquí para el responsable
+    }
+
+    // Default: 'asignacion'
     setHidden('asig_nombre_hidden', funcionario.nombre);
     setHidden('asig_cedula_hidden', funcionario.identificacion);
     setHidden('asig_cargo_hidden', funcionario.cargo);
@@ -690,6 +900,10 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.set('equipo_id', equipoIdAsig);
         }
 
+        if (window.selectorTarget === 'responsable') {
+            url.searchParams.set('contexto', 'responsabilidad');
+        }
+
         fetch(url.toString(), {
             headers: {
                 'Accept': 'application/json',
@@ -709,13 +923,44 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     };
 
+    const btnAbrirSelectorResponsable = document.getElementById('btnAbrirSelectorResponsable');
+
     if (btnAbrirSelectorFuncionario && modalSelectorFuncionario) {
         btnAbrirSelectorFuncionario.addEventListener('click', function() {
+            window.selectorTarget = 'asignacion';
             if (filtroFuncionarioElegible) {
                 filtroFuncionarioElegible.value = '';
             }
             modalSelectorFuncionario.show();
             cargarFuncionariosElegibles('');
+        });
+    }
+
+    if (btnAbrirSelectorResponsable && modalSelectorFuncionario) {
+        btnAbrirSelectorResponsable.addEventListener('click', function() {
+            window.selectorTarget = 'responsable';
+            if (filtroFuncionarioElegible) {
+                filtroFuncionarioElegible.value = '';
+            }
+            // Ocultar modal principal para que funcione como hijo (modal sobre modal)
+            const modalPrincipal = bootstrap.Modal.getInstance(document.getElementById('modalResponsabilidad'));
+            if (modalPrincipal) {
+                modalPrincipal.hide();
+            }
+
+            modalSelectorFuncionario.show();
+            cargarFuncionariosElegibles('');
+        });
+    }
+
+    if (modalSelectorFuncionarioEl) {
+        modalSelectorFuncionarioEl.addEventListener('hidden.bs.modal', function () {
+            if (window.selectorTarget === 'responsable') {
+                // Volver a mostrar el modal principal
+                new bootstrap.Modal(document.getElementById('modalResponsabilidad')).show();
+                // Limpiar flag en caso de que se haya cancelado
+                // window.selectorTarget = null;
+            }
         });
     }
 
@@ -848,7 +1093,91 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+
+
+    const formResponsabilidad = document.getElementById('formResponsabilidad');
+    if(formResponsabilidad) {
+        formResponsabilidad.addEventListener('submit', function(e) {
+            const responsableId = document.getElementById('resp_responsable_id').value;
+            if (!responsableId) {
+                e.preventDefault();
+                Swal.fire('Atención', 'Debe buscar y seleccionar un Responsable Administrativo.', 'warning');
+            }
+        });
+    }
+
 });
+
+function abrirModalResponsabilidad(equipoId, nombreEquipo) {
+    const form = document.getElementById('formResponsabilidad');
+    form.action = `/equipos/${equipoId}/asignacion-responsabilidad`;
+    document.getElementById('resp_method').value = 'POST';
+    document.getElementById('resp_nombre_equipo').textContent = nombreEquipo;
+    document.getElementById('modalResponsabilidadTitulo').innerHTML = '<i class="bi bi-person-badge me-2"></i>Nueva Asignación Bajo Responsabilidad';
+    
+    // Limpiar form
+    form.reset();
+    document.getElementById('resp_responsable_id').value = '';
+    document.getElementById('resp_responsable_nombre').value = '';
+    document.getElementById('resp_responsable_cedula').value = '';
+    const resumenResp = document.getElementById('resumenResponsableSeleccionado');
+    if (resumenResp) {
+        resumenResp.innerHTML = '<div class="text-muted">Aún no has seleccionado un responsable.</div>';
+    }
+    document.getElementById('resp_fecha_inicio').value = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('btnFinalizarResponsabilidad').classList.add('d-none');
+    
+    new bootstrap.Modal(document.getElementById('modalResponsabilidad')).show();
+}
+
+function abrirModalResponsabilidadEdit(equipoId, nombreEquipo, asignacion) {
+    const form = document.getElementById('formResponsabilidad');
+    form.action = `/equipos/${equipoId}/asignacion-responsabilidad/${asignacion.id}`;
+    document.getElementById('resp_method').value = 'PUT';
+    document.getElementById('resp_nombre_equipo').textContent = nombreEquipo;
+    document.getElementById('modalResponsabilidadTitulo').innerHTML = '<i class="bi bi-person-badge-fill me-2"></i>Gestionar Asignación Bajo Responsabilidad';
+    
+    // Llenar datos
+    document.getElementById('resp_responsable_id').value = asignacion.responsable_id || '';
+    document.getElementById('resp_responsable_nombre').value = asignacion.responsable_nombre || '';
+    document.getElementById('resp_responsable_cedula').value = asignacion.responsable_cedula || '';
+    
+    const resumenResp = document.getElementById('resumenResponsableSeleccionado');
+    if (resumenResp) {
+        resumenResp.innerHTML = `
+            <div class="fw-semibold text-primary"><i class="bi bi-person-check me-2"></i>${asignacion.responsable_nombre || '—'}</div>
+            <div class="small text-muted">
+                <i class="bi bi-card-text me-1"></i>CC: ${asignacion.responsable_cedula || '—'}
+            </div>
+        `;
+    }
+    
+    document.getElementById('resp_tipo_usuario').value = asignacion.tipo_usuario || '';
+    document.getElementById('resp_nombre_usuario').value = asignacion.nombre_usuario || '';
+    document.getElementById('resp_documento').value = asignacion.documento || '';
+    document.getElementById('resp_empresa').value = asignacion.empresa || '';
+    document.getElementById('resp_cargo').value = asignacion.cargo || '';
+    document.getElementById('resp_proyecto').value = asignacion.proyecto || '';
+    document.getElementById('resp_area').value = asignacion.area || '';
+    document.getElementById('resp_correo').value = asignacion.correo || '';
+    document.getElementById('resp_telefono').value = asignacion.telefono || '';
+    document.getElementById('resp_fecha_inicio').value = asignacion.fecha_inicio ? asignacion.fecha_inicio.split('T')[0] : '';
+    document.getElementById('resp_fecha_final_estimada').value = asignacion.fecha_final_estimada ? asignacion.fecha_final_estimada.split('T')[0] : '';
+    
+    // Botón de finalizar
+    const btnFin = document.getElementById('btnFinalizarResponsabilidad');
+    btnFin.classList.remove('d-none');
+    btnFin.onclick = function() {
+        // Ocultar modal de edición y abrir el de finalización
+        bootstrap.Modal.getInstance(document.getElementById('modalResponsabilidad')).hide();
+        const formFin = document.getElementById('formFinalizarRespReal');
+        formFin.action = `/equipos/${equipoId}/asignacion-responsabilidad/${asignacion.id}`;
+        new bootstrap.Modal(document.getElementById('modalFinalizarResponsabilidad')).show();
+    };
+    
+    new bootstrap.Modal(document.getElementById('modalResponsabilidad')).show();
+}
 
 // ====== FILTRO EN VIVO DE LA TABLA ======
 let searchTimeoutId;

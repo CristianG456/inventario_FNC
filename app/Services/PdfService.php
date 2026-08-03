@@ -35,16 +35,11 @@ class PdfService
         $datos = $this->prepararDatos($asignacion, $equipo);
 
         // Intentar usar plantilla personalizada
+        // Intentar usar plantilla personalizada
         $plantilla = $this->obtenerPlantillaActiva('acta_entrega');
 
-        if ($plantilla) {
-            $contenidoHtml = $plantilla->procesarVariables($datos);
-            $contenidoHtml = $this->forzarNombreUsuarioSistema($contenidoHtml, $usuarioSistema);
-            $html          = view('pdf.acta_entrega_wrapper', compact('contenidoHtml', 'equipo', 'asignacion'))->render();
-        } else {
-            // Vista por defecto
-            $html = view('pdf.acta_entrega', compact('asignacion', 'equipo', 'datos'))->render();
-        }
+        // FORCE use of Blade view to ensure layout changes are applied
+        $html = view('pdf.acta_entrega', compact('asignacion', 'equipo', 'datos'))->render();
 
         $pdf = Pdf::loadHTML($html)
             ->setPaper('letter', 'portrait')
@@ -76,16 +71,11 @@ class PdfService
         $datos = $this->prepararDatosDesdeEquipo($equipo);
 
         // Intentar usar plantilla personalizada
+        // Intentar usar plantilla personalizada
         $plantilla = $this->obtenerPlantillaActiva('acta_entrega');
 
-        if ($plantilla) {
-            $contenidoHtml = $plantilla->procesarVariables($datos);
-            $contenidoHtml = $this->forzarNombreUsuarioSistema($contenidoHtml, $usuarioSistema);
-            $html          = view('pdf.acta_entrega_wrapper', compact('contenidoHtml', 'equipo'))->render();
-        } else {
-            // Vista por defecto
-            $html = view('pdf.acta_entrega', ['equipo' => $equipo, 'asignacion' => null, 'datos' => $datos])->render();
-        }
+        // FORCE use of Blade view to ensure layout changes are applied
+        $html = view('pdf.acta_entrega', ['equipo' => $equipo, 'asignacion' => null, 'datos' => $datos])->render();
 
         $pdf = Pdf::loadHTML($html)
             ->setPaper('letter', 'portrait')

@@ -13,6 +13,15 @@ class HistorialTecnicoRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->has('tipo_evento')) {
+            $this->merge([
+                'tipo_evento' => strtolower($this->tipo_evento),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

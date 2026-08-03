@@ -13,6 +13,15 @@ class FilterSolicitudCambioPasswordRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->has('estado')) {
+            $this->merge([
+                'estado' => strtolower($this->estado),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

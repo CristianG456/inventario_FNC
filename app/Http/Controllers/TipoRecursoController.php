@@ -83,10 +83,14 @@ class TipoRecursoController extends Controller
     public function storeCatalogoComplemento(\Illuminate\Http\Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:100|unique:catalogo_complementos',
+            'nombre' => [
+                'required', 
+                'string', 
+                'max:100', 
+                \Illuminate\Validation\Rule::unique('catalogo_complementos')->whereNull('deleted_at')
+            ],
             'requiere_serial' => 'nullable|boolean',
             'usa_estado' => 'nullable|boolean',
-            'activo' => 'nullable|boolean',
             'tipo_recursos_ids' => 'required|array|min:1',
             'tipo_recursos_ids.*' => 'exists:tipo_recursos,id',
         ]);
@@ -95,7 +99,6 @@ class TipoRecursoController extends Controller
             'nombre' => $request->nombre,
             'requiere_serial' => $request->boolean('requiere_serial'),
             'usa_estado' => $request->boolean('usa_estado', true),
-            'activo' => $request->has('activo') ? $request->boolean('activo') : true,
         ]);
 
         // Sync relationships with order
@@ -111,10 +114,14 @@ class TipoRecursoController extends Controller
     public function updateCatalogoComplemento(\Illuminate\Http\Request $request, \App\Models\CatalogoComplemento $catalogoComplemento)
     {
         $request->validate([
-            'nombre' => 'required|string|max:100|unique:catalogo_complementos,nombre,' . $catalogoComplemento->id,
+            'nombre' => [
+                'required', 
+                'string', 
+                'max:100', 
+                \Illuminate\Validation\Rule::unique('catalogo_complementos')->ignore($catalogoComplemento->id)->whereNull('deleted_at')
+            ],
             'requiere_serial' => 'nullable|boolean',
             'usa_estado' => 'nullable|boolean',
-            'activo' => 'nullable|boolean',
             'tipo_recursos_ids' => 'required|array|min:1',
             'tipo_recursos_ids.*' => 'exists:tipo_recursos,id',
         ]);
@@ -123,7 +130,6 @@ class TipoRecursoController extends Controller
             'nombre' => $request->nombre,
             'requiere_serial' => $request->boolean('requiere_serial'),
             'usa_estado' => $request->boolean('usa_estado', true),
-            'activo' => $request->boolean('activo'),
         ]);
 
         $syncData = [];

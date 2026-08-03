@@ -39,5 +39,11 @@ class PlantillaPdfRequest extends FormRequest
         $this->merge([
             'activa' => $this->boolean('activa'),
         ]);
+
+        if ($this->has('tipo')) {
+            $this->merge([
+                'tipo' => strtolower($this->tipo),
+            ]);
+        }
     }
 }

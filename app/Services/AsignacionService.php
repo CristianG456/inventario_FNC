@@ -244,6 +244,16 @@ class AsignacionService
             $estadoAnterior = $equipo->estado_operativo;
             $equipo->update(['estado_operativo' => 'baja', 'razon_estado' => $motivoBaja]);
 
+            // Liberar complementos asociados al equipo
+            // Los que están en buen estado pasan a 'Disponible', los dañados se mantienen con su estado actual pero se desvinculan
+            $equipo->complementos()->whereNotIn('estado', ['Dañado', 'Malo', 'En reparación'])->update([
+                'equipo_id' => null,
+                'estado' => 'Disponible'
+            ]);
+            $equipo->complementos()->whereNotNull('equipo_id')->update([
+                'equipo_id' => null
+            ]);
+
             $asignacion = $equipo->asignaciones()->create([
                 ...$snapshot,
                 'tipo_accion'  => Asignacion::TIPO_BAJA,

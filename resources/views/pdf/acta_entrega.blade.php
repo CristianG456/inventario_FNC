@@ -131,19 +131,19 @@
         <tr>
             <td rowspan="2" class="logo-cell">
                 @php
-                    $logoPath = public_path('branding/logo-fnc.svg');
+                    $pngPath = public_path('imagenes/federacion cafeteros logo.png');
                     $logoBase64 = '';
-                    if (file_exists($logoPath)) {
-                        $logoBase64 = 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($logoPath));
+                    if (file_exists($pngPath)) {
+                        $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($pngPath));
                     } else {
-                        $pngPath = public_path('imagenes/federacion cafeteros logo.png');
-                        if (file_exists($pngPath)) {
-                            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($pngPath));
+                        $logoPath = public_path('branding/logo-fnc.svg');
+                        if (file_exists($logoPath)) {
+                            $logoBase64 = 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($logoPath));
                         }
                     }
                 @endphp
                 @if($logoBase64)
-                    <img src="{{ $logoBase64 }}" class="logo" alt="Logo FNC">
+                    <img src="{{ $logoBase64 }}" class="logo" alt="Logo FNC" style="max-width: 120px; max-height: 70px;">
                 @else
                     FNC
                 @endif
@@ -235,52 +235,47 @@
     </table>
 
     <!-- Signatures -->
-    <table class="no-border signatures">
+    <table class="no-border signatures" style="width: 100%; border-spacing: 0 20px;">
+        <!-- Fila Quién Entrega -->
         <tr>
-            <!-- Quién Entrega -->
-            <td class="sig-col" style="vertical-align: top;">
+            <td style="width: 15%; padding: 0 5px; vertical-align: top;">
                 <div class="sig-box">{{ mb_strtoupper(auth()->user()->dependencia ?? 'TI') }}</div>
                 <div class="sig-label">DEPENDENCIA</div>
-
-                <div class="sig-box" style="margin-top: 15px;">{{ mb_strtoupper(auth()->user()->name ?? '—') }}</div>
-                <div class="sig-label">NOMBRE Y FIRMA DE QUIEN ENTREGA</div>
-
-                <table class="no-border" style="width: 100%; margin-top: 15px;">
-                    <tr>
-                        <td style="width: 30%; padding: 0 5px 0 0;">
-                            <div class="sig-box"></div>
-                            <div class="sig-label" style="margin-bottom: 0;">Cod. Personal</div>
-                        </td>
-                        <td style="width: 70%; padding: 0 0 0 5px;">
-                            <div class="sig-box">{{ mb_strtoupper(auth()->user()->cargo ?? 'ANALISTA TIC') }}</div>
-                            <div class="sig-label" style="margin-bottom: 0;">Cargo</div>
-                        </td>
-                    </tr>
-                </table>
             </td>
-            
-            <td class="sig-spacer"></td>
+            <td style="width: 50%; padding: 0 5px; vertical-align: top;">
+                <div class="sig-box">{{ mb_strtoupper(auth()->user()->name ?? '—') }}</div>
+                <div class="sig-label">NOMBRE Y FIRMA DE QUIEN ENTREGA</div>
+            </td>
+            <td style="width: 15%; padding: 0 5px; vertical-align: top;">
+                <div class="sig-box"></div>
+                <div class="sig-label">Cod. Personal</div>
+            </td>
+            <td style="width: 20%; padding: 0 5px; vertical-align: top;">
+                <div class="sig-box">{{ mb_strtoupper(auth()->user()->cargo ?? 'ANALISTA TIC') }}</div>
+                <div class="sig-label">Cargo</div>
+            </td>
+        </tr>
+        
+        <!-- Fila vacía para separación -->
+        <tr><td colspan="4" style="height: 10px;"></td></tr>
 
-            <!-- Quién Recibe -->
-            <td class="sig-col" style="vertical-align: top;">
+        <!-- Fila Quién Recibe -->
+        <tr>
+            <td style="width: 15%; padding: 0 5px; vertical-align: top;">
                 <div class="sig-box">{{ mb_strtoupper($datos['seccional'] ?? '—') }}</div>
                 <div class="sig-label">DEPENDENCIA</div>
-
-                <div class="sig-box" style="margin-top: 15px;">{{ mb_strtoupper($datos['nombre_usuario'] ?? '—') }}</div>
+            </td>
+            <td style="width: 50%; padding: 0 5px; vertical-align: top;">
+                <div class="sig-box">{{ mb_strtoupper($datos['nombre_usuario'] ?? '—') }}</div>
                 <div class="sig-label">NOMBRE Y FIRMA DE QUIEN RECIBE</div>
-
-                <table class="no-border" style="width: 100%; margin-top: 15px;">
-                    <tr>
-                        <td style="width: 30%; padding: 0 5px 0 0;">
-                            <div class="sig-box"></div>
-                            <div class="sig-label" style="margin-bottom: 0;">Cod. Personal</div>
-                        </td>
-                        <td style="width: 70%; padding: 0 0 0 5px;">
-                            <div class="sig-box">{{ mb_strtoupper($datos['cargo'] ?? '—') }}</div>
-                            <div class="sig-label" style="margin-bottom: 0;">Cargo</div>
-                        </td>
-                    </tr>
-                </table>
+            </td>
+            <td style="width: 15%; padding: 0 5px; vertical-align: top;">
+                <div class="sig-box"></div>
+                <div class="sig-label">Cod. Personal</div>
+            </td>
+            <td style="width: 20%; padding: 0 5px; vertical-align: top;">
+                <div class="sig-box">{{ mb_strtoupper($datos['cargo'] ?? '—') }}</div>
+                <div class="sig-label">Cargo</div>
             </td>
         </tr>
     </table>

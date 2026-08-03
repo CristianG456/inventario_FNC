@@ -166,19 +166,19 @@
                                             <div class="col-12 col-md-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="obligatorio" id="obligatorio" value="1" {{ old('obligatorio') ? 'checked' : '' }}>
-                                                    <label class="form-check-label fw-bold text-danger" for="obligatorio">Obligatorio</label>
+                                                    <label class="form-check-label fw-bold text-danger" for="obligatorio"><i class="bi bi-asterisk me-1"></i> Obligatorio</label>
                                                 </div>
                                             </div>
                                             <div class="col-12 col-md-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="editable" id="editable" value="1" {{ old('editable', '1') ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="editable">Editable</label>
+                                                    <label class="form-check-label" for="editable"><i class="bi bi-pencil-square me-1"></i> Editable</label>
                                                 </div>
                                             </div>
                                             <div class="col-12 col-md-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="activo" id="activo" value="1" {{ old('activo', '1') ? 'checked' : '' }}>
-                                                    <label class="form-check-label text-success fw-bold" for="activo">Activo</label>
+                                                    <label class="form-check-label text-success fw-bold" for="activo"><i class="bi bi-check-circle-fill me-1"></i> Activo</label>
                                                 </div>
                                             </div>
 
@@ -188,22 +188,22 @@
                                             <div class="col-12 col-md-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="visible" id="visible" value="1" {{ old('visible', '1') ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="visible">Mostrar en Formularios</label>
+                                                    <label class="form-check-label" for="visible"><i class="bi bi-eye me-1"></i> Mostrar en Formularios</label>
                                                 </div>
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="mostrar_en_grilla" id="mostrar_en_grilla" value="1" {{ old('mostrar_en_grilla') ? 'checked' : '' }}>
-                                                    <label class="form-check-label fw-bold" for="mostrar_en_grilla">Mostrar en CMDB Principal</label>
+                                                    <label class="form-check-label fw-bold" for="mostrar_en_grilla"><i class="bi bi-hdd-network me-1"></i> Mostrar en CMDB Principal</label>
                                                 </div>
                                             </div>
 
                                             <div class="col-12 col-md-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="participa_exportacion_completa" id="participa_exportacion_completa" value="1" {{ old('participa_exportacion_completa', '1') ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="participa_exportacion_completa">Participar en Exportación Completa</label>
+                                                    <label class="form-check-label" for="participa_exportacion_completa"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Participar en Exportación Completa</label>
                                                 </div>
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="participa_exportacion_cmdb" id="participa_exportacion_cmdb" value="1" onchange="toggleExcel()" {{ old('participa_exportacion_cmdb', '1') ? 'checked' : '' }}>
-                                                    <label class="form-check-label fw-bold" for="participa_exportacion_cmdb">Participar en Exportación CMDB</label>
+                                                    <label class="form-check-label fw-bold" for="participa_exportacion_cmdb"><i class="bi bi-file-earmark-excel me-1"></i> Participar en Exportación CMDB</label>
                                                 </div>
                                                 <div id="excel_opciones" style="display: none;" class="ms-4 mb-3">
                                                     <label class="form-label text-muted small mb-1">Exportar después de:</label>
@@ -221,15 +221,15 @@
                                             <div class="col-12 col-md-4">
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="participa_reportes" id="participa_reportes" value="1" {{ old('participa_reportes', '1') ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="participa_reportes">Participar en Reportes</label>
+                                                    <label class="form-check-label" for="participa_reportes"><i class="bi bi-bar-chart-line me-1"></i> Participar en Reportes</label>
                                                 </div>
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="importable" id="importable" value="1" {{ old('importable', '1') ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="importable">Participar en Importaciones</label>
+                                                    <label class="form-check-label" for="importable"><i class="bi bi-cloud-upload me-1"></i> Participar en Importaciones</label>
                                                 </div>
                                                 <div class="form-check form-switch mb-2">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="participa_filtros" id="participa_filtros" value="1" {{ old('participa_filtros') ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="participa_filtros">Participar en Filtros del Sistema</label>
+                                                    <label class="form-check-label" for="participa_filtros"><i class="bi bi-funnel me-1"></i> Participar en Filtros del Sistema</label>
                                                 </div>
                                             </div>
 
@@ -240,7 +240,7 @@
                                                 <h6 class="text-danger mb-3">Valor inicial para equipos existentes</h6>
                                                 <div class="form-check form-switch mb-3">
                                                     <input class="form-check-input" type="checkbox" role="switch" name="asignar_valor_inicial" id="asignar_valor_inicial" value="1" onchange="toggleAsignacion()">
-                                                    <label class="form-check-label fw-bold text-danger" for="asignar_valor_inicial">Asignar un valor masivamente a los equipos existentes</label>
+                                                    <label class="form-check-label fw-bold text-danger" for="asignar_valor_inicial"><i class="bi bi-tags-fill me-1"></i> Asignar un valor masivamente a los equipos existentes</label>
                                                 </div>
                                                 <div id="asignacion_opciones" style="display: none;" class="p-3 bg-light rounded border border-danger">
                                                     <div class="row">

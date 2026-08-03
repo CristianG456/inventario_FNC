@@ -36,6 +36,11 @@ class StoreCampoPersonalizadoRequest extends FormRequest
                 'modulo' => strtolower($this->modulo),
             ]);
         }
+        if ($this->has('modo_asignacion_masiva')) {
+            $this->merge([
+                'modo_asignacion_masiva' => strtolower($this->modo_asignacion_masiva),
+            ]);
+        }
         if ($this->has('posicion_grilla_despues_de') && $this->posicion_grilla_despues_de) {
             $this->merge([
                 'posicion_grilla_despues_de' => strtolower($this->posicion_grilla_despues_de),

@@ -28,24 +28,25 @@
 </div>
 
 <div class="row g-4">
-    {{-- Datos del equipo --}}
-    <div class="col-lg-6">
-        <div class="card h-100 border-0 shadow-sm">
+    {{-- COLUMNA IZQUIERDA --}}
+    <div class="col-lg-6 d-flex flex-column gap-4">
+        {{-- Datos del equipo --}}
+        <div class="card border-0 shadow-sm">
             <div class="card-header bg-primary bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-laptop me-2 text-primary"></i>Datos del Equipo
             </div>
             <div class="card-body">
                 <dl class="row mb-0">
-                    <dt class="col-sm-5 text-muted">Tipo</dt>
-                    <dd class="col-sm-7">{{ $equipo->tipoRecurso?->nombre ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">ID Sistema</dt>
-                    <dd class="col-sm-7 fw-bold">{{ $equipo->identificador_interno }}</dd>
-                    <dt class="col-sm-5 text-muted">Serial</dt>
-                    <dd class="col-sm-7">
+                    <dt class="col-sm-4 text-muted">Tipo</dt>
+                    <dd class="col-sm-8">{{ $equipo->tipoRecurso?->nombre ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">ID Sistema</dt>
+                    <dd class="col-sm-8 fw-bold">{{ $equipo->identificador_interno }}</dd>
+                    <dt class="col-sm-4 text-muted">Serial</dt>
+                    <dd class="col-sm-8">
                         <span class="font-monospace">{{ $equipo->serial_visual }}</span>
                     </dd>
-                    <dt class="col-sm-5 text-muted">Activo Fijo</dt>
-                    <dd class="col-sm-7 font-monospace fw-bold text-dark">
+                    <dt class="col-sm-4 text-muted">Activo Fijo</dt>
+                    <dd class="col-sm-8 font-monospace fw-bold text-dark">
                         @php
                             $invalidos = ['PENDIENTE', 'N/A', 'NA', 'NO TIENE', 'SIN PLACA', 'SIN REGISTRO'];
                             $activoFijoStr = strtoupper(trim((string) $equipo->activo_fijo));
@@ -53,153 +54,37 @@
                         @endphp
                         {{ $activoValido ? $equipo->activo_fijo : '—' }}
                     </dd>
-                    <dt class="col-sm-5 text-muted">Placa</dt>
-                    <dd class="col-sm-7 font-monospace">{{ $equipo->placa_visual }}</dd>
-                    <dt class="col-sm-5 text-muted">Marca</dt>
-                    <dd class="col-sm-7">{{ $equipo->marca }}</dd>
-                    <dt class="col-sm-5 text-muted">Modelo</dt>
-                    <dd class="col-sm-7">{{ $equipo->modelo }}</dd>
-                    <dt class="col-sm-5 text-muted">Procesador</dt>
-                    <dd class="col-sm-7">{{ $equipo->procesador ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">RAM</dt>
-                    <dd class="col-sm-7">{{ $equipo->ram ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Disco</dt>
-                    <dd class="col-sm-7">{{ $equipo->disco ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Sistema Op.</dt>
-                    <dd class="col-sm-7">{{ $equipo->sistema_operativo ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Fecha Compra</dt>
-                    <dd class="col-sm-7">{{ $equipo->fecha_compra?->format('d/m/Y') ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Fin Garantía</dt>
-                    <dd class="col-sm-7">{{ $equipo->fin_garantia?->format('d/m/Y') ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Tiempo de Uso</dt>
-                    <dd class="col-sm-7">{{ $equipo->tiempo_uso ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Placa</dt>
+                    <dd class="col-sm-8 font-monospace">{{ $equipo->placa_visual }}</dd>
+                    <dt class="col-sm-4 text-muted">Marca</dt>
+                    <dd class="col-sm-8">{{ $equipo->marca }}</dd>
+                    <dt class="col-sm-4 text-muted">Modelo</dt>
+                    <dd class="col-sm-8">{{ $equipo->modelo }}</dd>
+                    <dt class="col-sm-4 text-muted">Procesador</dt>
+                    <dd class="col-sm-8">{{ $equipo->procesador ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">RAM</dt>
+                    <dd class="col-sm-8">{{ $equipo->ram ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Disco</dt>
+                    <dd class="col-sm-8">{{ $equipo->disco ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Sistema Op.</dt>
+                    <dd class="col-sm-8">{{ $equipo->sistema_operativo ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Fecha Compra</dt>
+                    <dd class="col-sm-8">{{ $equipo->fecha_compra?->format('d/m/Y') ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Fin Garantía</dt>
+                    <dd class="col-sm-8">{{ $equipo->fin_garantia?->format('d/m/Y') ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Tiempo de Uso</dt>
+                    <dd class="col-sm-8">{{ $equipo->tiempo_uso ?? '—' }}</dd>
                     @if($equipo->razon_estado)
-                        <dt class="col-sm-5 text-muted">Razón Estado</dt>
-                        <dd class="col-sm-7">{{ $equipo->razon_estado }}</dd>
+                        <dt class="col-sm-4 text-muted">Razón Estado</dt>
+                        <dd class="col-sm-8">{{ $equipo->razon_estado }}</dd>
                     @endif
                 </dl>
             </div>
         </div>
-    </div>
 
-    {{-- Usuario en préstamo --}}
-    <div class="col-lg-6">
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-person me-2 text-success"></i>Usuario en Préstamo</span>
-                @if($equipo->usuarioAsignado)
-                    <span class="badge bg-success">En préstamo</span>
-                @else
-                    <span class="badge bg-secondary">Sin préstamo</span>
-                @endif
-            </div>
-            <div class="card-body">
-                @if($equipo->usuarioAsignado)
-                    <dl class="row mb-0">
-                        <dt class="col-sm-5 text-muted">Nombre</dt>
-                        <dd class="col-sm-7 fw-bold text-success">{{ $equipo->usuarioAsignado->nombre }}</dd>
-                        <dt class="col-sm-5 text-muted">Cédula</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->cedula }}</dd>
-                        <dt class="col-sm-5 text-muted">Empresa Propietaria</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->empresa_propietaria ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Dependencia</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->dependencia ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Fuente de Recurso</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->fuente_recurso ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Empresa Funcionario</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->empresa_funcionario ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Emp. o Contratista</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->tipo_vinculacion ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Shortname</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->shortname ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Departamento</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->departamento ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Ciudad</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->ciudad ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Cargo</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->cargo ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Área</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->area ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Piso</dt>
-                        <dd class="col-sm-7">{{ $equipo->usuarioAsignado->piso ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Distrito</dt>
-                        <dd class="col-sm-7 fw-bold">{{ $equipo->usuarioAsignado->distrito ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Seccional</dt>
-                        <dd class="col-sm-7 fw-bold">{{ $equipo->usuarioAsignado->seccional ?? '—' }}</dd>
-                    </dl>
-                @else
-                    <p class="text-muted mb-0">Sin usuario en préstamo.</p>
-                @endif
-            </div>
-        </div>
-
-        {{-- Responsable del Activo --}}
-        @if($equipo->responsable_nombre)
-        <div class="card mb-4 border-0 shadow-sm mt-3 border-start border-info border-3">
-            <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3">
-                <div class="mb-2">
-                    <i class="bi bi-person-badge me-2 text-info"></i>
-                    <span class="fw-bold">Responsable del Activo</span>
-                </div>
-                <small class="text-muted d-block ps-4">
-                    Persona responsable de la administración y control del activo durante su ciclo de vida. 
-                    Esta responsabilidad es independiente del usuario al que se encuentre asignado el equipo.
-                </small>
-            </div>
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-5 text-muted">Nombre</dt>
-                    <dd class="col-sm-7 fw-bold">{{ $equipo->responsable_nombre }}</dd>
-                    <dt class="col-sm-5 text-muted">Cédula</dt>
-                    <dd class="col-sm-7">{{ $equipo->responsable_cedula ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Cargo</dt>
-                    <dd class="col-sm-7">{{ $equipo->responsable_cargo ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Ciudad</dt>
-                    <dd class="col-sm-7">{{ $equipo->responsable_ciudad ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Área</dt>
-                    <dd class="col-sm-7">{{ $equipo->responsable_area ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Tipo Recurso</dt>
-                    <dd class="col-sm-7">{{ $equipo->responsable_tipo_recurso ?? '—' }}</dd>
-                    <dt class="col-sm-5 text-muted">Fechas</dt>
-                    <dd class="col-sm-7">
-                        {{ $equipo->fecha_inicio_responsable?->format('d/m/Y') ?? '—' }}
-                        al
-                        {{ $equipo->fecha_fin_responsable?->format('d/m/Y') ?? '—' }}
-                    </dd>
-                </dl>
-            </div>
-        </div>
-        @endif
-
-        {{-- Periféricos --}}
+        {{-- Campos Personalizados (Información Adicional) --}}
+        @if($equipo->camposPersonalizadosValores->isNotEmpty())
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-warning bg-opacity-10 fw-semibold border-0 py-3">
-                <i class="bi bi-usb-plug me-2 text-warning"></i>Periféricos
-            </div>
-            <div class="card-body">
-                @if($equipo->periferico)
-                    <dl class="row mb-0">
-                        <dt class="col-sm-5 text-muted">Teléfono Fijo</dt>
-                        <dd class="col-sm-7">{{ $equipo->periferico->telefono ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Teclado</dt>
-                        <dd class="col-sm-7">{{ $equipo->periferico->teclado ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Mouse</dt>
-                        <dd class="col-sm-7">{{ $equipo->periferico->mouse ?? '—' }}</dd>
-                        <dt class="col-sm-5 text-muted">Cámara</dt>
-                        <dd class="col-sm-7">{{ $equipo->periferico->camara ?? '—' }}</dd>
-                    </dl>
-                @else
-                    <p class="text-muted mb-0">Sin periféricos registrados.</p>
-                @endif
-            </div>
-        </div>
-        </div>
-    </div>
-
-    {{-- Campos Personalizados (Información Adicional) --}}
-    @if($equipo->camposPersonalizadosValores->isNotEmpty())
-    <div class="col-lg-6">
-        <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-dark bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-ui-checks-grid me-2 text-dark"></i>Información Adicional
             </div>
@@ -207,8 +92,8 @@
                 <dl class="row mb-0">
                     @foreach($equipo->camposPersonalizadosValores as $cv)
                         @if($cv->campoPersonalizado && $cv->campoPersonalizado->visible)
-                            <dt class="col-sm-5 text-muted">{{ $cv->campoPersonalizado->nombre }}</dt>
-                            <dd class="col-sm-7">
+                            <dt class="col-sm-4 text-muted">{{ $cv->campoPersonalizado->nombre }}</dt>
+                            <dd class="col-sm-8">
                                 @if($cv->campoPersonalizado->tipo === 'boolean')
                                     <span class="badge bg-{{ $cv->valor == '1' ? 'success' : 'secondary' }}">
                                         {{ $cv->valor == '1' ? 'Sí' : 'No' }}
@@ -233,20 +118,219 @@
                 </dl>
             </div>
         </div>
+        @endif
+
+        {{-- Complementos del Activo --}}
+        @if($equipo->complementos->isNotEmpty() || auth()->user()->can('equipos.editar'))
+            @include('equipos._complementos_show')
+        @endif
+
+        {{-- Periféricos --}}
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning bg-opacity-10 fw-semibold border-0 py-3">
+                <i class="bi bi-usb-plug me-2 text-warning"></i>Periféricos
+            </div>
+            <div class="card-body">
+                @if($equipo->periferico)
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Teléfono Fijo</dt>
+                        <dd class="col-sm-8">{{ $equipo->periferico->telefono ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Teclado</dt>
+                        <dd class="col-sm-8">{{ $equipo->periferico->teclado ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Mouse</dt>
+                        <dd class="col-sm-8">{{ $equipo->periferico->mouse ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Cámara</dt>
+                        <dd class="col-sm-8">{{ $equipo->periferico->camara ?? '—' }}</dd>
+                    </dl>
+                @else
+                    <p class="text-muted mb-0">Sin periféricos registrados.</p>
+                @endif
+            </div>
+        </div>
     </div>
-    @endif
 
-    {{-- Complementos del Activo --}}
-    @if($equipo->complementos->isNotEmpty() || auth()->user()->can('equipos.editar'))
-        @include('equipos._complementos_show')
-    @endif
+    {{-- COLUMNA DERECHA --}}
+    <div class="col-lg-6 d-flex flex-column gap-4">
+        {{-- Funcionario Asignado / Asignación Bajo Responsabilidad --}}
+        @if($equipo->asignacionResponsabilidadActiva)
+        <div class="card border-0 shadow-sm border-start border-info border-3">
+            <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person-badge me-2 text-info"></i>Asignación Bajo Responsabilidad</span>
+                <span class="badge bg-info text-white">Temporal</span>
+            </div>
+            <div class="card-body">
+                <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-check me-2"></i>Responsable Administrativo</h6>
+                <dl class="row mb-4">
+                    <dt class="col-sm-4 text-muted">Responsable</dt>
+                    <dd class="col-sm-8 fw-bold">{{ $equipo->asignacionResponsabilidadActiva->responsable_nombre ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Cédula</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->responsable_cedula ?? '—' }}</dd>
+                </dl>
 
-    {{-- Últimos préstamos --}}
+                <h6 class="text-info border-bottom pb-2 mb-3"><i class="bi bi-person-badge me-2"></i>Usuario Temporal</h6>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Tipo de usuario</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->tipo_usuario ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Usuario Temporal</dt>
+                    <dd class="col-sm-8 fw-bold text-info">{{ $equipo->asignacionResponsabilidadActiva->nombre_usuario }}</dd>
+                    <dt class="col-sm-4 text-muted">Documento</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->documento ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Empresa</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->empresa ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Proyecto</dt>
+                    <dd class="col-sm-8 fw-bold">{{ $equipo->asignacionResponsabilidadActiva->proyecto ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Cargo</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->cargo ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Área</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->area ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Correo</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->correo ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Teléfono</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->telefono ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Fecha Inicio</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->fecha_inicio?->format('d/m/Y') ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Fecha Estimada Fin</dt>
+                    <dd class="col-sm-8">
+                        @php
+                            $asignacionTemp = $equipo->asignacionResponsabilidadActiva;
+                            if ($asignacionTemp->fecha_final_estimada) {
+                                echo $asignacionTemp->fecha_final_estimada->format('d/m/Y');
+                                $diasRestantes = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
+                                if ($diasRestantes < 0) {
+                                    echo ' <span class="badge bg-danger ms-2">Vencida (' . abs($diasRestantes) . ' días)</span>';
+                                } elseif ($diasRestantes <= 3) {
+                                    echo ' <span class="badge bg-danger ms-2">Vence en ' . $diasRestantes . ' días</span>';
+                                } elseif ($diasRestantes <= 7) {
+                                    echo ' <span class="badge bg-warning text-dark ms-2">Vence en ' . $diasRestantes . ' días</span>';
+                                }
+                            } else {
+                                echo '—';
+                            }
+                        @endphp
+                    </dd>
+                    <dt class="col-sm-4 text-muted">Tiempo Restante</dt>
+                    <dd class="col-sm-8">
+                        @if($asignacionTemp->fecha_final_estimada)
+                            @php
+                                $dias = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
+                                if ($dias < 0) echo '<span class="text-danger fw-bold">Vencido hace ' . abs($dias) . ' días</span>';
+                                elseif ($dias == 0) echo '<span class="text-warning fw-bold">Vence hoy</span>';
+                                else echo $dias . ' días';
+                            @endphp
+                        @else
+                            —
+                        @endif
+                    </dd>
+                    <dt class="col-sm-4 text-muted">Estado</dt>
+                    <dd class="col-sm-8"><span class="badge bg-success">Activa</span></dd>
+                    <dt class="col-sm-4 text-muted">Observaciones</dt>
+                    <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->observaciones ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted mt-3">Registrado por</dt>
+                    <dd class="col-sm-8 mt-3"><small><i class="bi bi-person me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->registradoPor->name ?? '—' }}</small></dd>
+                    <dt class="col-sm-4 text-muted">Fecha Creación</dt>
+                    <dd class="col-sm-8"><small><i class="bi bi-calendar3 me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->created_at?->format('d/m/Y H:i A') ?? '—' }}</small></dd>
+                </dl>
+            </div>
+        </div>
+        @else
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person me-2 text-success"></i>Funcionario Asignado</span>
+                @if($equipo->usuarioAsignado)
+                    <span class="badge bg-success">Asignado</span>
+                @else
+                    <span class="badge bg-secondary">Sin Asignar</span>
+                @endif
+            </div>
+            <div class="card-body">
+                @if($equipo->usuarioAsignado)
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Nombre</dt>
+                        <dd class="col-sm-8 fw-bold text-success">{{ $equipo->usuarioAsignado->nombre }}</dd>
+                        <dt class="col-sm-4 text-muted">Cédula</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->cedula }}</dd>
+                        <dt class="col-sm-4 text-muted">Empresa Propietaria</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->empresa_propietaria ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Dependencia</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->dependencia ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Fuente de Recurso</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->fuente_recurso ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Empresa Funcionario</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->empresa_funcionario ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Emp. o Contratista</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->tipo_vinculacion ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Shortname</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->shortname ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Departamento</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->departamento ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Ciudad</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->ciudad ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Cargo</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->cargo ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Área</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->area ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Piso</dt>
+                        <dd class="col-sm-8">{{ $equipo->usuarioAsignado->piso ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Distrito</dt>
+                        <dd class="col-sm-8 fw-bold">{{ $equipo->usuarioAsignado->distrito ?? '—' }}</dd>
+                        <dt class="col-sm-4 text-muted">Seccional</dt>
+                        <dd class="col-sm-8 fw-bold">{{ $equipo->usuarioAsignado->seccional ?? '—' }}</dd>
+                    </dl>
+                @else
+                    <p class="text-muted mb-0">Sin funcionario asignado.</p>
+                @endif
+            </div>
+        </div>
+        @endif
+
+        {{-- Responsable del Activo --}}
+        @if($equipo->responsable_nombre)
+        <div class="card border-0 shadow-sm border-start border-info border-3">
+            <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3">
+                <div class="mb-2">
+                    <i class="bi bi-person-badge me-2 text-info"></i>
+                    <span class="fw-bold">Responsable del Activo</span>
+                </div>
+                <small class="text-muted d-block ps-4">
+                    Persona responsable de la administración y control del activo durante su ciclo de vida. 
+                    Esta responsabilidad es independiente del usuario al que se encuentre asignado el equipo.
+                </small>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Nombre</dt>
+                    <dd class="col-sm-8 fw-bold">{{ $equipo->responsable_nombre }}</dd>
+                    <dt class="col-sm-4 text-muted">Cédula</dt>
+                    <dd class="col-sm-8">{{ $equipo->responsable_cedula ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Cargo</dt>
+                    <dd class="col-sm-8">{{ $equipo->responsable_cargo ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Ciudad</dt>
+                    <dd class="col-sm-8">{{ $equipo->responsable_ciudad ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Área</dt>
+                    <dd class="col-sm-8">{{ $equipo->responsable_area ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Tipo Recurso</dt>
+                    <dd class="col-sm-8">{{ $equipo->responsable_tipo_recurso ?? '—' }}</dd>
+                    <dt class="col-sm-4 text-muted">Fechas</dt>
+                    <dd class="col-sm-8">
+                        {{ $equipo->fecha_inicio_responsable?->format('d/m/Y') ?? '—' }}
+                        al
+                        {{ $equipo->fecha_fin_responsable?->format('d/m/Y') ?? '—' }}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        @endif
+
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    {{-- Últimas asignaciones --}}
     @if($equipo->asignaciones->isNotEmpty())
     <div class="col-lg-6">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-person-fill-gear me-2 text-success"></i>Últimos Préstamos</span>
+                <span><i class="bi bi-person-fill-gear me-2 text-success"></i>Últimas Asignaciones</span>
                 <a href="{{ route('asignaciones.por-equipo', $equipo) }}"
                    class="btn btn-sm btn-outline-success">Ver todas</a>
             </div>

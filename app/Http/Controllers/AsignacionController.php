@@ -73,6 +73,7 @@ class AsignacionController extends Controller
     {
         $termino = trim((string) $request->query('q', ''));
         $equipoId = $request->query('equipo_id');
+        $contexto = $request->query('contexto', 'asignacion');
 
         $esEquipoTecnologico = false;
         if ($equipoId) {
@@ -110,16 +111,21 @@ class AsignacionController extends Controller
             ->limit(200)
             ->get();
 
-        $enriquecidos = $funcionarios->map(function ($f) use ($esEquipoTecnologico) {
+        $enriquecidos = $funcionarios->map(function ($f) use ($esEquipoTecnologico, $contexto) {
             $activos = (int) $f->activos_count;
             $autorizacionesDisponibles = (int) $f->autorizaciones_disponibles_count;
             
-            if ($esEquipoTecnologico) {
-                $esElegible = $activos === 0 || $autorizacionesDisponibles >= 1;
-                $autorizacionesFaltantes = $activos > 0 && $autorizacionesDisponibles < 1 ? 1 : 0;
+            if ($contexto === 'responsabilidad') {
+                $esElegible = $autorizacionesDisponibles >= 1;
+                $autorizacionesFaltantes = $esElegible ? 0 : 1;
             } else {
-                $esElegible = true;
-                $autorizacionesFaltantes = 0;
+                if ($esEquipoTecnologico) {
+                    $esElegible = $activos === 0 || $autorizacionesDisponibles >= 1;
+                    $autorizacionesFaltantes = $activos > 0 && $autorizacionesDisponibles < 1 ? 1 : 0;
+                } else {
+                    $esElegible = true;
+                    $autorizacionesFaltantes = 0;
+                }
             }
 
             return [
@@ -143,19 +149,24 @@ class AsignacionController extends Controller
             ->filter(fn ($f) => $f['es_elegible'])
             ->values();
 
-        $bloqueadosCoincidentes = $enriquecidos
-            ->filter(fn ($f) => !$f['es_elegible'])
-            ->values()
-            ->map(function ($f) {
-                return [
-                    'id' => $f['id'],
-                    'identificacion' => $f['identificacion'],
-                    'nombre' => $f['nombre'],
-                    'activos_count' => $f['activos_count'],
-                    'autorizaciones_count' => $f['autorizaciones_count'],
-                    'autorizaciones_faltantes' => $f['autorizaciones_faltantes'],
-                ];
-            });
+        if ($contexto === 'responsabilidad') {
+            // "Los demás NO aparecerán"
+            $bloqueadosCoincidentes = collect([]);
+        } else {
+            $bloqueadosCoincidentes = $enriquecidos
+                ->filter(fn ($f) => !$f['es_elegible'])
+                ->values()
+                ->map(function ($f) {
+                    return [
+                        'id' => $f['id'],
+                        'identificacion' => $f['identificacion'],
+                        'nombre' => $f['nombre'],
+                        'activos_count' => $f['activos_count'],
+                        'autorizaciones_count' => $f['autorizaciones_count'],
+                        'autorizaciones_faltantes' => $f['autorizaciones_faltantes'],
+                    ];
+                });
+        }
 
         return response()->json([
             'data' => $elegibles,

@@ -50,7 +50,7 @@
                        value="{{ $serialValue }}"
                        maxlength="100">
                 <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" name="sin_serial_fisico" id="sinSerialCheck" value="true" {{ $isSinSerial ? 'checked' : '' }}>
+                    <input class="form-check-input" type="checkbox" name="sin_serial_fisico" id="sinSerialCheck" value="1" {{ $isSinSerial ? 'checked' : '' }}>
                     <label class="form-check-label text-muted small" for="sinSerialCheck">
                         Este equipo no posee serial físico
                     </label>

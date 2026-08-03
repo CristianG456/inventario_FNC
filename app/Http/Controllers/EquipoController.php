@@ -37,12 +37,20 @@ class EquipoController extends Controller
         if (count($request->query()) > 0) {
             session(['equipos_filtros' => $request->query()]);
         } elseif (session()->has('equipos_filtros')) {
-            return redirect()->route('equipos.index', session('equipos_filtros'));
+            // Filtrar valores nulos o vacíos que Laravel omitiría en la URL, causando un loop infinito
+            $filtros = array_filter(session('equipos_filtros'), fn($v) => $v !== null && $v !== '');
+            if (count($filtros) > 0) {
+                return redirect()->route('equipos.index', $filtros);
+            }
         }
 
         $buscar = trim((string) $request->input('buscar', ''));
         $filtroFuncionario = trim((string) $request->input('funcionario', ''));
 
+        $filtroProyecto = trim((string) $request->input('proyecto', ''));
+        $filtroTemporal = trim((string) $request->input('usuario_temporal', ''));
+        $filtroEmpresa = trim((string) $request->input('empresa_temporal', ''));
+        
         $query = Equipo::select([
                 'id',
                 'tipo_recurso_id',
@@ -59,7 +67,8 @@ class EquipoController extends Controller
             ])
             ->with([
                 'tipoRecurso:id,nombre',
-                'usuarioAsignado:id,equipo_id,nombre,cedula',
+                'usuarioAsignado',
+                'asignacionResponsabilidadActiva'
             ])
             ->when($buscar !== '', function ($q) use ($buscar) {
                 $termino = '%' . $buscar . '%';
@@ -77,7 +86,15 @@ class EquipoController extends Controller
                         ->orWhere('placa', 'like', $termino)
                         ->orWhere('estado_operativo', 'like', $termino)
                         ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
-                        ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
+                        ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino))
+                        ->orWhereHas('asignacionResponsabilidadActiva', function ($ar) use ($termino) {
+                            $ar->where('nombre_usuario', 'like', $termino)
+                               ->orWhere('documento', 'like', $termino)
+                               ->orWhere('empresa', 'like', $termino)
+                               ->orWhere('proyecto', 'like', $termino)
+                               ->orWhere('cargo', 'like', $termino)
+                               ->orWhere('correo', 'like', $termino);
+                        });
                     
                     if ($parsedId !== null) {
                         $sub->orWhere('equipos.id', $parsedId);
@@ -87,6 +104,9 @@ class EquipoController extends Controller
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
             ->when($request->filled('estado'), fn($q) => $q->where('estado_operativo', $request->estado))
             ->when($filtroFuncionario !== '', fn($q) => $q->whereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $filtroFuncionario . '%')))
+            ->when($filtroProyecto !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('proyecto', 'like', '%' . $filtroProyecto . '%')))
+            ->when($filtroTemporal !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('nombre_usuario', 'like', '%' . $filtroTemporal . '%')))
+            ->when($filtroEmpresa !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('empresa', 'like', '%' . $filtroEmpresa . '%')))
             ->latest();
 
         // Cargar campos personalizados que deben mostrarse en la grilla
@@ -143,7 +163,13 @@ class EquipoController extends Controller
                     ->orWhere('placa', 'like', $termino)
                     ->orWhere('estado_operativo', 'like', $termino)
                     ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
-                    ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino));
+                    ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino))
+                    ->orWhereHas('asignacionResponsabilidadActiva', function ($ar) use ($termino) {
+                        $ar->where('nombre_usuario', 'like', $termino)
+                           ->orWhere('documento', 'like', $termino)
+                           ->orWhere('empresa', 'like', $termino)
+                           ->orWhere('proyecto', 'like', $termino);
+                    });
                 
                 if ($parsedId !== null) {
                     $sub->orWhere('equipos.id', $parsedId);
@@ -213,9 +239,11 @@ class EquipoController extends Controller
         }
 
         // Regla: si no hay funcionario asignado en este flujo, no puede quedar como activo/asignado.
-        if (in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
-            $datosEquipo['estado_operativo'] = 'disponible';
-            $datosEquipo['razon_estado'] = null;
+        if (empty($request->usuario_nombre) && empty($request->usuario_cedula)) {
+            if (in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
+                $datosEquipo['estado_operativo'] = 'disponible';
+                $datosEquipo['razon_estado'] = null;
+            }
         }
 
         $equipo = Equipo::create($datosEquipo);
@@ -226,6 +254,28 @@ class EquipoController extends Controller
             'mouse'    => $request->periferico_mouse,
             'camara'   => $request->periferico_camara,
         ]);
+
+        if (!empty($request->usuario_nombre) || !empty($request->usuario_cedula)) {
+            $upper = fn($v) => $v ? mb_strtoupper((string) $v, 'UTF-8') : null;
+            $equipo->usuarioAsignado()->create([
+                'nombre' => $upper($request->usuario_nombre),
+                'cedula' => trim((string) $request->usuario_cedula),
+                'empresa_propietaria' => $upper($request->usuario_empresa_propietaria),
+                'dependencia' => $upper($request->usuario_dependencia),
+                'fuente_recurso' => $upper($request->usuario_fuente_recurso),
+                'empresa_funcionario' => $upper($request->usuario_empresa_funcionario),
+                'tipo_vinculacion' => $upper($request->usuario_tipo_vinculacion),
+                'shortname' => $upper($request->usuario_shortname),
+                'departamento' => $upper($request->usuario_departamento),
+                'ciudad' => $upper($request->usuario_ciudad),
+                'cargo' => $upper($request->usuario_cargo),
+                'area' => $upper($request->usuario_area),
+                'piso' => $upper($request->usuario_piso),
+                'distrito' => $upper($request->usuario_distrito),
+                'seccional' => $upper($request->usuario_seccional),
+            ]);
+            $this->sincronizarFuncionario($request);
+        }
 
         if ($request->has('campos_personalizados')) {
             foreach ($request->campos_personalizados as $campo_id => $valor) {
@@ -343,7 +393,7 @@ class EquipoController extends Controller
         }
 
         // Regla: un activo sin funcionario asignado no puede quedar como activo/asignado.
-        if (!$equipo->usuarioAsignado()->exists() && in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
+        if (empty($request->usuario_nombre) && empty($request->usuario_cedula) && !$equipo->usuarioAsignado()->exists() && in_array(($datosEquipo['estado_operativo'] ?? null), ['activo', 'asignado'], true)) {
             $datosEquipo['estado_operativo'] = 'disponible';
             $datosEquipo['razon_estado'] = null;
         }
@@ -413,8 +463,33 @@ class EquipoController extends Controller
             }
         }
 
-        // Sincronizar funcionario en la tabla de funcionarios
-        $this->sincronizarFuncionario($request);
+        // Sincronizar funcionario en la tabla de funcionarios y UsuarioAsignado
+        if (!empty($request->usuario_nombre) || !empty($request->usuario_cedula)) {
+            $upper = fn($v) => $v ? mb_strtoupper((string) $v, 'UTF-8') : null;
+            $equipo->usuarioAsignado()->updateOrCreate(
+                ['equipo_id' => $equipo->id],
+                [
+                    'nombre' => $upper($request->usuario_nombre),
+                    'cedula' => trim((string) $request->usuario_cedula),
+                    'empresa_propietaria' => $upper($request->usuario_empresa_propietaria),
+                    'dependencia' => $upper($request->usuario_dependencia),
+                    'fuente_recurso' => $upper($request->usuario_fuente_recurso),
+                    'empresa_funcionario' => $upper($request->usuario_empresa_funcionario),
+                    'tipo_vinculacion' => $upper($request->usuario_tipo_vinculacion),
+                    'shortname' => $upper($request->usuario_shortname),
+                    'departamento' => $upper($request->usuario_departamento),
+                    'ciudad' => $upper($request->usuario_ciudad),
+                    'cargo' => $upper($request->usuario_cargo),
+                    'area' => $upper($request->usuario_area),
+                    'piso' => $upper($request->usuario_piso),
+                    'distrito' => $upper($request->usuario_distrito),
+                    'seccional' => $upper($request->usuario_seccional),
+                ]
+            );
+            $this->sincronizarFuncionario($request);
+        } else {
+            $equipo->usuarioAsignado()->delete();
+        }
 
         return redirect()->route('equipos.index')
             ->with('success', 'Equipo actualizado correctamente.');
@@ -600,31 +675,33 @@ class EquipoController extends Controller
      */
     private function sincronizarFuncionario(Request $request): void
     {
-        $cedula = $request->usuario_cedula;
+        $cedula = trim((string) $request->usuario_cedula);
 
         if (empty($cedula)) {
             return;
         }
 
+        $upper = fn($v) => $v ? mb_strtoupper((string) $v, 'UTF-8') : null;
+
         // Separar nombre completo en nombres y apellidos (por el primer espacio)
-        $nombreCompleto = trim($request->usuario_nombre ?? '');
+        $nombreCompleto = trim((string) $request->usuario_nombre);
         $partes         = explode(' ', $nombreCompleto, 2);
-        $nombres        = $partes[0] ?? $nombreCompleto;
-        $apellidos      = $partes[1] ?? null;
+        $nombres        = $upper($partes[0] ?? $nombreCompleto);
+        $apellidos      = $upper($partes[1] ?? null);
 
         $funcionario = Funcionario::withTrashed()->updateOrCreate(
             ['identificacion' => $cedula],
             [
                 'nombres'             => $nombres,
                 'apellidos'           => $apellidos,
-                'cargo'               => $request->usuario_cargo,
-                'area'                => $request->usuario_area,
-                'departamento'        => $request->usuario_departamento,
-                'ciudad'              => $request->usuario_ciudad,
-                'empresa_funcionario' => $request->usuario_empresa_funcionario,
-                'tipo_vinculacion'    => $request->usuario_tipo_vinculacion,
-                'seccional'           => $request->usuario_seccional,
-                'distrito'            => $request->usuario_distrito,
+                'cargo'               => $upper($request->usuario_cargo),
+                'area'                => $upper($request->usuario_area),
+                'departamento'        => $upper($request->usuario_departamento),
+                'ciudad'              => $upper($request->usuario_ciudad),
+                'empresa_funcionario' => $upper($request->usuario_empresa_funcionario),
+                'tipo_vinculacion'    => $upper($request->usuario_tipo_vinculacion),
+                'seccional'           => $upper($request->usuario_seccional),
+                'distrito'            => $upper($request->usuario_distrito),
                 'estado'              => 'Activo',
             ]
         );
@@ -646,7 +723,7 @@ class EquipoController extends Controller
     public function storeComplemento(Request $request, Equipo $equipo, \App\Services\HistorialService $historialService)
     {
         \Illuminate\Support\Facades\Log::info('Store Complemento Payload:', $request->all());
-        $modo = $request->input('modo_ingreso', 'nuevo');
+        $modo = strtolower($request->input('modo_ingreso', 'nuevo'));
 
         if ($modo === 'existente') {
             $request->validate([

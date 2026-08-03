@@ -360,3 +360,10 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
 });
 
 require __DIR__ . '/auth.php';
+
+Route::middleware('auth')->group(function () {
+    // Asignacion Bajo Responsabilidad
+    Route::post('equipos/{equipo}/asignacion-responsabilidad', [App\Http\Controllers\AsignacionResponsabilidadController::class, 'store'])->name('equipos.asignacion-responsabilidad.store')->middleware('permission:equipos.crear');
+    Route::put('equipos/{equipo}/asignacion-responsabilidad/{asignacion}', [App\Http\Controllers\AsignacionResponsabilidadController::class, 'update'])->name('equipos.asignacion-responsabilidad.update')->middleware('permission:equipos.crear');
+    Route::delete('equipos/{equipo}/asignacion-responsabilidad/{asignacion}', [App\Http\Controllers\AsignacionResponsabilidadController::class, 'destroy'])->name('equipos.asignacion-responsabilidad.destroy')->middleware('permission:equipos.crear');
+});

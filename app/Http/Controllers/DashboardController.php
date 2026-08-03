@@ -39,6 +39,32 @@ class DashboardController extends Controller
             ->where('estado', 'Activa')
             ->count();
 
+        // Asignaciones Bajo Responsabilidad
+        $respActivas = \App\Models\AsignacionResponsabilidad::where('estado', 'activa')->count();
+        $respFinalizadas = \App\Models\AsignacionResponsabilidad::where('estado', 'finalizada')->count();
+        $respPorVencer = \App\Models\AsignacionResponsabilidad::where('estado', 'activa')
+            ->whereNotNull('fecha_final_estimada')
+            ->where('fecha_final_estimada', '<=', $hoy->copy()->addDays(15)->toDateString())
+            ->count();
+
+        $respPorProyecto = \App\Models\AsignacionResponsabilidad::where('estado', 'activa')
+            ->whereNotNull('proyecto')
+            ->where('proyecto', '!=', '')
+            ->select('proyecto', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->groupBy('proyecto')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        $respPorResponsable = \App\Models\Equipo::whereHas('asignacionResponsabilidadActiva')
+            ->select('responsable_nombre', \Illuminate\Support\Facades\DB::raw('count(*) as total'))
+            ->whereNotNull('responsable_nombre')
+            ->where('responsable_nombre', '!=', '')
+            ->groupBy('responsable_nombre')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
         return view('dashboard', compact(
             'totalEquipos',
             'activos',
@@ -48,7 +74,12 @@ class DashboardController extends Controller
             'equiposPorTipo',
             'ultimosEquipos',
             'alertasRojas',
-            'alertasAmarillas'
+            'alertasAmarillas',
+            'respActivas',
+            'respFinalizadas',
+            'respPorVencer',
+            'respPorProyecto',
+            'respPorResponsable'
         ));
     }
 }

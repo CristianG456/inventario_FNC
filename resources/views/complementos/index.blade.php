@@ -48,17 +48,17 @@
 <!-- Filtros -->
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <form method="GET" action="{{ route('equipos.complementos.global') }}" class="row g-3 align-items-end">
+        <form id="formFiltros" method="GET" action="{{ route('equipos.complementos.global') }}" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label small">Buscar (Serial, Marca, Equipo)</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                    <input type="text" name="buscar" class="form-control" value="{{ request('buscar') }}" placeholder="Término de búsqueda...">
+                    <input type="text" name="buscar" id="buscarInput" class="form-control" value="{{ request('buscar') }}" placeholder="Término de búsqueda...">
                 </div>
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Tipo de Complemento</label>
-                <select name="catalogo_id" class="form-select">
+                <select name="catalogo_id" id="filtroCatalogo" class="form-select">
                     <option value="">Todos</option>
                     @foreach($catalogo as $cat)
                         <option value="{{ $cat->id }}" {{ request('catalogo_id') == $cat->id ? 'selected' : '' }}>{{ $cat->nombre }}</option>
@@ -67,7 +67,7 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Estado</label>
-                <select name="estado" class="form-select">
+                <select name="estado" id="filtroEstado" class="form-select">
                     <option value="">Todos</option>
                     @foreach(\App\Models\ActivoComplemento::ESTADOS as $est)
                         <option value="{{ $est }}" {{ request('estado') == $est ? 'selected' : '' }}>{{ $est }}</option>
@@ -162,3 +162,111 @@
     @endif
 </div>
 @endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+    .ts-control { min-height: 38px; padding: 6px 12px; }
+    .ts-control > input { padding: 0 !important; }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar TomSelect
+        if (document.getElementById('filtroCatalogo')) {
+            new TomSelect('#filtroCatalogo', {
+                placeholder: 'Todos',
+                searchField: ['text'],
+                maxOptions: 50
+            });
+        }
+        
+        if (document.getElementById('filtroEstado')) {
+            new TomSelect('#filtroEstado', {
+                placeholder: 'Todos',
+                searchField: ['text']
+            });
+        }
+
+        // Auto-submit via AJAX
+        const formFiltros = document.getElementById('formFiltros');
+        const selectCatalogo = document.getElementById('filtroCatalogo');
+        const selectEstado = document.getElementById('filtroEstado');
+        const searchInput = document.getElementById('buscarInput');
+        const tablaContainer = document.querySelector('.table-responsive');
+        const footerContainer = document.querySelector('.card-footer') ? document.querySelector('.card-footer').parentElement : document.querySelector('.table-responsive').parentElement;
+        
+        let searchTimeoutId;
+
+        function updateTable() {
+            // Mostrar indicador de carga visualmente
+            tablaContainer.style.opacity = '0.5';
+            
+            // Construir la URL con todos los filtros actuales del formulario
+            const formData = new FormData(formFiltros);
+            const params = new URLSearchParams(formData);
+            const url = `${formFiltros.action}?${params.toString()}`;
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.text())
+            .then(html => {
+                // Parsear el HTML devuelto
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Extraer el nuevo tbody
+                const newTbody = doc.querySelector('.table-responsive tbody');
+                const currentTbody = tablaContainer.querySelector('tbody');
+                
+                if (newTbody && currentTbody) {
+                    currentTbody.innerHTML = newTbody.innerHTML;
+                }
+                
+                // Extraer e inyectar la paginación (card-footer)
+                const newFooter = doc.querySelector('.card-footer');
+                const currentFooter = document.querySelector('.card-footer');
+                
+                if (newFooter && footerContainer) {
+                    if (currentFooter) {
+                        currentFooter.outerHTML = newFooter.outerHTML;
+                    } else {
+                        footerContainer.appendChild(newFooter);
+                    }
+                } else if (!newFooter && currentFooter) {
+                    currentFooter.remove();
+                }
+
+                // Restaurar opacidad
+                tablaContainer.style.opacity = '1';
+                
+                // Actualizar la URL del navegador sin recargar (para que al recargar mantenga el filtro)
+                window.history.pushState({}, '', url);
+            })
+            .catch(error => {
+                console.error('Error al filtrar:', error);
+                tablaContainer.style.opacity = '1';
+            });
+        }
+
+        if (selectCatalogo) {
+            selectCatalogo.addEventListener('change', updateTable);
+        }
+        if (selectEstado) {
+            selectEstado.addEventListener('change', updateTable);
+        }
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeoutId);
+                searchTimeoutId = setTimeout(updateTable, 500);
+            });
+        }
+    });
+</script>
+@endpush
