@@ -11,10 +11,6 @@ services:
     build: .
     container_name: laravel_app
     working_dir: /var/www
-    env_file:
-      - .env
-    environment:
-      TZ: ${APP_TIMEZONE:-America/Bogota}
     restart: unless-stopped
     depends_on:
       db:
@@ -33,10 +29,6 @@ services:
   webserver:
     image: nginx:alpine
     container_name: nginx_server
-    env_file:
-      - .env
-    environment:
-      TZ: ${APP_TIMEZONE:-America/Bogota}
     restart: unless-stopped
     ports:
       - "3300:80"
@@ -51,15 +43,12 @@ services:
   db:
     image: mysql:8.0
     container_name: mysql_db
-    env_file:
-      - .env
+    restart: unless-stopped
     environment:
-      TZ: ${APP_TIMEZONE:-America/Bogota}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-    restart: unless-stopped
     ports:
       - "3307:3306"
     volumes:
@@ -75,68 +64,6 @@ services:
       start_period: 30s
     logging: *default-logging
 
-  # ---------------------------------------------------------
-  # ESTRUCTURA PREPARADA PARA FUTURA ESCALABILIDAD (INACTIVOS)
-  # ---------------------------------------------------------
-  
-  # redis:
-  #   image: redis:alpine
-  #   container_name: redis_server
-  #   env_file:
-  #     - .env
-  #   restart: unless-stopped
-  #   volumes:
-  #     - redis_data:/data
-  #   networks:
-  #     - laravel
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   logging: *default-logging
-
-  # worker:
-  #   build: .
-  #   container_name: laravel_worker
-  #   working_dir: /var/www
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     TZ: ${APP_TIMEZONE:-America/Bogota}
-  #   restart: unless-stopped
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   volumes:
-  #     - .:/var/www
-  #   command: php artisan queue:work --sleep=3 --tries=3
-  #   networks:
-  #     - laravel
-  #   logging: *default-logging
-
-  # scheduler:
-  #   build: .
-  #   container_name: laravel_scheduler
-  #   working_dir: /var/www
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     TZ: ${APP_TIMEZONE:-America/Bogota}
-  #   restart: unless-stopped
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   volumes:
-  #     - .:/var/www
-  #   command: >
-  #     sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
-  #   networks:
-  #     - laravel
-  #   logging: *default-logging
-
 networks:
   laravel:
     driver: bridge
@@ -148,7 +75,6 @@ volumes:
   framework_views_data:
   actas_firmadas_data:
   mysql_data:
-    # Preparación para futuros Backups Cloudflare R2 / Kopia:
+    # Preparación para futuros Backups Cloudflare R2:
     # Este volumen asegura la retención local, y el servicio de backup
-    # podrá montarlo para leer y subir el .sql o el volumen completo.
-  # redis_data:
+    # podrá montarlo para leer y subir el .sql a R2.
