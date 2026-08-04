@@ -61,58 +61,23 @@
             </div>
 
             <div class="col-12 col-md-4">
-                <label class="form-label fw-medium">Activo Fijo</label>
-                <input type="text" name="activo_fijo"
-                       class="form-control @error('activo_fijo') is-invalid @enderror"
-                       value="{{ old('activo_fijo', $equipo->activo_fijo ?? '') }}"
-                       placeholder="Ej: FNC-001234" maxlength="100">
-                @error('activo_fijo')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                <x-ui.input name="activo_fijo" label="Activo Fijo" required="false" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <label class="form-label fw-medium">Placa</label>
-                <input type="text" name="placa"
-                       class="form-control @error('placa') is-invalid @enderror"
-                       value="{{ old('placa', $equipo->placa ?? '') }}"
-                       maxlength="100">
-                @error('placa')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                <x-ui.input name="placa" label="Placa" required="false" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <label class="form-label fw-medium">Marca <span class="text-danger">*</span></label>
-                <input type="text" name="marca"
-                       class="form-control @error('marca') is-invalid @enderror"
-                       value="{{ old('marca', $equipo->marca ?? '') }}"
-                       required maxlength="100">
-                @error('marca')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                <x-ui.input name="marca" label="Marca" required="true" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <label class="form-label fw-medium">Modelo <span class="text-danger">*</span></label>
-                <input type="text" name="modelo"
-                       class="form-control @error('modelo') is-invalid @enderror"
-                       value="{{ old('modelo', $equipo->modelo ?? '') }}"
-                       required maxlength="100">
-                @error('modelo')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                <x-ui.input name="modelo" label="Modelo" required="true" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <label class="form-label fw-medium">Nombre del Equipo <span class="text-danger">*</span></label>
-                <input type="text" name="nombre_equipo"
-                       class="form-control @error('nombre_equipo') is-invalid @enderror"
-                       value="{{ old('nombre_equipo', $equipo->nombre_equipo ?? '') }}"
-                       required maxlength="150">
-                @error('nombre_equipo')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                <x-ui.input name="nombre_equipo" label="Nombre del Equipo" required="true" maxlength="150" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
@@ -158,36 +123,16 @@
         <div class="accordion-body">
             <div class="row g-3">
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Procesador</label>
-                    <input type="text" name="procesador"
-                           class="form-control @error('procesador') is-invalid @enderror"
-                           value="{{ old('procesador', $equipo->procesador ?? '') }}"
-                           maxlength="150">
-                    @error('procesador') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="procesador" label="Procesador" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">RAM</label>
-                    <input type="text" name="ram"
-                           class="form-control @error('ram') is-invalid @enderror"
-                           value="{{ old('ram', $equipo->ram ?? '') }}"
-                           placeholder="Ej: 16 GB" maxlength="50">
-                    @error('ram') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="ram" label="RAM" required="false" maxlength="50" placeholder="Ej: 16 GB" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Disco</label>
-                    <input type="text" name="disco"
-                           class="form-control @error('disco') is-invalid @enderror"
-                           value="{{ old('disco', $equipo->disco ?? '') }}"
-                           placeholder="Ej: 512 GB SSD" maxlength="50">
-                    @error('disco') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="disco" label="Disco" required="false" maxlength="50" placeholder="Ej: 512 GB SSD" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Sistema Operativo</label>
-                    <input type="text" name="sistema_operativo"
-                           class="form-control @error('sistema_operativo') is-invalid @enderror"
-                           value="{{ old('sistema_operativo', $equipo->sistema_operativo ?? '') }}"
-                           maxlength="100">
-                    @error('sistema_operativo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="sistema_operativo" label="Sistema Operativo" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
                     <label class="form-label fw-medium">Fecha de Compra</label>
@@ -204,12 +149,7 @@
                     @error('fin_garantia') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Tiempo de Uso</label>
-                    <input type="text" name="tiempo_uso"
-                           class="form-control @error('tiempo_uso') is-invalid @enderror"
-                           value="{{ old('tiempo_uso', $equipo->tiempo_uso ?? '') }}"
-                           placeholder="Ej: 2 años" maxlength="100">
-                    @error('tiempo_uso') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="tiempo_uso" label="Tiempo de Uso" required="false" maxlength="100" placeholder="Ej: 2 años" containerClass="" />
                 </div>
             </div>
         </div>
@@ -234,124 +174,49 @@
             @endif
             <div class="row g-3">
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Empresa Propietaria del Equipo</label>
-                    <input type="text" name="usuario_empresa_propietaria"
-                           class="form-control @error('usuario_empresa_propietaria') is-invalid @enderror"
-                           value="{{ old('usuario_empresa_propietaria', $equipo->usuarioAsignado->empresa_propietaria ?? '') }}"
-                           maxlength="150">
-                    @error('usuario_empresa_propietaria') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_empresa_propietaria" label="Empresa Propietaria del Equipo" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Dependencia</label>
-                    <input type="text" name="usuario_dependencia"
-                           class="form-control @error('usuario_dependencia') is-invalid @enderror"
-                           value="{{ old('usuario_dependencia', $equipo->usuarioAsignado->dependencia ?? '') }}"
-                           maxlength="150">
-                    @error('usuario_dependencia') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_dependencia" label="Dependencia" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Fuente de Recurso</label>
-                    <input type="text" name="usuario_fuente_recurso"
-                           class="form-control @error('usuario_fuente_recurso') is-invalid @enderror"
-                           value="{{ old('usuario_fuente_recurso', $equipo->usuarioAsignado->fuente_recurso ?? '') }}"
-                           maxlength="150">
-                    @error('usuario_fuente_recurso') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_fuente_recurso" label="Fuente de Recurso" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Empresa Funcionario</label>
-                    <input type="text" name="usuario_empresa_funcionario"
-                           class="form-control @error('usuario_empresa_funcionario') is-invalid @enderror"
-                           value="{{ old('usuario_empresa_funcionario', $equipo->usuarioAsignado->empresa_funcionario ?? '') }}"
-                           maxlength="150">
-                    @error('usuario_empresa_funcionario') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_empresa_funcionario" label="Empresa Funcionario" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Empleado o Contratista</label>
-                    <input type="text" name="usuario_tipo_vinculacion"
-                           class="form-control @error('usuario_tipo_vinculacion') is-invalid @enderror"
-                           value="{{ old('usuario_tipo_vinculacion', $equipo->usuarioAsignado->tipo_vinculacion ?? '') }}"
-                           maxlength="100">
-                    @error('usuario_tipo_vinculacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_tipo_vinculacion" label="Empleado o Contratista" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Shortname</label>
-                    <input type="text" name="usuario_shortname"
-                           class="form-control @error('usuario_shortname') is-invalid @enderror"
-                           value="{{ old('usuario_shortname', $equipo->usuarioAsignado->shortname ?? '') }}"
-                           maxlength="100">
-                    @error('usuario_shortname') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_shortname" label="Shortname" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-6">
-                      <label class="form-label fw-medium">Nombre</label>
-                    <input type="text" name="usuario_nombre"
-                           class="form-control @error('usuario_nombre') is-invalid @enderror"
-                           value="{{ old('usuario_nombre', $equipo->usuarioAsignado->nombre ?? '') }}"
-                          maxlength="150">
-                    @error('usuario_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                      <x-ui.input name="usuario_nombre" label="Nombre" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                      <label class="form-label fw-medium">Cédula</label>
-                    <input type="text" name="usuario_cedula"
-                           class="form-control @error('usuario_cedula') is-invalid @enderror"
-                           value="{{ old('usuario_cedula', $equipo->usuarioAsignado->cedula ?? '') }}"
-                          maxlength="20">
-                    @error('usuario_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                      <x-ui.input name="usuario_cedula" label="Cédula" required="false" maxlength="20" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Ciudad</label>
-                    <input type="text" name="usuario_ciudad"
-                           class="form-control @error('usuario_ciudad') is-invalid @enderror"
-                           value="{{ old('usuario_ciudad', $equipo->usuarioAsignado->ciudad ?? '') }}"
-                           maxlength="100">
-                    @error('usuario_ciudad') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_ciudad" label="Ciudad" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Departamento</label>
-                    <input type="text" name="usuario_departamento"
-                           class="form-control @error('usuario_departamento') is-invalid @enderror"
-                           value="{{ old('usuario_departamento', $equipo->usuarioAsignado->departamento ?? '') }}"
-                           maxlength="100">
-                    @error('usuario_departamento') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_departamento" label="Departamento" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Cargo</label>
-                    <input type="text" name="usuario_cargo"
-                           class="form-control @error('usuario_cargo') is-invalid @enderror"
-                           value="{{ old('usuario_cargo', $equipo->usuarioAsignado->cargo ?? '') }}"
-                           maxlength="100">
-                    @error('usuario_cargo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_cargo" label="Cargo" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Área</label>
-                    <input type="text" name="usuario_area"
-                           class="form-control @error('usuario_area') is-invalid @enderror"
-                           value="{{ old('usuario_area', $equipo->usuarioAsignado->area ?? '') }}"
-                           maxlength="100">
-                    @error('usuario_area') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_area" label="Área" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Piso</label>
-                    <input type="text" name="usuario_piso"
-                           class="form-control @error('usuario_piso') is-invalid @enderror"
-                           value="{{ old('usuario_piso', $equipo->usuarioAsignado->piso ?? '') }}"
-                           maxlength="20">
-                    @error('usuario_piso') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_piso" label="Piso" required="false" maxlength="20" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Distrito</label>
-                    <input type="text" name="usuario_distrito"
-                           class="form-control @error('usuario_distrito') is-invalid @enderror"
-                           value="{{ old('usuario_distrito', $equipo->usuarioAsignado->distrito ?? '') }}"
-                           maxlength="150">
-                    @error('usuario_distrito') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_distrito" label="Distrito" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="form-label fw-medium">Seccional</label>
-                    <input type="text" name="usuario_seccional"
-                           class="form-control @error('usuario_seccional') is-invalid @enderror"
-                           value="{{ old('usuario_seccional', $equipo->usuarioAsignado->seccional ?? '') }}"
-                           maxlength="150">
-                    @error('usuario_seccional') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="usuario_seccional" label="Seccional" required="false" maxlength="150" containerClass="" />
                 </div>
             </div>
         </div>
@@ -383,52 +248,22 @@
                 {{-- EDIT: Mostrar campos editables --}}
                 <div class="row g-3">
                     <div class="col-12 col-md-3">
-                        <label class="form-label fw-medium">Cédula</label>
-                        <input type="text" name="responsable_cedula"
-                               class="form-control @error('responsable_cedula') is-invalid @enderror"
-                               value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}"
-                               maxlength="20">
-                        @error('responsable_cedula') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <x-ui.input name="responsable_cedula" label="Cédula" required="false" maxlength="20" containerClass="" />
                     </div>
                     <div class="col-12 col-md-5">
-                        <label class="form-label fw-medium">Nombre</label>
-                        <input type="text" name="responsable_nombre"
-                               class="form-control @error('responsable_nombre') is-invalid @enderror"
-                               value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}"
-                               maxlength="150">
-                        @error('responsable_nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <x-ui.input name="responsable_nombre" label="Nombre" required="false" maxlength="150" containerClass="" />
                     </div>
                     <div class="col-12 col-md-4">
-                        <label class="form-label fw-medium">Cargo</label>
-                        <input type="text" name="responsable_cargo"
-                               class="form-control @error('responsable_cargo') is-invalid @enderror"
-                               value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}"
-                               maxlength="100">
-                        @error('responsable_cargo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <x-ui.input name="responsable_cargo" label="Cargo" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <label class="form-label fw-medium">Ciudad</label>
-                        <input type="text" name="responsable_ciudad"
-                               class="form-control @error('responsable_ciudad') is-invalid @enderror"
-                               value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}"
-                               maxlength="100">
-                        @error('responsable_ciudad') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <x-ui.input name="responsable_ciudad" label="Ciudad" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <label class="form-label fw-medium">Área</label>
-                        <input type="text" name="responsable_area"
-                               class="form-control @error('responsable_area') is-invalid @enderror"
-                               value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}"
-                               maxlength="100">
-                        @error('responsable_area') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <x-ui.input name="responsable_area" label="Área" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <label class="form-label fw-medium">Tipo de Recurso</label>
-                        <input type="text" name="responsable_tipo_recurso"
-                               class="form-control @error('responsable_tipo_recurso') is-invalid @enderror"
-                               value="{{ old('responsable_tipo_recurso', $equipo->responsable_tipo_recurso ?? '') }}"
-                               maxlength="100">
-                        @error('responsable_tipo_recurso') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <x-ui.input name="responsable_tipo_recurso" label="Tipo de Recurso" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
                         <label class="form-label fw-medium">Fecha Inicio</label>
@@ -462,36 +297,16 @@
         <div class="accordion-body">
             <div class="row g-3">
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Teléfono Fijo</label>
-                    <input type="text" name="periferico_telefono"
-                           class="form-control @error('periferico_telefono') is-invalid @enderror"
-                           value="{{ old('periferico_telefono', $equipo->periferico->telefono ?? '') }}"
-                           maxlength="100">
-                    @error('periferico_telefono') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="periferico_telefono" label="Teléfono Fijo" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Teclado</label>
-                    <input type="text" name="periferico_teclado"
-                           class="form-control @error('periferico_teclado') is-invalid @enderror"
-                           value="{{ old('periferico_teclado', $equipo->periferico->teclado ?? '') }}"
-                           maxlength="100">
-                    @error('periferico_teclado') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="periferico_teclado" label="Teclado" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Mouse</label>
-                    <input type="text" name="periferico_mouse"
-                           class="form-control @error('periferico_mouse') is-invalid @enderror"
-                           value="{{ old('periferico_mouse', $equipo->periferico->mouse ?? '') }}"
-                           maxlength="100">
-                    @error('periferico_mouse') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="periferico_mouse" label="Mouse" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Cámara</label>
-                    <input type="text" name="periferico_camara"
-                           class="form-control @error('periferico_camara') is-invalid @enderror"
-                           value="{{ old('periferico_camara', $equipo->periferico->camara ?? '') }}"
-                           maxlength="100">
-                    @error('periferico_camara') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <x-ui.input name="periferico_camara" label="Cámara" required="false" maxlength="100" containerClass="" />
                 </div>
             </div>
         </div>

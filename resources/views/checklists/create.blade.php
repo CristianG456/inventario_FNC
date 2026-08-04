@@ -7,14 +7,12 @@
     $equipoBackId = old('equipo_id', request('equipo_id'));
     $volverUrl = $equipoBackId ? route('equipos.edit', $equipoBackId) : route('checklists.index');
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-plus-circle me-2 text-primary"></i>Nuevo Checklist Técnico
-    </h4>
-    <a href="{{ $volverUrl }}" class="btn btn-outline-secondary" id="btnVolverChecklist">
-        <i class="bi bi-arrow-left me-1"></i>Volver
-    </a>
-</div>
+<x-ui.toolbar 
+    title="Nuevo Checklist Técnico" 
+    icon="plus-circle"
+>
+    <x-ui.button href="{{ $volverUrl }}" outline="true" color="secondary" icon="arrow-left" text="Volver" id="btnVolverChecklist" />
+</x-ui.toolbar>
 
 <form method="POST" action="{{ route('checklists.store') }}" novalidate>
     @csrf
@@ -22,10 +20,8 @@
     @include('checklists._form')
 
     <div class="d-flex justify-content-end gap-2 flex-wrap">
-        <a href="{{ $volverUrl }}" class="btn btn-secondary" id="btnCancelarChecklist">Cancelar</a>
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-floppy me-1"></i>Guardar
-        </button>
+        <x-ui.button href="{{ $volverUrl }}" color="secondary" text="Cancelar" id="btnCancelarChecklist" />
+        <x-ui.button type="submit" color="primary" icon="floppy" text="Guardar" />
     </div>
 </form>
 

@@ -203,41 +203,49 @@ class CMDBMapperService
         // ─── Campos del responsable del activo ────────────────────────────
 
         'responsable_cedula' => [
+            'responsable_del_activo_cedula',
             'responsable_cedula',
             'cedula_responsable',
         ],
 
         'responsable_nombre' => [
+            'responsable_del_activo_nombre',
             'responsable_nombre',
             'nombre_responsable',
         ],
 
         'responsable_cargo' => [
+            'responsable_del_activo_cargo',
             'responsable_cargo',
             'cargo_responsable',
         ],
 
         'responsable_ciudad' => [
+            'responsable_del_activo_ciudad',
             'responsable_ciudad',
             'ciudad_responsable',
         ],
 
         'responsable_area' => [
+            'responsable_del_activo_area',
             'responsable_area',
             'area_responsable',
         ],
 
         'responsable_tipo_recurso' => [
+            'responsable_del_activo_tipo_recurso',
             'responsable_tipo_recurso',
             'tipo_recurso_responsable',
         ],
 
         'fecha_inicio_responsable' => [
+            'responsable_desde',
             'fecha_inicio_responsable',
             'inicio_responsable',
         ],
 
         'fecha_fin_responsable' => [
+            'responsable_hasta',
             'fecha_fin_responsable',
             'fin_responsable',
         ],
@@ -245,6 +253,7 @@ class CMDBMapperService
         // ─── Campos del usuario asignado ─────────────────────────────────
 
         'nombre_usuario' => [
+            'usuario_asignado_nombre',
             'nombres_y_apellidos',  // CMDB
             'nombre_usuario',
             'full_name',
@@ -254,7 +263,9 @@ class CMDBMapperService
         ],
 
         'cedula' => [
-            'cedula_del_funcionariocontratista',  // CMDB (normalizado)
+            'usuario_asignado_cedula',
+            'cedula_de_funcionario_contratista', // CMDB exact match
+            'cedula_del_funcionariocontratista',  // CMDB (normalizado antiguo)
             'cedula_del_funcionariocont',
             'cedula_del_funcionario',
             'cedula',
@@ -266,6 +277,7 @@ class CMDBMapperService
         ],
 
         'empresa_propietaria' => [
+            'usuario_asignado_empresa_propietaria',
             'empresa_propietario_del_equipo',     // CMDB
             'empresa_propietaria_del_equipo',
             'empresa_propietario_del',
@@ -276,6 +288,7 @@ class CMDBMapperService
         ],
 
         'dependencia' => [
+            'usuario_asignado_dependencia',
             'dependencia',          // propio
             'dependency',
             'area_funcional',
@@ -283,6 +296,7 @@ class CMDBMapperService
         ],
 
         'fuente_recurso' => [
+            'usuario_asignado_fuente_recurso',
             'fuente_de_recurso',    // CMDB
             'fuente_recurso',
             'fuente',
@@ -290,6 +304,7 @@ class CMDBMapperService
         ],
 
         'empresa_funcionario' => [
+            'usuario_asignado_empresa_funcionario',
             'empresa_funcionario',  // CMDB & propio
             'empresa_empleado',
             'employer',
@@ -297,6 +312,7 @@ class CMDBMapperService
         ],
 
         'tipo_vinculacion' => [
+            'usuario_asignado_tipo_vinculacion',
             'empleado_o_contratista',  // CMDB
             'tipo_vinculacion',
             'vinculacion',
@@ -305,6 +321,7 @@ class CMDBMapperService
         ],
 
         'shortname' => [
+            'usuario_asignado_shortname',
             'shortname',            // CMDB & propio
             'short_name',
             'usuario_red',
@@ -314,6 +331,7 @@ class CMDBMapperService
         ],
 
         'departamento' => [
+            'usuario_asignado_departamento',
             'departamento',         // CMDB & propio
             'department',
             'depto',
@@ -321,6 +339,7 @@ class CMDBMapperService
         ],
 
         'ciudad' => [
+            'usuario_asignado_ciudad',
             'ciudad',               // CMDB & propio
             'city',
             'municipio',
@@ -328,6 +347,7 @@ class CMDBMapperService
         ],
 
         'cargo' => [
+            'usuario_asignado_cargo',
             'cargo',                // CMDB & propio
             'position',
             'job_title',
@@ -336,12 +356,14 @@ class CMDBMapperService
         ],
 
         'area' => [
+            'usuario_asignado_area',
             'area',                 // CMDB & propio
             'area_trabajo',
             'work_area',
         ],
 
         'piso' => [
+            'usuario_asignado_piso',
             'ubicacion_y_piso',     // CMDB
             'piso',
             'floor',

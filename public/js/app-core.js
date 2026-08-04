@@ -230,4 +230,31 @@
             }
         });
     });
+
+    // === Confirmación de Restauración Global ===
+    document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('.js-form-restaurar button[type="submit"]');
+        if (!trigger) return;
+        event.preventDefault();
+
+        const form = trigger.closest('form');
+        if (!form) return;
+
+        const nombreEquipo = form.dataset.equipo || 'el registro';
+
+        Swal.fire({
+            title: '¿Estás seguro?',
+            html: `Se restaurará <strong>${nombreEquipo}</strong> a estado <strong>Activo</strong>.<br>¿Deseas continuar?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, restaurar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
 })();

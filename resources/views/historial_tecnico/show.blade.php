@@ -3,32 +3,18 @@
 @section('title', 'Detalle — Evento Técnico')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold mb-0">
-            <i class="bi {{ $historialTecnico->tipo_evento_icono }} me-2 text-{{ $historialTecnico->tipo_evento_color }}"></i>
-            {{ $historialTecnico->tipo_evento_label }}
-        </h4>
-        <small class="text-muted">
-            {{ $historialTecnico->equipo?->nombre_equipo }} — {{ $historialTecnico->fecha_evento?->format('d/m/Y') }}
-        </small>
-    </div>
-    <div class="d-flex gap-2 flex-wrap">
-        @if($puedeModificarBitacora)
-            <a href="{{ route('historial-tecnico.edit', $historialTecnico) }}" class="btn btn-warning text-white">
-                <i class="bi bi-pencil me-1"></i>Editar
-            </a>
-        @endif
-        <a href="{{ route('historial-tecnico.por-equipo', ['equipo' => $historialTecnico->equipo_id, 'return_to' => request()->fullUrl()]) }}"
-           class="btn btn-outline-secondary">
-            <i class="bi bi-clock-history me-1"></i>Historial del Equipo
-        </a>
-        <a href="{{ route('historial-tecnico.index') }}"
-           class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-    </div>
-</div>
+<x-ui.toolbar 
+    title="{{ $historialTecnico->tipo_evento_label }}" 
+    icon="{{ $historialTecnico->tipo_evento_icono }}"
+    iconClass="text-{{ $historialTecnico->tipo_evento_color }}"
+>
+    <x-slot name="subtitle">{{ $historialTecnico->equipo?->nombre_equipo }} — {{ $historialTecnico->fecha_evento?->format('d/m/Y') }}</x-slot>
+    @if($puedeModificarBitacora)
+        <x-ui.button href="{{ route('historial-tecnico.edit', $historialTecnico) }}" color="warning" class="text-white" icon="pencil" text="Editar" />
+    @endif
+    <x-ui.button href="{{ route('historial-tecnico.por-equipo', ['equipo' => $historialTecnico->equipo_id, 'return_to' => request()->fullUrl()]) }}" outline="true" color="secondary" icon="clock-history" text="Historial del Equipo" />
+    <x-ui.button href="{{ route('historial-tecnico.index') }}" outline="true" color="secondary" icon="arrow-left" text="Volver" />
+</x-ui.toolbar>
 
 <div class="row g-4">
     <div class="col-lg-8">

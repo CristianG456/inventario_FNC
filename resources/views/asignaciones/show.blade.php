@@ -3,8 +3,12 @@
 @section('title', 'Detalle de Préstamo')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
+<x-ui.toolbar 
+    title="Detalle de Préstamo #{{ str_pad($asignacion->id, 5, '0', STR_PAD_LEFT) }}" 
+    icon="person-fill-gear"
+    backRoute="{{ route('equipos.show', $asignacion->equipo_id) }}"
+>
+    <x-slot name="title">
         <h4 class="fw-bold mb-0">
             <i class="bi bi-person-fill-gear me-2 text-primary"></i>
             Detalle de Préstamo #{{ str_pad($asignacion->id, 5, '0', STR_PAD_LEFT) }}
@@ -12,36 +16,29 @@
         <small class="text-muted">
             {{ $asignacion->equipo?->nombre_equipo }} — {{ $asignacion->fecha_accion?->format('d/m/Y H:i') }}
         </small>
-    </div>
-    <div class="d-flex gap-2">
-        @if(in_array($asignacion->tipo_accion, ['asignacion','reemplazo']))
-        <a href="{{ route('asignaciones.pdf', $asignacion) }}" class="btn btn-danger">
-            <i class="bi bi-file-pdf me-1"></i>Descargar PDF
-        </a>
-        @endif
-        <a href="{{ route('equipos.show', $asignacion->equipo_id) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver al equipo
-        </a>
-    </div>
-</div>
+    </x-slot>
+    @if(in_array($asignacion->tipo_accion, ['asignacion','reemplazo']))
+        <x-ui.button href="{{ route('asignaciones.pdf', $asignacion) }}" color="danger" icon="file-pdf" text="Descargar PDF" />
+    @endif
+    <x-ui.button href="{{ route('equipos.show', $asignacion->equipo_id) }}" outline="true" color="secondary" icon="arrow-left" text="Volver al equipo" />
+</x-ui.toolbar>
 
 <div class="row g-4">
     {{-- Tipo de acción --}}
     <div class="col-12">
-        <div class="alert alert-{{ $asignacion->tipo_accion_color }} d-flex align-items-center gap-3 mb-0">
-            <i class="bi bi-info-circle-fill fs-4"></i>
+        <x-ui.alert type="{{ $asignacion->tipo_accion_color }}" class="d-flex align-items-center gap-3 mb-0" icon="info-circle-fill">
             <div>
                 <strong>{{ $asignacion->tipo_accion_label }}</strong>
                 @if($asignacion->motivo)
                     — {{ $asignacion->motivo }}
                 @endif
             </div>
-        </div>
+        </x-ui.alert>
     </div>
 
     {{-- Datos del equipo --}}
     <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
+        <x-ui.card noPadding="true" class="h-100 border-0 shadow-sm">
             <div class="card-header bg-primary bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-laptop me-2 text-primary"></i>Datos del Equipo
             </div>
@@ -66,12 +63,12 @@
                     <dd class="col-sm-7">{{ $asignacion->equipo?->marca }} / {{ $asignacion->equipo?->modelo }}</dd>
                 </dl>
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
     {{-- Datos del usuario --}}
     <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
+        <x-ui.card noPadding="true" class="h-100 border-0 shadow-sm">
             <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-person me-2 text-success"></i>Usuario en el Momento
             </div>
@@ -105,13 +102,13 @@
                     <p class="text-muted mb-0">Sin datos de usuario para este evento.</p>
                 @endif
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
     {{-- Datos de la acción --}}
     @if($asignacion->observaciones || $asignacion->entregado_por)
     <div class="col-12">
-        <div class="card border-0 shadow-sm">
+        <x-ui.card noPadding="true" class="border-0 shadow-sm">
             <div class="card-header bg-secondary bg-opacity-10 fw-semibold border-0 py-3">
                 <i class="bi bi-info-circle me-2 text-secondary"></i>Información Adicional
             </div>
@@ -129,7 +126,7 @@
                     <dd class="col-sm-9">{{ $asignacion->registradoPor?->name ?? '—' }}</dd>
                 </dl>
             </div>
-        </div>
+        </x-ui.card>
     </div>
     @endif
 </div>

@@ -11,76 +11,58 @@
 @section('title', 'Equipos')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-laptop me-2 text-primary"></i>Inventario de Equipos</h4>
-    <div class="d-flex gap-2">
-        @can('equipos.crear')
-        <a href="{{ route('equipos.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i>Nuevo Activo
-        </a>
-        @endcan
-    </div>
-</div>
+<x-ui.toolbar 
+    title="Inventario de Equipos" 
+    icon="laptop" 
+    createRoute="{{ auth()->user()->can('equipos.crear') ? route('equipos.create') : null }}" 
+    createText="Nuevo Activo" 
+/>
 
 {{-- Filtros --}}
-<div class="card mb-4">
-    <div class="card-body py-3">
-        <form method="GET" action="{{ route('equipos.index') }}" class="row g-2 align-items-end">
-            <div class="col-12 col-md-5">
-                <label class="form-label fw-medium small mb-1">Buscar</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="buscar" id="buscadorEquipos" value="{{ request('buscar') }}"
-                           class="form-control" placeholder="Marca, tipo, modelo, serial, placa, usuario..." autocomplete="off">
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <label class="form-label fw-medium small mb-1">Tipo</label>
-                <select name="tipo" id="filtroTipo" class="form-select">
-                    <option value="">Todos los tipos</option>
-                    @foreach($tipoRecursos as $tipo)
-                        <option value="{{ $tipo->id }}" {{ request('tipo') == $tipo->id ? 'selected' : '' }}>
-                            {{ $tipo->nombre }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-12 col-md-2">
-                <label class="form-label fw-medium small mb-1">Estado</label>
-                <select name="estado" id="filtroEstado" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Asignado</option>
-                    <option value="disponible" {{ request('estado') === 'disponible' ? 'selected' : '' }}>Disponible</option>
-                    <option value="mantenimiento" {{ request('estado') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
-                    <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-2 d-flex justify-content-end gap-1">
-                <button type="submit" class="btn btn-primary flex-fill">
-                    <i class="bi bi-funnel me-1"></i>Filtrar
-                </button>
-                @if(request()->query())
-                <a href="{{ route('equipos.index', ['clear' => 1]) }}" class="btn btn-outline-secondary" title="Limpiar Filtros">
-                    <i class="bi bi-eraser"></i>
-                </a>
-                @endif
-            </div>
-        </form>
+<x-ui.filter-container action="{{ route('equipos.index') }}" clearRoute="{{ route('equipos.index', ['clear' => 1]) }}">
+    <div class="col-12 col-md-5">
+        <label class="form-label fw-medium small mb-1">Buscar</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="buscar" id="buscadorEquipos" value="{{ request('buscar') }}"
+                   class="form-control" placeholder="Marca, tipo, modelo, serial, placa, usuario..." autocomplete="off">
+        </div>
     </div>
-</div>
+    <div class="col-12 col-md-3">
+        <label class="form-label fw-medium small mb-1">Tipo</label>
+        <select name="tipo" id="filtroTipo" class="form-select">
+            <option value="">Todos los tipos</option>
+            @foreach($tipoRecursos as $tipo)
+                <option value="{{ $tipo->id }}" {{ request('tipo') == $tipo->id ? 'selected' : '' }}>
+                    {{ $tipo->nombre }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-12 col-md-2">
+        <label class="form-label fw-medium small mb-1">Estado</label>
+        <select name="estado" id="filtroEstado" class="form-select">
+            <option value="">Todos</option>
+            <option value="activo" {{ request('estado') === 'activo' ? 'selected' : '' }}>Asignado</option>
+            <option value="responsabilidad" {{ request('estado') === 'responsabilidad' ? 'selected' : '' }}>Asignado Bajo Responsabilidad</option>
+            <option value="disponible" {{ request('estado') === 'disponible' ? 'selected' : '' }}>Disponible</option>
+            <option value="mantenimiento" {{ request('estado') === 'mantenimiento' ? 'selected' : '' }}>Mantenimiento</option>
+            <option value="baja" {{ request('estado') === 'baja' ? 'selected' : '' }}>Baja</option>
+        </select>
+    </div>
+</x-ui.filter-container>
 
 {{-- Tabla --}}
-<div class="card">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
+<x-ui.card noPadding="true">
+    <x-ui.table>
+        <x-slot name="head">
                     @php
                         $renderHeader = function($posicion) use ($camposDinamicos) {
                             if(!isset($camposDinamicos)) return '';
                             $html = '';
                             foreach($camposDinamicos->where('posicion_grilla_despues_de', $posicion) as $cd) {
-                                $html .= "<th class='text-primary border-primary border-bottom-2'>{$cd->nombre}</th>";
+                                $nombreAMostrar = $cd->nombre === 'Estado De Uso' ? 'Distrito' : $cd->nombre;
+                                $html .= "<th class='text-primary border-primary border-bottom-2'>{$nombreAMostrar}</th>";
                             }
                             return $html;
                         };
@@ -103,10 +85,9 @@
                         <th>Estado</th>
                         {!! $renderHeader('estado_operativo') !!}
                         {!! $renderHeader('') !!}
-                        <th class="text-center">Acciones</th>
+                        <th class="text-center" style="min-width: 130px;">Acciones</th>
                     </tr>
-                </thead>
-                <tbody>
+        </x-slot>
                     @forelse($equipos as $equipo)
                         <tr>
                             @php
@@ -114,6 +95,12 @@
                                     if(!isset($camposDinamicos)) return '';
                                     $html = '';
                                     foreach($camposDinamicos->where('posicion_grilla_despues_de', $posicion) as $cd) {
+                                        if ($cd->nombre === 'Estado De Uso') {
+                                            $distrito = $equipo->usuarioAsignado->distrito ?? '<span class="text-muted fst-italic">N/A</span>';
+                                            $html .= "<td><span class='fw-medium text-dark'>{$distrito}</span></td>";
+                                            continue;
+                                        }
+
                                         $valorObj = $equipo->camposPersonalizadosValores->where('campo_personalizado_id', $cd->id)->first();
                                         $valor = $valorObj ? $valorObj->valor : '<span class="text-muted fst-italic">N/A</span>';
                                         
@@ -262,101 +249,45 @@
                             </td>
                             {!! $renderValor('estado_operativo') !!}
                             {!! $renderValor('') !!}
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center flex-wrap">
+                            <td class="text-center align-middle">
+                                <div class="d-flex gap-1 justify-content-center flex-wrap mx-auto" style="max-width: 150px;">
                                     {{-- Acciones siempre disponibles --}}
-                                    <a href="{{ route('equipos.show', $equipo) }}"
-                                       class="btn btn-sm btn-outline-info" title="Ver detalle">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
+                                    <x-ui.button href="{{ route('equipos.show', $equipo) }}" color="info" outline="true" size="sm" icon="eye" title="Ver detalle" />
                                     @can('equipos.editar')
-                                    <a href="{{ route('equipos.edit', $equipo) }}"
-                                       class="btn btn-sm btn-outline-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    <x-ui.button href="{{ route('equipos.edit', $equipo) }}" color="warning" outline="true" size="sm" icon="pencil" title="Editar" />
                                     @endcan
 
                                     @can('equipos.crear')
                                     @if(!$equipo->usuarioAsignado && !$equipo->asignacionResponsabilidadActiva)
                                         {{-- Sin préstamo: mostrar botón Registrar préstamo solo si está activo --}}
                                         @if(in_array($equipo->estado_operativo, ['activo', 'disponible'], true))
-                                        <button type="button"
-                                                class="btn btn-sm btn-success"
-                                            title="Asignar Funcionario"
-                                                onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')">
-                                            <i class="bi bi-person-plus"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="success" size="sm" icon="person-plus" title="Asignar Funcionario" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')" />
 
-                                        <button type="button" class="btn btn-sm btn-outline-info" title="Asignación Bajo Responsabilidad"
-                                            onclick="abrirModalResponsabilidad({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}')">
-                                            <i class="bi bi-person-badge"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="info" outline="true" size="sm" icon="person-badge" title="Asignación Bajo Responsabilidad" onclick="abrirModalResponsabilidad({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}')" />
                                         @else
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-success"
-                                                title="Restaurar a Activo"
-                                                onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')">
-                                            <i class="bi bi-arrow-repeat"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="success" outline="true" size="sm" icon="arrow-repeat" title="Restaurar a Activo" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')" />
                                         @endif
                                     @elseif($equipo->asignacionResponsabilidadActiva)
-                                        <button type="button" class="btn btn-sm btn-info text-white" title="Gestionar Asignación Bajo Responsabilidad"
-                                            onclick="abrirModalResponsabilidadEdit({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', {{ json_encode($equipo->asignacionResponsabilidadActiva) }})">
-                                            <i class="bi bi-person-badge-fill"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="info" class="text-white" size="sm" icon="person-badge-fill" title="Gestionar Asignación Bajo Responsabilidad" onclick="abrirModalResponsabilidadEdit({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', {{ json_encode($equipo->asignacionResponsabilidadActiva) }})" />
                                     @elseif($equipo->usuarioAsignado)
                                         {{-- Ya asignado normalmente: opciones de gestión y ACTA --}}
                                         @if(in_array($equipo->estado_operativo, ['activo', 'asignado'], true))
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary"
-                                                title="Reemplazar Funcionario"
-                                                onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')">
-                                            <i class="bi bi-arrow-left-right"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="primary" outline="true" size="sm" icon="arrow-left-right" title="Reemplazar Funcionario" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')" />
                                         
-                                        <a href="{{ route('equipos.acta', $equipo->id) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Generar Acta de Entrega PDF">
-                                            <i class="bi bi-file-earmark-pdf"></i>
-                                        </a>
+                                        <x-ui.button href="{{ route('equipos.acta', $equipo->id) }}" color="dark" outline="true" size="sm" icon="file-earmark-pdf" title="Generar Acta de Entrega PDF" target="_blank" />
 
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-warning"
-                                                title="Pasar a mantenimiento"
-                                                onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'mantenimiento')">
-                                            <i class="bi bi-tools"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="warning" outline="true" size="sm" icon="tools" title="Pasar a mantenimiento" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'mantenimiento')" />
                                         @else
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-success"
-                                                title="Restaurar a Activo"
-                                                onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')">
-                                            <i class="bi bi-arrow-repeat"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="success" outline="true" size="sm" icon="arrow-repeat" title="Restaurar a Activo" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')" />
                                         @endif
                                         
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-secondary"
-                                                title="Retiro de funcionario"
-                                                onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro')">
-                                            <i class="bi bi-person-dash"></i>
-                                        </button>
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Retiro definitivo del activo"
-                                                onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'baja')">
-                                            <i class="bi bi-x-circle"></i>
-                                        </button>
+                                        <x-ui.button type="button" color="secondary" outline="true" size="sm" icon="person-dash" title="Retiro de funcionario" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro')" />
+                                        <x-ui.button type="button" color="danger" outline="true" size="sm" icon="x-circle" title="Retiro definitivo del activo" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'baja')" />
                                     @endif
                                     @endcan
 
                                     @can('equipos.eliminar')
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            title="Eliminar"
-                                            data-delete-url="{{ route('equipos.destroy', $equipo) }}"
-                                            data-delete-name="{{ $equipo->nombre_equipo }}"
-                                            data-delete-require-confirm="true">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+                                    <x-ui.button type="button" color="danger" outline="true" size="sm" icon="trash" title="Eliminar" data-delete-url="{{ route('equipos.destroy', $equipo) }}" data-delete-name="{{ $equipo->nombre_equipo }}" data-delete-require-confirm="true" />
                                     @endcan
                                 </div>
                             </td>
@@ -369,35 +300,24 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+    </x-ui.table>
     @if($equipos->hasPages())
-        <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-            <small class="text-muted">
-                Mostrando {{ $equipos->firstItem() }}–{{ $equipos->lastItem() }} de {{ $equipos->total() }} equipos
-            </small>
-            {{ $equipos->links('pagination::bootstrap-5') }}
-        </div>
+        <x-slot name="footer">
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    Mostrando {{ $equipos->firstItem() }}–{{ $equipos->lastItem() }} de {{ $equipos->total() }} equipos
+                </small>
+                {{ $equipos->links('pagination::bootstrap-5') }}
+            </div>
+        </x-slot>
     @endif
-</div>
+</x-ui.card>
 
 {{-- ═══ MODAL: Acción con datos de usuario (préstamo / reemplazo) ══════════ --}}
-<div class="modal fade" id="modalAsignacion" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
-        <div class="modal-content">
-            <form id="formAsignacion" method="POST" action="{{ route('asignaciones.store') }}" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="equipo_id" id="asig_equipo_id">
-                <input type="hidden" name="tipo_accion" id="asig_tipo_accion">
-                <input type="hidden" name="return_to" id="asig_return_to" value="{{ request()->fullUrl() }}">
-
-                <div class="modal-header equipo-modal-header">
-                    <h5 class="modal-title" id="modalAsignacionTitulo">Registrar Asignación</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
+<x-ui.modal id="modalAsignacion" title="Registrar Asignación" size="modal-lg modal-dialog-scrollable modal-fullscreen-md-down" formId="formAsignacion" action="{{ route('asignaciones.store') }}" submitId="btnConfirmarAsig">
+    <input type="hidden" name="equipo_id" id="asig_equipo_id">
+    <input type="hidden" name="tipo_accion" id="asig_tipo_accion">
+    <input type="hidden" name="return_to" id="asig_return_to" value="{{ request()->fullUrl() }}">
                     <p class="text-muted small mb-3">
                         <i class="bi bi-laptop me-1"></i>
                         Equipo: <strong id="asig_nombre_equipo"></strong>
@@ -434,37 +354,16 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Entregado Por</label>
-                            <input type="text" name="entregado_por" class="form-control"
-                                   value="{{ auth()->user()->name }}">
+                            <x-ui.input type="text" name="entregado_por" label="Entregado Por" value="{{ auth()->user()->name }}" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Fecha de Préstamo</label>
-                            <input type="date" name="fecha_accion" class="form-control"
-                                   value="{{ date('Y-m-d') }}">
+                            <x-ui.input type="date" name="fecha_accion" label="Fecha de Préstamo" value="{{ date('Y-m-d') }}" />
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="btnConfirmarAsig">
-                        <i class="bi bi-check-lg me-1"></i>Confirmar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+</x-ui.modal>
 
 {{-- ═══ MODAL: Selector de funcionarios elegibles ══════════════════════════ --}}
-<div class="modal fade" id="modalSelectorFuncionario" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-people me-2"></i>Funcionarios elegibles</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
+<x-ui.modal id="modalSelectorFuncionario" title="Funcionarios elegibles" size="modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
                 <div class="mb-3">
                     <input type="text" id="filtroFuncionarioElegible" class="form-control" placeholder="Buscar por nombre, cédula, cargo o área...">
                 </div>
@@ -486,62 +385,31 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <x-slot name="footer">
+        <x-ui.button type="button" color="secondary" outline="true" data-bs-dismiss="modal" text="Cerrar" />
+    </x-slot>
+</x-ui.modal>
 
 {{-- ═══ MODAL: Acción simple (retiro, baja, mantenimiento) ════════════════ --}}
-<div class="modal fade" id="modalSimple" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down">
-        <div class="modal-content">
-            <form id="formSimple" method="POST" action="{{ route('asignaciones.store') }}">
-                @csrf
-                <input type="hidden" name="equipo_id" id="simple_equipo_id">
-                <input type="hidden" name="tipo_accion" id="simple_tipo_accion">
-                <input type="hidden" name="return_to" id="simple_return_to" value="{{ request()->fullUrl() }}">
-
-                <div class="modal-header equipo-modal-header">
-                    <h5 class="modal-title" id="modalSimpleTitulo">Acción</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
+<x-ui.modal id="modalSimple" title="Acción" size="modal-dialog-scrollable modal-fullscreen-md-down" formId="formSimple" action="{{ route('asignaciones.store') }}" submitText="Confirmar" submitIcon="check-lg" submitId="btnConfirmarSimple">
+    <input type="hidden" name="equipo_id" id="simple_equipo_id">
+    <input type="hidden" name="tipo_accion" id="simple_tipo_accion">
+    <input type="hidden" name="return_to" id="simple_return_to" value="{{ request()->fullUrl() }}">
                     <p class="text-muted small mb-3">
                         <i class="bi bi-laptop me-1"></i>
                         Equipo: <strong id="simple_nombre_equipo"></strong>
                     </p>
                     <div class="mb-3" id="simple_motivo_wrap">
-                        <label class="form-label fw-medium" id="simple_motivo_label">Motivo <span class="text-danger">*</span></label>
-                        <textarea name="motivo" id="simple_motivo" rows="3" class="form-control" required
-                                  placeholder="Describa el motivo de esta acción..."></textarea>
+                        <x-ui.textarea name="motivo" id="simple_motivo" label="Motivo" required="true" rows="3" placeholder="Describa el motivo de esta acción..." />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-medium" id="simple_observaciones_label">Observaciones</label>
-                        <textarea name="observaciones" id="simple_observaciones" rows="2" class="form-control"></textarea>
+                        <x-ui.textarea name="observaciones" id="simple_observaciones" label="Observaciones" rows="2" />
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger" id="btnConfirmarSimple">
-                        <i class="bi bi-check-lg me-1"></i>Confirmar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+</x-ui.modal>
 
 {{-- ═══ MODAL: Asignación Bajo Responsabilidad ════════════════ --}}
-<div class="modal fade" id="modalResponsabilidad" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down">
-        <form id="formResponsabilidad" method="POST" action="" class="modal-content">
-            @csrf
-            <input type="hidden" name="_method" id="resp_method" value="POST">
-                <div class="modal-header bg-info bg-opacity-10">
-                    <h5 class="modal-title text-info" id="modalResponsabilidadTitulo"><i class="bi bi-person-badge me-2"></i>Asignación Bajo Responsabilidad</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
+<x-ui.modal id="modalResponsabilidad" title="Asignación Bajo Responsabilidad" size="modal-lg modal-dialog-scrollable modal-fullscreen-md-down" formId="formResponsabilidad" action="">
+    <input type="hidden" name="_method" id="resp_method" value="POST">
                     <p class="text-muted small mb-3">
                         <i class="bi bi-laptop me-1"></i>
                         Equipo: <strong id="resp_nombre_equipo"></strong>
@@ -573,115 +441,87 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Tipo de usuario <span class="text-danger">*</span></label>
-                            <select name="tipo_usuario" id="resp_tipo_usuario" class="form-select" required>
-                                <option value="">Seleccione...</option>
+                            <x-ui.select name="tipo_usuario" id="resp_tipo_usuario" label="Tipo de usuario" required="true">
+<option value="">Seleccione...</option>
                                 <option value="Temporal">Temporal</option>
                                 <option value="Contratista">Contratista</option>
                                 <option value="Practicante">Practicante</option>
                                 <option value="Consultor">Consultor</option>
                                 <option value="Visitante">Visitante</option>
                                 <option value="Otro">Otro</option>
-                            </select>
+                            </x-ui.select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Nombre de Usuario <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre_usuario" id="resp_nombre_usuario" class="form-control" required>
+                            <x-ui.input type="text" name="nombre_usuario" id="resp_nombre_usuario" label="Nombre de Usuario" required="true" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Documento</label>
-                            <input type="text" name="documento" id="resp_documento" class="form-control">
+                            <x-ui.input type="text" name="documento" id="resp_documento" label="Documento" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Empresa</label>
-                            <input type="text" name="empresa" id="resp_empresa" class="form-control">
+                            <x-ui.input type="text" name="empresa" id="resp_empresa" label="Empresa" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Cargo</label>
-                            <input type="text" name="cargo" id="resp_cargo" class="form-control">
+                            <x-ui.input type="text" name="cargo" id="resp_cargo" label="Cargo" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Proyecto</label>
-                            <input type="text" name="proyecto" id="resp_proyecto" class="form-control">
+                            <x-ui.input type="text" name="proyecto" id="resp_proyecto" label="Proyecto" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Área</label>
-                            <input type="text" name="area" id="resp_area" class="form-control">
+                            <x-ui.input type="text" name="area" id="resp_area" label="Área" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Correo</label>
-                            <input type="email" name="correo" id="resp_correo" class="form-control">
+                            <x-ui.input type="email" name="correo" id="resp_correo" label="Correo" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Teléfono</label>
-                            <input type="text" name="telefono" id="resp_telefono" class="form-control">
+                            <x-ui.input type="text" name="telefono" id="resp_telefono" label="Teléfono" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Fecha de Inicio <span class="text-danger">*</span></label>
-                            <input type="date" name="fecha_inicio" id="resp_fecha_inicio" class="form-control" required>
+                            <x-ui.input type="date" name="fecha_inicio" id="resp_fecha_inicio" label="Fecha de Inicio" required="true" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Fecha Final Estimada</label>
-                            <input type="date" name="fecha_final_estimada" id="resp_fecha_final_estimada" class="form-control">
+                            <x-ui.input type="date" name="fecha_final_estimada" id="resp_fecha_final_estimada" label="Fecha Final Estimada" />
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-danger d-none" id="btnFinalizarResponsabilidad">
-                        <i class="bi bi-x-circle me-1"></i>Finalizar Asignación
-                    </button>
-                    <div>
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-info text-white"><i class="bi bi-check-lg me-1"></i>Guardar</button>
-                    </div>
-                </div>
-            </form>
-            
-            <form id="formFinalizarResponsabilidad" method="POST" class="d-none">
-                @csrf
-                @method('DELETE')
-        </form>
-    </div>
-</div>
+    <x-slot name="footer">
+        <div class="w-100 d-flex justify-content-between align-items-center">
+            <button type="button" class="btn btn-danger d-none" id="btnFinalizarResponsabilidad">
+                <i class="bi bi-x-circle me-1"></i>Finalizar Asignación
+            </button>
+            <div>
+                <x-ui.button type="button" color="secondary" outline="true" data-bs-dismiss="modal" text="Cancelar" />
+                <x-ui.button type="submit" color="info" class="text-white" icon="check-lg" text="Guardar" />
+            </div>
+        </div>
+    </x-slot>
+</x-ui.modal>
+
+<form id="formFinalizarResponsabilidad" method="POST" class="d-none">
+    @csrf
+    @method('DELETE')
+</form>
 
 {{-- ═══ MODAL: Finalizar Asignación Bajo Responsabilidad ════════════════ --}}
-<div class="modal fade" id="modalFinalizarResponsabilidad" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content border-0 shadow">
-            <form id="formFinalizarRespReal" method="POST" action="">
-                @csrf
-                @method('DELETE')
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="bi bi-person-x-fill me-2"></i>Finalizar Asignación</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
+<x-ui.modal id="modalFinalizarResponsabilidad" title="Finalizar Asignación" formId="formFinalizarRespReal" action="" method="POST" submitText="Confirmar Finalización" submitIcon="check2-circle">
+    @method('DELETE')
                     <div class="mb-3">
-                        <label class="form-label fw-medium">Fecha Final Real <span class="text-danger">*</span></label>
-                        <input type="date" name="fecha_final_real" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        <x-ui.input type="date" name="fecha_final_real" label="Fecha Final Real" required="true" value="{{ date('Y-m-d') }}" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-medium">Motivo de Finalización <span class="text-danger">*</span></label>
-                        <select name="motivo_finalizacion" class="form-select" required>
-                            <option value="">Seleccione un motivo...</option>
+                        <x-ui.select name="motivo_finalizacion" label="Motivo de Finalización" required="true">
+<option value="">Seleccione un motivo...</option>
                             <option value="Devolución por fin de contrato">Devolución por fin de contrato</option>
                             <option value="Reasignación a otro usuario">Reasignación a otro usuario</option>
                             <option value="Renuncia / Retiro">Renuncia / Retiro</option>
                             <option value="Daño / Pérdida del equipo">Daño / Pérdida del equipo</option>
                             <option value="Cambio de proyecto">Cambio de proyecto</option>
                             <option value="Otro">Otro</option>
-                        </select>
+                            </x-ui.select>
                     </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger"><i class="bi bi-check2-circle me-2"></i>Confirmar Finalización</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+    <x-slot name="footer">
+        <x-ui.button type="button" color="secondary" outline="true" data-bs-dismiss="modal" text="Cancelar" />
+        <x-ui.button type="submit" color="danger" icon="check2-circle" text="Confirmar Finalización" />
+    </x-slot>
+</x-ui.modal>
 
 @endsection
 
@@ -812,7 +652,7 @@ function abrirModalAsignacion(equipoId, nombreEquipo, tipo) {
     document.getElementById('asig_tipo_accion').value = tipo;
     document.getElementById('asig_return_to').value   = window.location.href;
     document.getElementById('asig_nombre_equipo').textContent = nombreEquipo;
-    document.getElementById('modalAsignacionTitulo').textContent = LABELS_ACCION[tipo] || tipo;
+    document.getElementById('modalAsignacionLabel').textContent = LABELS_ACCION[tipo] || tipo;
 
     const btn = document.getElementById('btnConfirmarAsig');
     btn.className = 'btn ' + (COLORES_ACCION[tipo] || 'btn-primary');
@@ -842,7 +682,7 @@ function abrirModalSimple(equipoId, nombreEquipo, tipo) {
     document.getElementById('simple_tipo_accion').value = tipo;
     document.getElementById('simple_return_to').value   = window.location.href;
     document.getElementById('simple_nombre_equipo').textContent = nombreEquipo;
-    document.getElementById('modalSimpleTitulo').textContent = LABELS_ACCION[tipo] || tipo;
+    document.getElementById('modalSimpleLabel').textContent = LABELS_ACCION[tipo] || tipo;
 
     const btn = document.getElementById('btnConfirmarSimple');
     btn.className = 'btn ' + (COLORES_ACCION[tipo] || 'btn-danger');
@@ -1113,7 +953,7 @@ function abrirModalResponsabilidad(equipoId, nombreEquipo) {
     form.action = `/equipos/${equipoId}/asignacion-responsabilidad`;
     document.getElementById('resp_method').value = 'POST';
     document.getElementById('resp_nombre_equipo').textContent = nombreEquipo;
-    document.getElementById('modalResponsabilidadTitulo').innerHTML = '<i class="bi bi-person-badge me-2"></i>Nueva Asignación Bajo Responsabilidad';
+    document.getElementById('modalResponsabilidadLabel').innerHTML = '<i class="bi bi-person-badge me-2"></i>Nueva Asignación Bajo Responsabilidad';
     
     // Limpiar form
     form.reset();
@@ -1136,7 +976,7 @@ function abrirModalResponsabilidadEdit(equipoId, nombreEquipo, asignacion) {
     form.action = `/equipos/${equipoId}/asignacion-responsabilidad/${asignacion.id}`;
     document.getElementById('resp_method').value = 'PUT';
     document.getElementById('resp_nombre_equipo').textContent = nombreEquipo;
-    document.getElementById('modalResponsabilidadTitulo').innerHTML = '<i class="bi bi-person-badge-fill me-2"></i>Gestionar Asignación Bajo Responsabilidad';
+    document.getElementById('modalResponsabilidadLabel').innerHTML = '<i class="bi bi-person-badge-fill me-2"></i>Gestionar Asignación Bajo Responsabilidad';
     
     // Llenar datos
     document.getElementById('resp_responsable_id').value = asignacion.responsable_id || '';

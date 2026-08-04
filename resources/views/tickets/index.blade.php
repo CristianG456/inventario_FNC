@@ -3,21 +3,18 @@
 @section('title', 'Mesa de Ayuda')
 
 @section('content')
-<div class="page-header mb-4 d-flex justify-content-between align-items-center">
-    <div>
-        <h4 class="page-title mb-0">Mesa de Ayuda TIC</h4>
-        <p class="page-subtitle mb-0">Centro de gestión de incidentes y servicios tecnológicos</p>
-    </div>
+<x-ui.toolbar 
+    title="Mesa de Ayuda TIC" 
+    subtitle="Centro de gestión de incidentes y servicios tecnológicos"
+>
     @can('mesaayuda.crear')
-    <a href="{{ route('tickets.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> Nuevo Ticket
-    </a>
+    <x-ui.button href="{{ route('tickets.create') }}" color="primary" icon="plus-lg" text="Nuevo Ticket" />
     @endcan
-</div>
+</x-ui.toolbar>
 
 <!-- Removed Dashboard Metrics Row as requested -->
 
-<div class="card p-0 border-0 shadow-sm">
+<x-ui.card noPadding="true" class="border-0 shadow-sm">
     <div class="p-4 border-bottom border-light">
         <form action="{{ route('tickets.index') }}" method="GET" class="d-flex flex-column flex-md-row gap-3 align-items-stretch align-items-md-center w-100">
             <div class="search-bar flex-grow-1 ticket-search-bar w-100 bg-light rounded px-3 py-2 border">
@@ -39,84 +36,78 @@
         </form>
     </div>
     
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th class="ps-4">Ticket</th>
-                    <th>Solicitante</th>
-                    <th>Estado / Prioridad</th>
-                    <th>Responsable</th>
-                    <th>Tiempo Abierto</th>
-                    <th class="text-end pe-4">Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($tickets as $ticket)
-                <tr>
-                    <td class="ps-4">
-                        <span class="fw-bold text-dark">#{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}</span><br>
-                        <small class="text-muted fw-medium">{{ Str::limit($ticket->titulo, 50) }}</small>
-                    </td>
-                    <td>
-                        {{ $ticket->funcionario->nombres ?? 'Desconocido' }}<br>
-                        <small class="text-muted">{{ $ticket->funcionario->cargo ?? '' }}</small>
-                    </td>
-                    <td>
-                        <span class="badge {{ 
-                            in_array($ticket->estado, ['Abierto', 'En Diagnóstico']) ? 'bg-primary' : 
-                            (in_array($ticket->estado, ['Resuelto', 'Cerrado']) ? 'bg-secondary' : 'bg-warning text-dark') 
-                        }} mb-1">{{ $ticket->estado }}</span><br>
-                        
-                        @php
-                            $badgePrioridad = 'bg-success'; // Baja
-                            if($ticket->prioridad == 'Media') $badgePrioridad = 'bg-warning text-dark';
-                            if($ticket->prioridad == 'Alta') $badgePrioridad = 'bg-orange'; // Asumiendo estilo o usar bg-danger bg-opacity-75
-                            if($ticket->prioridad == 'Crítica') $badgePrioridad = 'bg-danger';
-                        @endphp
-                        <span class="badge {{ $badgePrioridad }}">{{ $ticket->prioridad }}</span>
-                    </td>
-                    <td class="text-muted">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-person-circle fs-5"></i>
-                            {{ $ticket->responsable->name ?? 'Sin asignar' }}
-                        </div>
-                    </td>
-                    <td>
-                        @if(in_array($ticket->estado, ['Resuelto', 'Cerrado']) && $ticket->fecha_cierre)
-                            <span class="text-success small fw-bold">
-                                Cerrado en {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans($ticket->fecha_cierre, true) }}
-                            </span>
-                        @else
-                            <span class="text-muted small">
-                                Hace {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans(null, true) }}
-                            </span>
-                        @endif
-                        <br>
-                        <small class="text-muted" style="font-size: 0.7rem;">Solicitado: {{ $ticket->fecha_solicitud ? $ticket->fecha_solicitud->format('d/m/Y') : $ticket->created_at->format('d/m/Y') }}</small>
-                    </td>
-                    <td class="text-end pe-4">
-                        <a href="{{ route('tickets.show', $ticket) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                            Ver Detalle
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
-                        <div class="my-4 text-uppercase fw-semibold ticket-empty-state">
-                            NO SE ENCONTRARON TICKETS REGISTRADOS
-                        </div>
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-ui.table>
+        <x-slot name="head">
+            <tr>
+                <th class="ps-4">Ticket</th>
+                <th>Solicitante</th>
+                <th>Estado / Prioridad</th>
+                <th>Responsable</th>
+                <th>Tiempo Abierto</th>
+                <th class="text-end pe-4">Acción</th>
+            </tr>
+        </x-slot>
+        @forelse($tickets as $ticket)
+        <tr>
+            <td class="ps-4">
+                <span class="fw-bold text-dark">#{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}</span><br>
+                <small class="text-muted fw-medium">{{ Str::limit($ticket->titulo, 50) }}</small>
+            </td>
+            <td>
+                {{ $ticket->funcionario->nombres ?? 'Desconocido' }}<br>
+                <small class="text-muted">{{ $ticket->funcionario->cargo ?? '' }}</small>
+            </td>
+            <td>
+                <span class="badge {{ 
+                    in_array($ticket->estado, ['Abierto', 'En Diagnóstico']) ? 'bg-primary' : 
+                    (in_array($ticket->estado, ['Resuelto', 'Cerrado']) ? 'bg-secondary' : 'bg-warning text-dark') 
+                }} mb-1">{{ $ticket->estado }}</span><br>
+                
+                @php
+                    $badgePrioridad = 'bg-success'; // Baja
+                    if($ticket->prioridad == 'Media') $badgePrioridad = 'bg-warning text-dark';
+                    if($ticket->prioridad == 'Alta') $badgePrioridad = 'bg-orange'; // Asumiendo estilo o usar bg-danger bg-opacity-75
+                    if($ticket->prioridad == 'Crítica') $badgePrioridad = 'bg-danger';
+                @endphp
+                <span class="badge {{ $badgePrioridad }}">{{ $ticket->prioridad }}</span>
+            </td>
+            <td class="text-muted">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-circle fs-5"></i>
+                    {{ $ticket->responsable->name ?? 'Sin asignar' }}
+                </div>
+            </td>
+            <td>
+                @if(in_array($ticket->estado, ['Resuelto', 'Cerrado']) && $ticket->fecha_cierre)
+                    <span class="text-success small fw-bold">
+                        Cerrado en {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans($ticket->fecha_cierre, true) }}
+                    </span>
+                @else
+                    <span class="text-muted small">
+                        Hace {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans(null, true) }}
+                    </span>
+                @endif
+                <br>
+                <small class="text-muted" style="font-size: 0.7rem;">Solicitado: {{ $ticket->fecha_solicitud ? $ticket->fecha_solicitud->format('d/m/Y') : $ticket->created_at->format('d/m/Y') }}</small>
+            </td>
+            <td class="text-end pe-4">
+                <x-ui.button href="{{ route('tickets.show', $ticket) }}" color="primary" outline="true" size="sm" class="rounded-pill px-3" text="Ver Detalle" />
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="6" class="text-center py-5 text-muted">
+                <div class="my-4 text-uppercase fw-semibold ticket-empty-state">
+                    NO SE ENCONTRARON TICKETS REGISTRADOS
+                </div>
+            </td>
+        </tr>
+        @endforelse
+    </x-ui.table>
     @if($tickets->hasPages())
     <div class="p-3 border-top bg-light">
         {{ $tickets->links() }}
     </div>
     @endif
-</div>
+</x-ui.card>
 @endsection

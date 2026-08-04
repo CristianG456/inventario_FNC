@@ -3,39 +3,27 @@
 @section('title', 'Detalle del Equipo')
 
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-info-circle me-2 text-info"></i>{{ $equipo->identificador_interno }} - {{ $equipo->nombre_equipo }}
-        <span class="badge bg-{{ $equipo->estado_badge }} ms-2 fs-6">{{ $equipo->estado_label }}</span>
-    </h4>
-    <div class="d-flex gap-2 flex-wrap">
-        <a href="{{ route('equipos.historial-vida', $equipo) }}" class="btn btn-outline-primary">
-            <i class="bi bi-clock-history me-1"></i>Historial de Vida
-        </a>
-        <a href="{{ route('historial-tecnico.por-equipo', $equipo) }}" class="btn btn-outline-warning">
-            <i class="bi bi-tools me-1"></i>Historial Técnico
-        </a>
-        <a href="{{ route('asignaciones.por-equipo', $equipo) }}" class="btn btn-outline-success">
-            <i class="bi bi-person-fill-gear me-1"></i>Préstamos
-        </a>
-        <a href="{{ route('equipos.edit', $equipo) }}" class="btn btn-warning text-white">
-            <i class="bi bi-pencil me-1"></i>Editar
-        </a>
-        <a href="{{ route('equipos.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-    </div>
-</div>
+<x-ui.toolbar 
+    title="{{ $equipo->identificador_interno }} - {{ $equipo->nombre_equipo }}" 
+    icon="info-circle" 
+    backRoute="{{ route('equipos.index') }}"
+>
+    <x-slot name="titleSuffix">
+        <x-ui.badge color="{{ $equipo->estado_badge }}" class="ms-2 fs-6" text="{{ $equipo->estado_label }}" />
+    </x-slot>
+
+    <x-ui.button href="{{ route('equipos.historial-vida', $equipo) }}" color="primary" outline="true" icon="clock-history" text="Historial de Vida" />
+    <x-ui.button href="{{ route('historial-tecnico.por-equipo', $equipo) }}" color="warning" outline="true" icon="tools" text="Historial Técnico" />
+    <x-ui.button href="{{ route('asignaciones.por-equipo', $equipo) }}" color="success" outline="true" icon="person-fill-gear" text="Préstamos" />
+    <x-ui.button href="{{ route('equipos.edit', $equipo) }}" color="warning" class="text-white" icon="pencil" text="Editar" />
+</x-ui.toolbar>
 
 <div class="row g-4">
     {{-- COLUMNA IZQUIERDA --}}
     <div class="col-lg-6 d-flex flex-column gap-4">
         {{-- Datos del equipo --}}
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-primary bg-opacity-10 fw-semibold border-0 py-3">
-                <i class="bi bi-laptop me-2 text-primary"></i>Datos del Equipo
-            </div>
-            <div class="card-body">
+        <x-ui.card title="Datos del Equipo" icon="laptop" headerClass="bg-primary" iconColor="primary">
+
                 <dl class="row mb-0">
                     <dt class="col-sm-4 text-muted">Tipo</dt>
                     <dd class="col-sm-8">{{ $equipo->tipoRecurso?->nombre ?? '—' }}</dd>
@@ -79,25 +67,19 @@
                         <dd class="col-sm-8">{{ $equipo->razon_estado }}</dd>
                     @endif
                 </dl>
-            </div>
-        </div>
+</x-ui.card>
 
         {{-- Campos Personalizados (Información Adicional) --}}
         @if($equipo->camposPersonalizadosValores->isNotEmpty())
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-dark bg-opacity-10 fw-semibold border-0 py-3">
-                <i class="bi bi-ui-checks-grid me-2 text-dark"></i>Información Adicional
-            </div>
-            <div class="card-body">
+        <x-ui.card title="Información Adicional" icon="ui-checks-grid" headerClass="bg-dark" iconColor="dark">
+
                 <dl class="row mb-0">
                     @foreach($equipo->camposPersonalizadosValores as $cv)
                         @if($cv->campoPersonalizado && $cv->campoPersonalizado->visible)
                             <dt class="col-sm-4 text-muted">{{ $cv->campoPersonalizado->nombre }}</dt>
                             <dd class="col-sm-8">
                                 @if($cv->campoPersonalizado->tipo === 'boolean')
-                                    <span class="badge bg-{{ $cv->valor == '1' ? 'success' : 'secondary' }}">
-                                        {{ $cv->valor == '1' ? 'Sí' : 'No' }}
-                                    </span>
+                                    <x-ui.badge color="{{ $cv->valor == '1' ? 'success' : 'secondary' }}" text="{{ $cv->valor == '1' ? 'Sí' : 'No' }}" />
                                 @elseif($cv->campoPersonalizado->tipo === 'url' && filter_var($cv->valor, FILTER_VALIDATE_URL))
                                     <a href="{{ $cv->valor }}" target="_blank" class="text-break"><i class="bi bi-link-45deg"></i> Ver Enlace</a>
                                 @elseif($cv->campoPersonalizado->tipo === 'multiselect')
@@ -116,8 +98,7 @@
                         @endif
                     @endforeach
                 </dl>
-            </div>
-        </div>
+</x-ui.card>
         @endif
 
         {{-- Complementos del Activo --}}
@@ -126,11 +107,8 @@
         @endif
 
         {{-- Periféricos --}}
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-warning bg-opacity-10 fw-semibold border-0 py-3">
-                <i class="bi bi-usb-plug me-2 text-warning"></i>Periféricos
-            </div>
-            <div class="card-body">
+        <x-ui.card title="Periféricos" icon="usb-plug" headerClass="bg-warning" iconColor="warning">
+
                 @if($equipo->periferico)
                     <dl class="row mb-0">
                         <dt class="col-sm-4 text-muted">Teléfono Fijo</dt>
@@ -145,8 +123,7 @@
                 @else
                     <p class="text-muted mb-0">Sin periféricos registrados.</p>
                 @endif
-            </div>
-        </div>
+</x-ui.card>
     </div>
 
     {{-- COLUMNA DERECHA --}}
@@ -156,7 +133,7 @@
         <div class="card border-0 shadow-sm border-start border-info border-3">
             <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-person-badge me-2 text-info"></i>Asignación Bajo Responsabilidad</span>
-                <span class="badge bg-info text-white">Temporal</span>
+                <x-ui.badge color="info" class="text-white" text="Temporal" />
             </div>
             <div class="card-body">
                 <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-check me-2"></i>Responsable Administrativo</h6>
@@ -222,7 +199,7 @@
                         @endif
                     </dd>
                     <dt class="col-sm-4 text-muted">Estado</dt>
-                    <dd class="col-sm-8"><span class="badge bg-success">Activa</span></dd>
+                    <dd class="col-sm-8"><x-ui.badge color="success" text="Activa" /></dd>
                     <dt class="col-sm-4 text-muted">Observaciones</dt>
                     <dd class="col-sm-8">{{ $equipo->asignacionResponsabilidadActiva->observaciones ?? '—' }}</dd>
                     <dt class="col-sm-4 text-muted mt-3">Registrado por</dt>
@@ -233,16 +210,15 @@
             </div>
         </div>
         @else
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-person me-2 text-success"></i>Funcionario Asignado</span>
-                @if($equipo->usuarioAsignado)
-                    <span class="badge bg-success">Asignado</span>
+        <x-ui.card title="Funcionario Asignado" icon="person" headerClass="bg-success" iconColor="success">
+    <x-slot name="headerActions">
+        @if($equipo->usuarioAsignado)
+                    <x-ui.badge color="success" text="Asignado" />
                 @else
-                    <span class="badge bg-secondary">Sin Asignar</span>
+                    <x-ui.badge color="secondary" text="Sin Asignar" />
                 @endif
-            </div>
-            <div class="card-body">
+    </x-slot>
+
                 @if($equipo->usuarioAsignado)
                     <dl class="row mb-0">
                         <dt class="col-sm-4 text-muted">Nombre</dt>
@@ -279,24 +255,21 @@
                 @else
                     <p class="text-muted mb-0">Sin funcionario asignado.</p>
                 @endif
-            </div>
-        </div>
+</x-ui.card>
         @endif
 
         {{-- Responsable del Activo --}}
         @if($equipo->responsable_nombre)
-        <div class="card border-0 shadow-sm border-start border-info border-3">
-            <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3">
-                <div class="mb-2">
-                    <i class="bi bi-person-badge me-2 text-info"></i>
-                    <span class="fw-bold">Responsable del Activo</span>
-                </div>
-                <small class="text-muted d-block ps-4">
-                    Persona responsable de la administración y control del activo durante su ciclo de vida. 
-                    Esta responsabilidad es independiente del usuario al que se encuentre asignado el equipo.
-                </small>
-            </div>
-            <div class="card-body">
+        <x-ui.card title="Responsable del Activo" icon="person-badge" headerClass="bg-info" iconColor="info" class="border-start border-info border-3">
+    <x-slot name="header">
+        <div>
+            <i class="bi bi-person-badge me-2 text-info"></i>
+            <span class="fw-bold">Responsable del Activo</span>
+            <small class="text-muted d-block ps-4">Persona responsable de la administración y control del activo durante su ciclo de vida. 
+                    Esta responsabilidad es independiente del usuario al que se encuentre asignado el equipo.</small>
+        </div>
+    </x-slot>
+
                 <dl class="row mb-0">
                     <dt class="col-sm-4 text-muted">Nombre</dt>
                     <dd class="col-sm-8 fw-bold">{{ $equipo->responsable_nombre }}</dd>
@@ -317,8 +290,7 @@
                         {{ $equipo->fecha_fin_responsable?->format('d/m/Y') ?? '—' }}
                     </dd>
                 </dl>
-            </div>
-        </div>
+</x-ui.card>
         @endif
 
     </div>
@@ -328,101 +300,78 @@
     {{-- Últimas asignaciones --}}
     @if($equipo->asignaciones->isNotEmpty())
     <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-success bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-person-fill-gear me-2 text-success"></i>Últimas Asignaciones</span>
-                <a href="{{ route('asignaciones.por-equipo', $equipo) }}"
-                   class="btn btn-sm btn-outline-success">Ver todas</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
+        <x-ui.card title="Últimas Asignaciones" icon="person-fill-gear" headerClass="bg-success" iconColor="success" noPadding="true">
+    <x-slot name="headerActions">
+        <x-ui.button href="{{ route('asignaciones.por-equipo', $equipo) }}" color="success" outline="true" size="sm" text="Ver todas" />
+    </x-slot>
+
+                <x-ui.table class="table table-sm table-hover mb-0">
+    <x-slot name="head">
+        <tr>
                                 <th>Tipo</th>
                                 <th>Usuario</th>
                                 <th>Fecha</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($equipo->asignaciones as $asig)
+    </x-slot>
+    @foreach($equipo->asignaciones as $asig)
                             <tr>
                                 <td>
-                                    <span class="badge bg-{{ $asig->tipo_accion_color }}">
-                                        {{ $asig->tipo_accion_label }}
-                                    </span>
+                                    <x-ui.badge color="{{ $asig->tipo_accion_color }}" text="{{ $asig->tipo_accion_label }}" />
                                 </td>
                                 <td class="small">{{ $asig->usuario_nombre ?? '—' }}</td>
                                 <td class="small">{{ $asig->fecha_accion?->format('d/m/Y') }}</td>
                             </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+</x-ui.table>
+</x-ui.card>
     </div>
     @endif
 
     {{-- Últimos eventos técnicos --}}
     @if($equipo->historialTecnico->isNotEmpty())
     <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-warning bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-tools me-2 text-warning"></i>Últimos Eventos Técnicos</span>
-                <a href="{{ route('historial-tecnico.por-equipo', $equipo) }}"
-                   class="btn btn-sm btn-outline-warning">Ver todos</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
+        <x-ui.card title="Últimos Eventos Técnicos" icon="tools" headerClass="bg-warning" iconColor="warning" noPadding="true">
+    <x-slot name="headerActions">
+        <x-ui.button href="{{ route('historial-tecnico.por-equipo', $equipo) }}" color="warning" outline="true" size="sm" text="Ver todos" />
+    </x-slot>
+
+                <x-ui.table class="table table-sm table-hover mb-0">
+    <x-slot name="head">
+        <tr>
                                 <th>Tipo</th>
                                 <th>Descripción</th>
                                 <th>Fecha</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($equipo->historialTecnico as $ht)
+    </x-slot>
+    @foreach($equipo->historialTecnico as $ht)
                             <tr>
                                 <td>
-                                    <span class="badge bg-{{ $ht->tipo_evento_color }}">
-                                        <i class="bi {{ $ht->tipo_evento_icono }}"></i>
-                                    </span>
+                                    <x-ui.badge color="{{ $ht->tipo_evento_color }}"><i class="bi {{ $ht->tipo_evento_icono }}"></i></x-ui.badge>
                                 </td>
                                 <td class="small">{{ Str::limit($ht->descripcion, 50) }}</td>
                                 <td class="small">{{ $ht->fecha_evento?->format('d/m/Y') }}</td>
                             </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+</x-ui.table>
+</x-ui.card>
     </div>
     @endif
 
     {{-- Licencias Asignadas --}}
     @if($equipo->licenciaAsignaciones && $equipo->licenciaAsignaciones->isNotEmpty())
     <div class="col-lg-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-info bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-key me-2 text-info"></i>Licencias Asignadas</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
+        <x-ui.card title="Licencias Asignadas" icon="key" headerClass="bg-info" iconColor="info" noPadding="true">
+
+                <x-ui.table class="table table-sm table-hover mb-0">
+    <x-slot name="head">
+        <tr>
                                 <th>Licencia</th>
                                 <th>Tipo</th>
                                 <th>Fecha Asignación</th>
                                 <th>Estado</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($equipo->licenciaAsignaciones as $la)
+    </x-slot>
+    @foreach($equipo->licenciaAsignaciones as $la)
                             <tr>
                                 <td>
                                     @if($la->licencia)
@@ -436,35 +385,25 @@
                                 <td>{{ $la->licencia ? $la->licencia->tipo_licencia : 'N/A' }}</td>
                                 <td class="small">{{ $la->fecha_asignacion?->format('d/m/Y') }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $la->estado === 'Activa' ? 'success' : 'secondary' }}">
-                                        {{ $la->estado }}
-                                    </span>
+                                    <x-ui.badge color="{{ $la->estado === 'Activa' ? 'success' : 'secondary' }}" text="{{ $la->estado }}" />
                                 </td>
                             </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+</x-ui.table>
+</x-ui.card>
     </div>
     @endif
 
     {{-- Checklists --}}
     <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-secondary bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-clipboard-check me-2 text-secondary"></i>Checklists Técnicos</span>
-                <a href="{{ route('checklists.create') }}?equipo_id={{ $equipo->id }}"
-                   class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-plus-lg me-1"></i>Nuevo Checklist
-                </a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
+        <x-ui.card title="Checklists Técnicos" icon="clipboard-check" headerClass="bg-secondary" iconColor="secondary" noPadding="true">
+    <x-slot name="headerActions">
+        <x-ui.button href="{{ route('checklists.create') }}?equipo_id={{ $equipo->id }}" color="primary" outline="true" size="sm" icon="plus-lg" text="Nuevo Checklist" />
+    </x-slot>
+
+                <x-ui.table class="table table-hover mb-0">
+    <x-slot name="head">
+        <tr>
                                 <th>Responsable TI</th>
                                 <th>Orden de Trabajo</th>
                                 <th>Resultado</th>
@@ -472,9 +411,8 @@
                                 <th>Fecha</th>
                                 <th>Acciones</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($equipo->checklists as $cl)
+    </x-slot>
+    @forelse($equipo->checklists as $cl)
                                 <tr>
                                     <td>{{ $cl->responsable_ti ?? '—' }}</td>
                                     <td>{{ $cl->orden_trabajo ?? '—' }}</td>
@@ -482,14 +420,8 @@
                                     <td>{{ $cl->fnc ?? '—' }}</td>
                                     <td>{{ $cl->created_at->format('d/m/Y') }}</td>
                                     <td>
-                                        <a href="{{ route('checklists.show', $cl) }}"
-                                           class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('checklists.edit', $cl) }}"
-                                           class="btn btn-sm btn-outline-warning">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
+                                        <x-ui.button href="{{ route('checklists.show', $cl) }}" color="info" outline="true" size="sm" icon="eye" />
+                                        <x-ui.button href="{{ route('checklists.edit', $cl) }}" color="warning" outline="true" size="sm" icon="pencil" />
                                     </td>
                                 </tr>
                             @empty
@@ -497,11 +429,8 @@
                                     <td colspan="6" class="text-center text-muted py-4">Sin checklists registrados.</td>
                                 </tr>
                             @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+</x-ui.table>
+</x-ui.card>
     </div>
 </div>
 @endsection

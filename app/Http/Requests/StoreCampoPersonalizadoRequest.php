@@ -19,6 +19,11 @@ class StoreCampoPersonalizadoRequest extends FormRequest
         return $this->user()->can('campos_personalizados.crear');
     }
 
+    protected function failedAuthorization()
+    {
+        throw new \Illuminate\Auth\Access\AuthorizationException('No tiene permisos para crear campos personalizados.');
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

@@ -12,16 +12,7 @@ class PermisosNuevosModulosSeeder extends Seeder
      */
     public function run(): void
     {
-        $permisos = [
-            'suscripciones.ver', 'suscripciones.crear', 'suscripciones.editar', 'suscripciones.eliminar', 'suscripciones.exportar',
-            'vitalicias.ver', 'vitalicias.crear', 'vitalicias.editar', 'vitalicias.eliminar', 'vitalicias.exportar'
-        ];
-
-        foreach ($permisos as $permiso) {
-            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permiso]);
-        }
-
-        $rolAdmin = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador']);
-        $rolAdmin->givePermissionTo($permisos);
+        // El usuario solicitó remover los permisos de vitalicias y suscripciones
+        // Por lo que este seeder queda vacío para no recrearlos.
     }
 }

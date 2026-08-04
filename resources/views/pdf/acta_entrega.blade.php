@@ -126,7 +126,7 @@
 </head>
 <body>
 
-    <!-- Header -->
+
     <table class="header-table">
         <tr>
             <td rowspan="2" class="logo-cell">
@@ -160,7 +160,7 @@
         </tr>
     </table>
 
-    <!-- Info Section -->
+
     <table class="no-border info-section">
         <tr>
             <td style="width: 33%;">
@@ -179,7 +179,7 @@
         </tr>
     </table>
 
-    <!-- Main Table -->
+
     <table class="main-table">
         <thead>
             <tr>
@@ -194,7 +194,7 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Fila del equipo principal -->
+
             <tr>
                 <td class="text-na">N/A</td>
                 <td class="text-na">N/A</td>
@@ -206,7 +206,7 @@
                 <td class="fw-bold">ENTREGA DE EQUIPO</td>
             </tr>
             
-            <!-- Fila de Periférico / Cargador -->
+
             <tr>
                 <td class="text-na">N/A</td>
                 <td class="text-na">N/A</td>
@@ -218,7 +218,7 @@
                 <td class="fw-bold">ENTREGA DE EQUIPO</td>
             </tr>
 
-            <!-- Filas vacías adicionales -->
+
             @for ($i = 0; $i < 9; $i++)
             <tr>
                 <td class="text-na">N/A</td>
@@ -234,9 +234,9 @@
         </tbody>
     </table>
 
-    <!-- Signatures -->
+
     <table class="no-border signatures" style="width: 100%; border-spacing: 0 20px;">
-        <!-- Fila Quién Entrega -->
+
         <tr>
             <td style="width: 15%; padding: 0 5px; vertical-align: top;">
                 <div class="sig-box">{{ mb_strtoupper(auth()->user()->dependencia ?? 'TI') }}</div>
@@ -256,10 +256,10 @@
             </td>
         </tr>
         
-        <!-- Fila vacía para separación -->
+
         <tr><td colspan="4" style="height: 10px;"></td></tr>
 
-        <!-- Fila Quién Recibe -->
+
         <tr>
             <td style="width: 15%; padding: 0 5px; vertical-align: top;">
                 <div class="sig-box">{{ mb_strtoupper($datos['seccional'] ?? '—') }}</div>

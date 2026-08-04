@@ -3,17 +3,15 @@
 @section('title', 'Panel de Reportes')
 
 @section('content')
-<div class="page-header mb-4">
-    <div>
-        <h4 class="page-title">Panel de Reportes</h4>
-        <p class="page-subtitle">Generación de informes de inventario TIC</p>
-    </div>
-</div>
+<x-ui.toolbar 
+    title="Panel de Reportes" 
+    subtitle="Generación de informes de inventario TIC" 
+/>
 
 <div class="row g-4">
-    <!-- Card 1 -->
+
     <div class="col-md-4">
-        <div class="card p-4 h-100 text-center shadow-sm border-0 transition-hover">
+        <x-ui.card class="h-100 text-center shadow-sm border-0 transition-hover">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-laptop fs-3"></i>
             </div>
@@ -22,12 +20,8 @@
             <div class="mt-auto">
                 @can('equipos.exportar')
                 <div class="d-grid gap-2">
-                    <a href="{{ route('equipos.exportar', ['modo_exportacion' => 'cmdb_principal']) }}" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100">
-                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar CMDB Principal
-                    </a>
-                    <a href="{{ route('equipos.exportar', ['modo_exportacion' => 'completa']) }}" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100">
-                        <i class="bi bi-collection me-1"></i>Exportar Toda la Información
-                    </a>
+                    <x-ui.button href="{{ route('equipos.exportar', ['modo_exportacion' => 'cmdb_principal']) }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-spreadsheet" text="Exportar CMDB Principal" />
+                    <x-ui.button href="{{ route('equipos.exportar', ['modo_exportacion' => 'completa']) }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="collection" text="Exportar Toda la Información" />
                     <button type="button" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalExportacionReportes">
                         <i class="bi bi-sliders me-1"></i>CMDB Principal + Columnas Adicionales
                     </button>
@@ -38,68 +32,68 @@
                 </button>
                 @endcan
             </div>
-        </div>
+        </x-ui.card>
     </div>
     
-    <!-- Card 2 -->
+
     <div class="col-md-4">
-        <div class="card p-4 h-100 text-center shadow-sm border-0">
+        <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-person-badge fs-3"></i>
             </div>
             <h5 class="fw-bold">Activos por Funcionario</h5>
             <p class="text-muted small mb-4">Reporte de equipos asignados a cada empleado del Comité Tolima.</p>
             <div class="mt-auto">
-                <a href="{{ route('reportes.activos-funcionario') }}" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100"><i class="bi bi-file-earmark-excel me-1"></i> Descargar Excel</a>
+                <x-ui.button href="{{ route('reportes.activos-funcionario') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
-    <!-- Card 3 -->
+
     <div class="col-md-4">
-        <div class="card p-4 h-100 text-center shadow-sm border-0">
+        <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-person-gear fs-3"></i>
             </div>
             <h5 class="fw-bold">Asignaciones / Movimientos</h5>
             <p class="text-muted small mb-4">Histórico de actas de entrega, devoluciones y traslados.</p>
             <div class="mt-auto">
-                <a href="{{ route('reportes.asignaciones') }}" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100"><i class="bi bi-file-earmark-excel me-1"></i> Descargar Excel</a>
+                <x-ui.button href="{{ route('reportes.asignaciones') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
-    <!-- Card 4 -->
+
     <div class="col-md-4">
-        <div class="card p-4 h-100 text-center shadow-sm border-0">
+        <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-tools fs-3"></i>
             </div>
             <h5 class="fw-bold">Mantenimientos</h5>
             <p class="text-muted small mb-4">Registro de mantenimientos preventivos y correctivos ejecutados.</p>
             <div class="mt-auto">
-                <a href="{{ route('reportes.mantenimientos') }}" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100"><i class="bi bi-file-earmark-excel me-1"></i> Descargar Excel</a>
+                <x-ui.button href="{{ route('reportes.mantenimientos') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
-    <!-- Card 5 -->
+
     <div class="col-md-4">
-        <div class="card p-4 h-100 text-center shadow-sm border-0">
+        <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-shield-check fs-3"></i>
             </div>
             <h5 class="fw-bold">Garantías</h5>
             <p class="text-muted small mb-4">Equipos con garantía vigente y próximos a expirar.</p>
             <div class="mt-auto">
-                <a href="{{ route('reportes.garantias') }}" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100"><i class="bi bi-file-earmark-excel me-1"></i> Descargar Excel</a>
+                <x-ui.button href="{{ route('reportes.garantias') }}" outline="true" color="danger" class="rounded-pill px-4 w-100 btn-sm" icon="file-earmark-excel" text="Descargar Excel" />
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
-    <!-- Card 6 -->
+
     <div class="col-md-4">
-        <div class="card p-4 h-100 text-center shadow-sm border-0">
+        <x-ui.card class="h-100 text-center shadow-sm border-0">
             <div class="mx-auto bg-light rounded-circle d-flex align-items-center justify-content-center mb-3 report-icon-wrapper">
                 <i class="bi bi-pie-chart fs-3"></i>
             </div>
@@ -108,7 +102,7 @@
             <div class="mt-auto">
                 <a href="{{ route('reportes.estadisticas-pdf') }}" target="_blank" class="btn btn-outline-danger rounded-pill px-4 btn-sm w-100"><i class="bi bi-file-earmark-pdf me-1"></i> Generar PDF</a>
             </div>
-        </div>
+        </x-ui.card>
     </div>
 </div>
 

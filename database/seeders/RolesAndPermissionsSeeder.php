@@ -41,7 +41,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'historial.ver', 'historial.exportar',
             
             // Configuración
-            'configuracion.ver', 'configuracion.editar',
+            'configuracion.ver', 'configuracion.editar', 'campos_personalizados.ver', 'campos_personalizados.crear', 'campos_personalizados.editar', 'campos_personalizados.eliminar',
             
             // Roles
             'roles.ver', 'roles.crear', 'roles.editar', 'roles.eliminar',

@@ -26,7 +26,24 @@ class CapitalizeFirstLetter extends TransformsRequest
         'serial',
         'activo_fijo',
         'placa',
+        'permissions',
     ];
+
+    /**
+     * Clean the given value.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @return mixed
+     */
+    protected function cleanValue($key, $value)
+    {
+        if (in_array($key, $this->except, true)) {
+            return $value;
+        }
+
+        return parent::cleanValue($key, $value);
+    }
 
     /**
      * Transform the given value.

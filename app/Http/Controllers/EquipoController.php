@@ -102,7 +102,15 @@ class EquipoController extends Controller
                 });
             })
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
-            ->when($request->filled('estado'), fn($q) => $q->where('estado_operativo', $request->estado))
+            ->when($request->filled('estado'), function ($q) use ($request) {
+                if ($request->estado === 'responsabilidad') {
+                    $q->whereHas('asignacionesResponsabilidad', function ($q2) {
+                        $q2->where('estado', 'activa');
+                    });
+                } else {
+                    $q->where('estado_operativo', $request->estado);
+                }
+            })
             ->when($filtroFuncionario !== '', fn($q) => $q->whereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', '%' . $filtroFuncionario . '%')))
             ->when($filtroProyecto !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('proyecto', 'like', '%' . $filtroProyecto . '%')))
             ->when($filtroTemporal !== '', fn($q) => $q->whereHas('asignacionResponsabilidadActiva', fn($ar) => $ar->where('nombre_usuario', 'like', '%' . $filtroTemporal . '%')))
@@ -864,11 +872,11 @@ class EquipoController extends Controller
      */
     private function obtenerNombreAnalistaTicInstitucional(): string
     {
-        $analistas = User::role('Soporte TI')->select('id', 'name')->get();
+        $analistas = User::role('Analista Tic')->select('id', 'name')->get();
 
         if ($analistas->count() !== 1) {
             throw new \RuntimeException(
-                'No se puede determinar el Analista TIC institucional. Debe existir exactamente un usuario con rol Soporte TI.'
+                'No se puede determinar el Analista TIC institucional. Debe existir exactamente un usuario con rol Analista Tic.'
             );
         }
 

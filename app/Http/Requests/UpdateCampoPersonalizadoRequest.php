@@ -15,6 +15,11 @@ class UpdateCampoPersonalizadoRequest extends FormRequest
         return $this->user()->can('campos_personalizados.editar');
     }
 
+    protected function failedAuthorization()
+    {
+        throw new \Illuminate\Auth\Access\AuthorizationException('No tiene permisos para editar campos personalizados.');
+    }
+
     protected function prepareForValidation()
     {
         if ($this->has('tipo')) {

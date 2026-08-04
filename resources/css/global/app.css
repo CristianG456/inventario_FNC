@@ -237,15 +237,19 @@
 
         /* MAIN CONTENT */
         .main-content { 
+            width: calc(100% - var(--sidebar-width-collapsed));
             margin-left: var(--sidebar-width-collapsed); 
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: margin-left .28s ease;
+            min-width: 0;
+            overflow-x: hidden;
+            transition: width .28s ease, margin-left .28s ease;
         }
 
         #sidebar:hover + .main-content,
         #sidebar.is-expanded + .main-content {
+            width: calc(100% - var(--sidebar-width-expanded));
             margin-left: var(--sidebar-width-expanded);
         }
 
@@ -329,6 +333,7 @@
         .content-area { 
             padding: 32px; 
             flex-grow: 1;
+            min-width: 0;
         }
 
         .page-header {
@@ -399,15 +404,15 @@
             font-weight: 600;
             font-size: 0.85rem;
             border-bottom: 2px solid var(--border-color);
-            padding: 16px;
+            padding: 12px 8px;
         }
 
         .table tbody td {
-            padding: 16px;
+            padding: 12px 8px;
             vertical-align: middle;
             color: var(--text-dark);
             border-bottom: 1px solid var(--border-color);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .table tbody tr:hover { 
@@ -460,6 +465,7 @@
             .main-content,
             #sidebar:hover + .main-content,
             #sidebar.is-expanded + .main-content { 
+                width: 100% !important;
                 margin-left: 0 !important; 
             }
             .topbar { padding: 16px; }

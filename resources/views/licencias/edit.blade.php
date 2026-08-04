@@ -3,105 +3,124 @@
 @section('title', 'Editar Licencia')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-pencil-square text-primary me-2"></i>Editar Licencia
-    </h4>
-    <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Volver
-    </a>
-</div>
+<x-ui.toolbar 
+    title="Editar Licencia" 
+    icon="pencil-square" 
+    backRoute="{{ route('licencias.index') }}"
+/>
 
-<div class="card">
-    <div class="card-body p-4">
-        <form method="POST" action="{{ route('licencias.update', $licencia) }}">
-            @csrf
-            @method('PUT')
+<x-ui.card>
+    <form method="POST" action="{{ route('licencias.update', $licencia) }}">
+        @csrf
+        @method('PUT')
+        
+        <div class="row g-4">
+            <x-ui.input 
+                name="nombre" 
+                label="Nombre de Licencia" 
+                required="true"
+                value="{{ old('nombre', $licencia->nombre) }}"
+                containerClass="col-12 col-md-6"
+            />
             
-            <div class="row g-4">
-                <div class="col-12 col-md-6">
-                    <label class="form-label fw-medium">Nombre de Licencia <span class="text-danger">*</span></label>
-                    <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre', $licencia->nombre) }}" required>
-                    @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                
-                <div class="col-12 col-md-6">
-                    <label class="form-label fw-medium">Tipo <span class="text-danger">*</span></label>
-                    <select name="tipo_licencia" id="tipo_licencia" class="form-select @error('tipo_licencia') is-invalid @enderror" required>
-                        <option value="Suscripción" {{ old('tipo_licencia', $licencia->tipo_licencia) == 'Suscripción' ? 'selected' : '' }}>Suscripción</option>
-                        <option value="Vitalicia" {{ old('tipo_licencia', $licencia->tipo_licencia) == 'Vitalicia' ? 'selected' : '' }}>Licencia Vitalicia</option>
-                    </select>
-                    @error('tipo_licencia') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                
-                <div class="col-12 col-md-6">
-                    <label class="form-label fw-medium">Estado <span class="text-danger">*</span></label>
-                    <select name="estado" class="form-select @error('estado') is-invalid @enderror" required>
-                        <option value="Activa" {{ old('estado', $licencia->estado) == 'Activa' ? 'selected' : '' }}>Activa</option>
-                        <option value="Suspendida" {{ old('estado', $licencia->estado) == 'Suspendida' ? 'selected' : '' }}>Suspendida</option>
-                        <option value="Vencida" {{ old('estado', $licencia->estado) == 'Vencida' ? 'selected' : '' }}>Vencida</option>
-                    </select>
-                    @error('estado') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
+            <x-ui.select 
+                name="tipo_licencia" 
+                id="tipo_licencia"
+                label="Tipo" 
+                required="true"
+                containerClass="col-12 col-md-6"
+            >
+                <option value="Suscripción" {{ old('tipo_licencia', $licencia->tipo_licencia) == 'Suscripción' ? 'selected' : '' }}>Suscripción</option>
+                <option value="Vitalicia" {{ old('tipo_licencia', $licencia->tipo_licencia) == 'Vitalicia' ? 'selected' : '' }}>Licencia Vitalicia</option>
+            </x-ui.select>
+            
+            <x-ui.select 
+                name="estado" 
+                label="Estado" 
+                required="true"
+                containerClass="col-12 col-md-6"
+            >
+                <option value="Activa" {{ old('estado', $licencia->estado) == 'Activa' ? 'selected' : '' }}>Activa</option>
+                <option value="Suspendida" {{ old('estado', $licencia->estado) == 'Suspendida' ? 'selected' : '' }}>Suspendida</option>
+                <option value="Vencida" {{ old('estado', $licencia->estado) == 'Vencida' ? 'selected' : '' }}>Vencida</option>
+            </x-ui.select>
 
-                <!-- Campos de Suscripción -->
-                <div class="col-12 col-md-4 campo-suscripcion">
-                    <label class="form-label fw-medium">Cantidad Máxima de Cupos <span class="text-danger">*</span></label>
-                    <input type="number" name="cantidad_maxima" id="cantidad_maxima" class="form-control @error('cantidad_maxima') is-invalid @enderror" value="{{ old('cantidad_maxima', $licencia->cantidad_maxima) }}" min="1">
-                    @error('cantidad_maxima') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                
-                <div class="col-12 col-md-4 campo-suscripcion">
-                    <label class="form-label fw-medium">Fecha de Inicio</label>
-                    <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control @error('fecha_inicio') is-invalid @enderror" value="{{ old('fecha_inicio', $licencia->fecha_inicio ? $licencia->fecha_inicio->format('Y-m-d') : '') }}" min="{{ $licencia->fecha_inicio && $licencia->fecha_inicio->isPast() ? $licencia->fecha_inicio->format('Y-m-d') : date('Y-m-d') }}">
-                    @error('fecha_inicio') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                
-                <div class="col-12 col-md-4 campo-suscripcion">
-                    <label class="form-label fw-medium">Fecha de Vencimiento</label>
-                    <input type="date" name="fecha_vencimiento" id="fecha_vencimiento" class="form-control @error('fecha_vencimiento') is-invalid @enderror" value="{{ old('fecha_vencimiento', $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('Y-m-d') : '') }}">
-                    @error('fecha_vencimiento') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
 
-                <div class="col-12 col-md-6 campo-suscripcion">
-                    <label class="form-label fw-medium">¿Requiere correo electrónico? <span class="text-danger">*</span></label>
-                    <select name="requiere_correo" id="requiere_correo" class="form-select @error('requiere_correo') is-invalid @enderror">
-                        <option value="0" {{ old('requiere_correo', $licencia->requiere_correo) == false ? 'selected' : '' }}>No</option>
-                        <option value="1" {{ old('requiere_correo', $licencia->requiere_correo) == true ? 'selected' : '' }}>Sí</option>
-                    </select>
-                    @error('requiere_correo') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
+            <x-ui.input 
+                name="cantidad_maxima" 
+                id="cantidad_maxima"
+                type="number"
+                label="Cantidad Máxima de Cupos" 
+                required="true"
+                value="{{ old('cantidad_maxima', $licencia->cantidad_maxima) }}"
+                min="1"
+                containerClass="col-12 col-md-4 campo-suscripcion"
+            />
+            
+            <x-ui.input 
+                name="fecha_inicio" 
+                id="fecha_inicio"
+                type="date"
+                label="Fecha de Inicio" 
+                value="{{ old('fecha_inicio', $licencia->fecha_inicio ? $licencia->fecha_inicio->format('Y-m-d') : '') }}"
+                min="{{ $licencia->fecha_inicio && $licencia->fecha_inicio->isPast() ? $licencia->fecha_inicio->format('Y-m-d') : date('Y-m-d') }}"
+                containerClass="col-12 col-md-4 campo-suscripcion"
+            />
+            
+            <x-ui.input 
+                name="fecha_vencimiento" 
+                id="fecha_vencimiento"
+                type="date"
+                label="Fecha de Vencimiento" 
+                value="{{ old('fecha_vencimiento', $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('Y-m-d') : '') }}"
+                containerClass="col-12 col-md-4 campo-suscripcion"
+            />
 
-                <!-- Campo compartido o condicional (Correo Compra) -->
-                <div class="col-12 col-md-6" id="container_correo_asociado" style="display: none;">
-                    <label class="form-label fw-medium">Correo de Compra <span class="text-danger">*</span></label>
-                    <input type="email" name="correo_compra" id="correo_compra" class="form-control @error('correo_compra') is-invalid @enderror" value="{{ old('correo_compra', $licencia->correo_compra) }}" placeholder="Correo con el que se adquirió">
-                    @error('correo_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
+            <x-ui.select 
+                name="requiere_correo" 
+                id="requiere_correo"
+                label="¿Requiere correo electrónico?" 
+                required="true"
+                containerClass="col-12 col-md-6 campo-suscripcion"
+            >
+                <option value="0" {{ old('requiere_correo', $licencia->requiere_correo) == false ? 'selected' : '' }}>No</option>
+                <option value="1" {{ old('requiere_correo', $licencia->requiere_correo) == true ? 'selected' : '' }}>Sí</option>
+            </x-ui.select>
 
-                <div class="col-12 col-md-3">
-                    <label class="form-label fw-medium">Fecha de Compra</label>
-                    <input type="date" name="fecha_compra" class="form-control @error('fecha_compra') is-invalid @enderror" value="{{ old('fecha_compra', $licencia->fecha_compra ? $licencia->fecha_compra->format('Y-m-d') : '') }}">
+
+            <div class="col-12 col-md-6" id="container_correo_asociado" style="display: none;">
+                <label class="form-label fw-medium">Correo de Compra <span class="text-danger">*</span></label>
+                <input type="email" name="correo_compra" id="correo_compra" class="form-control @error('correo_compra') is-invalid @enderror" value="{{ old('correo_compra', $licencia->correo_compra) }}" placeholder="Correo con el que se adquirió">
+                @error('correo_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            <x-ui.input 
+                name="fecha_compra" 
+                type="date"
+                label="Fecha de Compra" 
+                value="{{ old('fecha_compra', $licencia->fecha_compra ? $licencia->fecha_compra->format('Y-m-d') : '') }}"
+                containerClass="col-12 col-md-3"
+            >
+                <x-slot name="append">
                     <div class="form-text">Informativa</div>
-                    @error('fecha_compra') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
+                </x-slot>
+            </x-ui.input>
 
-                <div class="col-12 col-md-3 campo-suscripcion">
-                    <label class="form-label fw-medium">Fecha de Renovación</label>
-                    <input type="date" name="fecha_renovacion" class="form-control @error('fecha_renovacion') is-invalid @enderror" value="{{ old('fecha_renovacion', $licencia->fecha_renovacion ? $licencia->fecha_renovacion->format('Y-m-d') : '') }}">
-                    @error('fecha_renovacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
+            <x-ui.input 
+                name="fecha_renovacion" 
+                type="date"
+                label="Fecha de Renovación" 
+                value="{{ old('fecha_renovacion', $licencia->fecha_renovacion ? $licencia->fecha_renovacion->format('Y-m-d') : '') }}"
+                containerClass="col-12 col-md-3 campo-suscripcion"
+            />
 
-            </div>
+        </div>
 
-            <div class="mt-4 pt-3 border-top text-end">
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="bi bi-save me-2"></i>Actualizar Licencia
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+        <div class="mt-4 pt-3 border-top text-end">
+            <x-ui.button type="submit" color="primary" class="px-4" icon="save" text="Actualizar Licencia" />
+        </div>
+    </form>
+</x-ui.card>
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {

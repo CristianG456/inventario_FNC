@@ -112,7 +112,7 @@ class TicketController extends Controller
         ]);
 
         try {
-            $tecnicos = User::role('Soporte TI')->select('id', 'name')->get();
+            $tecnicos = User::role('Analista Tic')->select('id', 'name')->get();
             if ($tecnicos->isEmpty()) throw new \Exception();
         } catch (\Exception $e) {
             $tecnicos = User::select('id', 'name')->get();

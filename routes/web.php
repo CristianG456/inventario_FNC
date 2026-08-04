@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuditController;
+use App\Http\Controllers\Auth\ForcePasswordChangeController;
 
 // Ruta raíz redirige a la pantalla principal (o al login si no está autenticado)
 Route::get('/', function () {
@@ -32,8 +33,14 @@ Route::get('/test-export', function() {
 });
 
 
+// === Ruta de cambio obligatorio de contraseña (primer inicio) ===
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cambiar-contraseña', [ForcePasswordChangeController::class, 'show'])->name('password.force-change');
+    Route::put('/cambiar-contraseña', [ForcePasswordChangeController::class, 'update'])->name('password.force-change.update');
+});
+
 // === Rutas protegidas por autenticación ===
-Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
+Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-change'])->group(function () {
 
     // Pantalla principal
     Route::get('/inicio', [DashboardController::class, 'index'])->name('inicio')->middleware('permission:dashboard.ver');
@@ -361,7 +368,7 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
 
 require __DIR__ . '/auth.php';
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'force-password-change'])->group(function () {
     // Asignacion Bajo Responsabilidad
     Route::post('equipos/{equipo}/asignacion-responsabilidad', [App\Http\Controllers\AsignacionResponsabilidadController::class, 'store'])->name('equipos.asignacion-responsabilidad.store')->middleware('permission:equipos.crear');
     Route::put('equipos/{equipo}/asignacion-responsabilidad/{asignacion}', [App\Http\Controllers\AsignacionResponsabilidadController::class, 'update'])->name('equipos.asignacion-responsabilidad.update')->middleware('permission:equipos.crear');

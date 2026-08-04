@@ -3,83 +3,75 @@
 @section('title', 'Detalle de Solicitud')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-file-earmark-text me-2 text-primary"></i>
-        Detalle de Solicitud #{{ $solicitud->id }}
-    </h4>
-</div>
+<x-ui.toolbar 
+    title="Detalle de Solicitud #{{ $solicitud->id }}" 
+    icon="file-earmark-text"
+/>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="small text-muted">Nombre del usuario</div>
-                <div class="fw-semibold">{{ $solicitud->usuario?->name ?? 'Usuario eliminado' }}</div>
-            </div>
-            <div class="col-md-6">
-                <div class="small text-muted">Correo</div>
-                <div class="fw-semibold">{{ $solicitud->email }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="small text-muted">Fecha</div>
-                <div>{{ optional($solicitud->created_at)->format('d/m/Y') }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="small text-muted">Hora</div>
-                <div>{{ optional($solicitud->created_at)->format('H:i:s') }}</div>
-            </div>
-            <div class="col-md-4">
-                <div class="small text-muted">Estado</div>
-                <div>{{ $solicitud->estado }}</div>
-            </div>
-            <div class="col-md-6">
-                <div class="small text-muted">Dirección IP</div>
-                <div>{{ $solicitud->ip ?? 'N/A' }}</div>
-            </div>
-            <div class="col-md-6">
-                <div class="small text-muted">Navegador</div>
-                <div>{{ $solicitud->user_agent ?? 'N/A' }}</div>
-            </div>
-            <div class="col-md-12">
-                <div class="small text-muted">Observaciones</div>
-                <div>{{ $solicitud->observacion ?: 'Sin observaciones.' }}</div>
-            </div>
-            @if($solicitud->administrador)
-                <div class="col-md-6">
-                    <div class="small text-muted">Administrador responsable</div>
-                    <div>{{ $solicitud->administrador->name }}</div>
-                </div>
-                <div class="col-md-6">
-                    <div class="small text-muted">Fecha de atención</div>
-                    <div>{{ optional($solicitud->fecha_atencion)->format('d/m/Y H:i:s') }}</div>
-                </div>
-            @endif
+<x-ui.card class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="small text-muted">Nombre del usuario</div>
+            <div class="fw-semibold">{{ $solicitud->usuario?->name ?? 'Usuario eliminado' }}</div>
         </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Correo</div>
+            <div class="fw-semibold">{{ $solicitud->email }}</div>
+        </div>
+        <div class="col-md-4">
+            <div class="small text-muted">Fecha</div>
+            <div>{{ optional($solicitud->created_at)->format('d/m/Y') }}</div>
+        </div>
+        <div class="col-md-4">
+            <div class="small text-muted">Hora</div>
+            <div>{{ optional($solicitud->created_at)->format('H:i:s') }}</div>
+        </div>
+        <div class="col-md-4">
+            <div class="small text-muted">Estado</div>
+            <div>{{ $solicitud->estado }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Dirección IP</div>
+            <div>{{ $solicitud->ip ?? 'N/A' }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Navegador</div>
+            <div>{{ $solicitud->user_agent ?? 'N/A' }}</div>
+        </div>
+        <div class="col-md-12">
+            <div class="small text-muted">Observaciones</div>
+            <div>{{ $solicitud->observacion ?: 'Sin observaciones.' }}</div>
+        </div>
+        @if($solicitud->administrador)
+            <div class="col-md-6">
+                <div class="small text-muted">Administrador responsable</div>
+                <div>{{ $solicitud->administrador->name }}</div>
+            </div>
+            <div class="col-md-6">
+                <div class="small text-muted">Fecha de atención</div>
+                <div>{{ optional($solicitud->fecha_atencion)->format('d/m/Y H:i:s') }}</div>
+            </div>
+        @endif
     </div>
-</div>
+</x-ui.card>
 
-<div class="card">
-    <div class="card-body d-flex flex-wrap gap-2">
+<x-ui.card>
+    <div class="d-flex flex-wrap gap-2">
         @if($solicitud->estado === 'Pendiente')
-            <a href="{{ route('solicitudes-password.edit-password', $solicitud) }}" class="btn btn-primary">
-                Cambiar contraseña
-            </a>
+            <x-ui.button href="{{ route('solicitudes-password.edit-password', $solicitud) }}" color="primary" text="Cambiar contraseña" />
 
             <button class="btn btn-outline-danger" type="button" data-bs-toggle="collapse" data-bs-target="#form-rechazo" aria-expanded="false" aria-controls="form-rechazo">
                 Rechazar solicitud
             </button>
         @endif
 
-        <a href="{{ route('solicitudes-password.index') }}" class="btn btn-secondary">
-            Cancelar
-        </a>
+        <x-ui.button href="{{ route('solicitudes-password.index') }}" color="secondary" text="Cancelar" />
     </div>
-</div>
+</x-ui.card>
 
 @if($solicitud->estado === 'Pendiente')
 <div class="collapse mt-3" id="form-rechazo">
-    <div class="card card-body">
+    <x-ui.card>
         <form method="POST" action="{{ route('solicitudes-password.reject', $solicitud) }}">
             @csrf
             @method('PUT')
@@ -92,9 +84,9 @@
                 @enderror
             </div>
 
-            <button type="submit" class="btn btn-danger">Confirmar rechazo</button>
+            <x-ui.button type="submit" color="danger" text="Confirmar rechazo" />
         </form>
-    </div>
+    </x-ui.card>
 </div>
 @endif
 @endsection

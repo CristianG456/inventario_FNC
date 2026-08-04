@@ -52,9 +52,12 @@ class RoleController extends Controller
 
             DB::commit();
             return redirect()->route('roles.index')->with('success', 'Rol creado exitosamente.');
+        } catch (\Spatie\Permission\Exceptions\PermissionDoesNotExist $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Ocurrió un error: Uno o más permisos seleccionados no existen en el sistema.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Ocurrió un error al crear el rol: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Ocurrió un error inesperado al crear el rol. Por favor, intente de nuevo.');
         }
     }
 
@@ -94,9 +97,12 @@ class RoleController extends Controller
 
             DB::commit();
             return redirect()->route('roles.index')->with('success', 'Rol actualizado exitosamente.');
+        } catch (\Spatie\Permission\Exceptions\PermissionDoesNotExist $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Ocurrió un error: Uno o más permisos seleccionados no existen en el sistema.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Ocurrió un error al actualizar el rol: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Ocurrió un error inesperado al actualizar el rol. Por favor, intente de nuevo.');
         }
     }
 

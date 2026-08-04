@@ -20,14 +20,36 @@ class FuncionarioController extends Controller
 
         if ($request->filled('buscar')) {
             $buscar = $request->buscar;
-            $query->where('nombres', 'like', "%{$buscar}%")
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombres', 'like', "%{$buscar}%")
+                  ->orWhere('apellidos', 'like', "%{$buscar}%")
                   ->orWhere('identificacion', 'like', "%{$buscar}%")
-                  ->orWhere('cargo', 'like', "%{$buscar}%");
+                  ->orWhere('cargo', 'like', "%{$buscar}%")
+                  ->orWhere('area', 'like', "%{$buscar}%")
+                  ->orWhere('seccional', 'like', "%{$buscar}%")
+                  ->orWhere('distrito', 'like', "%{$buscar}%");
+            });
         }
 
-        $funcionarios = $query->paginate(15);
-        
-        return view('funcionarios.index', compact('funcionarios'));
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($request->filled('area')) {
+            $query->where('area', 'like', '%' . $request->area . '%');
+        }
+
+        if ($request->filled('tipo_vinculacion')) {
+            $query->where('tipo_vinculacion', $request->tipo_vinculacion);
+        }
+
+        // Obtener valores distintos para los selects de filtro
+        $areasDisponibles = Funcionario::select('area')->whereNotNull('area')->distinct()->orderBy('area')->pluck('area');
+        $tiposVinculacion = Funcionario::select('tipo_vinculacion')->whereNotNull('tipo_vinculacion')->distinct()->orderBy('tipo_vinculacion')->pluck('tipo_vinculacion');
+
+        $funcionarios = $query->orderBy('nombres')->paginate(15)->withQueryString();
+
+        return view('funcionarios.index', compact('funcionarios', 'areasDisponibles', 'tiposVinculacion'));
     }
 
     public function storeAutorizacion(Request $request, Funcionario $funcionario)

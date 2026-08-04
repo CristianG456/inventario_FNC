@@ -3,23 +3,17 @@
 @section('title', 'Detalle de Licencia')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">
-        <i class="bi bi-key text-primary me-2"></i>{{ $licencia->nombre }}
-    </h4>
-    <div class="d-flex gap-2 flex-wrap">
-        <a href="{{ route('licencias.edit', $licencia) }}" class="btn btn-warning">
-            <i class="bi bi-pencil me-1"></i>Editar
-        </a>
-        <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-    </div>
-</div>
+<x-ui.toolbar 
+    title="{{ $licencia->nombre }}" 
+    icon="key" 
+    backRoute="{{ route('licencias.index') }}"
+>
+    <x-ui.button href="{{ route('licencias.edit', $licencia) }}" color="warning" icon="pencil" text="Editar" />
+</x-ui.toolbar>
 
 <div class="row">
     <div class="col-md-4">
-        <div class="card mb-4">
+        <x-ui.card noPadding="true" class="mb-4">
             <div class="card-header bg-light fw-bold">Información de la Licencia</div>
             <div class="card-body">
                 <dl class="row mb-0">
@@ -28,17 +22,17 @@
 
                     <dt class="col-sm-5 text-muted">Estado:</dt>
                     <dd class="col-sm-7">
-                        <span class="badge bg-{{ $licencia->estado === 'Activa' ? 'success' : ($licencia->estado === 'Suspendida' ? 'warning' : 'danger') }}">
+                        <x-ui.badge color="{{ $licencia->estado === 'Activa' ? 'success' : ($licencia->estado === 'Suspendida' ? 'warning' : 'danger') }}">
                             {{ $licencia->estado }}
-                        </span>
+                        </x-ui.badge>
                     </dd>
 
                     @if($licencia->tipo_licencia === 'Suscripción')
                         <dt class="col-sm-5 text-muted">Cupos:</dt>
                         <dd class="col-sm-7">
-                            <span class="badge {{ $licencia->cupos_disponibles > 0 ? 'bg-success' : 'bg-danger' }}">
+                            <x-ui.badge color="{{ $licencia->cupos_disponibles > 0 ? 'success' : 'danger' }}">
                                 {{ $licencia->cupos_asignados }} / {{ $licencia->cantidad_maxima }} Asignados
-                            </span>
+                            </x-ui.badge>
                         </dd>
 
                         <dt class="col-sm-5 text-muted">Inicio:</dt>
@@ -57,7 +51,7 @@
                         <dd class="col-sm-7">{{ $licencia->requiere_correo ? 'Sí' : 'No' }}</dd>
 
                     @elseif($licencia->tipo_licencia === 'Vitalicia')
-                        <!-- Se ha eliminado usuario_asignado -->
+
                     @endif
                     
                     <dt class="col-sm-5 text-muted">Correo Compra:</dt>
@@ -71,7 +65,7 @@
                 <div class="text-muted small"><strong>Observaciones:</strong><br>{{ $licencia->observaciones }}</div>
                 @endif
             </div>
-        </div>
+        </x-ui.card>
     </div>
     
     <div class="col-md-8">
@@ -93,7 +87,7 @@
             </li>
         </ul>
         <div class="tab-content border-start border-end border-bottom bg-white p-3 mb-4" id="licenciaTabsContent">
-            <!-- Pestaña Asignaciones -->
+
             <div class="tab-pane fade show active" id="asignaciones" role="tabpanel">
                 @if($licencia->asignaciones->count() > 0)
                 <div class="table-responsive">
@@ -125,9 +119,9 @@
                                 </td>
                                 <td>{{ $asignacion->fecha_asignacion ? $asignacion->fecha_asignacion->format('d/m/Y') : 'N/A' }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $asignacion->estado === 'Activa' ? 'success' : 'secondary' }}">
+                                    <x-ui.badge color="{{ $asignacion->estado === 'Activa' ? 'success' : 'secondary' }}">
                                         {{ $asignacion->estado }}
-                                    </span>
+                                    </x-ui.badge>
                                 </td>
                             </tr>
                             @endforeach
@@ -139,7 +133,7 @@
                 @endif
             </div>
 
-            <!-- Pestaña Seriales -->
+
             <div class="tab-pane fade" id="seriales" role="tabpanel">
                 <div class="mb-3">
                     <form method="POST" action="{{ route('licencias.seriales.store', $licencia) }}" class="row g-2 align-items-center">
@@ -154,9 +148,7 @@
                             </select>
                         </div>
                         <div class="col-12 col-md-4">
-                            <button type="submit" class="btn btn-sm btn-primary w-100">
-                                <i class="bi bi-plus-circle me-1"></i>Agregar Serial
-                            </button>
+                            <x-ui.button type="submit" color="primary" size="sm" class="w-100" icon="plus-circle" text="Agregar Serial" />
                         </div>
                     </form>
                 </div>
@@ -177,9 +169,9 @@
                             <tr>
                                 <td class="fw-medium font-monospace">{{ $serialItem->serial }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $serialItem->estado === 'Disponible' ? 'success' : ($serialItem->estado === 'Asignado' ? 'primary' : ($serialItem->estado === 'Reservado' ? 'warning' : 'secondary')) }}">
+                                    <x-ui.badge color="{{ $serialItem->estado === 'Disponible' ? 'success' : ($serialItem->estado === 'Asignado' ? 'primary' : ($serialItem->estado === 'Reservado' ? 'warning' : 'secondary')) }}">
                                         {{ $serialItem->estado }}
-                                    </span>
+                                    </x-ui.badge>
                                 </td>
                                 <td>{{ $serialItem->observaciones ?: 'Ninguna' }}</td>
                                 <td>
@@ -198,48 +190,44 @@
                                 </td>
                             </tr>
                             
-                            <!-- Edit Serial Modal -->
-                            <div class="modal fade" id="editSerialModal{{ $serialItem->id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down">
-                                    <div class="modal-content">
-                                        <form method="POST" action="{{ route('licencias.seriales.update', [$licencia, $serialItem]) }}">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Editar Serial</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Serial</label>
-                                                    <input type="text" name="serial" class="form-control" value="{{ $serialItem->serial }}" {{ $serialItem->estado === 'Asignado' ? 'readonly' : 'required' }}>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Estado</label>
-                                                    <select name="estado" class="form-select" {{ $serialItem->estado === 'Asignado' ? 'disabled' : 'required' }}>
-                                                        <option value="Disponible" {{ $serialItem->estado === 'Disponible' ? 'selected' : '' }}>Disponible</option>
-                                                        <option value="Inactivo" {{ $serialItem->estado === 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
-                                                        @if($serialItem->estado === 'Asignado' || $serialItem->estado === 'Reservado')
-                                                        <option value="{{ $serialItem->estado }}" selected>{{ $serialItem->estado }}</option>
-                                                        @endif
-                                                    </select>
-                                                    @if($serialItem->estado === 'Asignado')
-                                                    <input type="hidden" name="estado" value="Asignado">
-                                                    @endif
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Observaciones</label>
-                                                    <textarea name="observaciones" class="form-control" rows="2">{{ $serialItem->observaciones }}</textarea>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                <button type="submit" class="btn btn-primary">Guardar</button>
-                                            </div>
-                                        </form>
+
+                            <x-ui.modal id="editSerialModal{{ $serialItem->id }}" title="Editar Serial">
+                                <form method="POST" action="{{ route('licencias.seriales.update', [$licencia, $serialItem]) }}">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="modal-body">
+                                        <x-ui.input 
+                                            name="serial" 
+                                            label="Serial" 
+                                            value="{{ $serialItem->serial }}" 
+                                            readonly="{{ $serialItem->estado === 'Asignado' ? 'true' : 'false' }}"
+                                            required="{{ $serialItem->estado === 'Asignado' ? 'false' : 'true' }}"
+                                            containerClass="mb-3"
+                                        />
+                                        <div class="mb-3">
+                                            <label class="form-label">Estado</label>
+                                            <select name="estado" class="form-select" {{ $serialItem->estado === 'Asignado' ? 'disabled' : 'required' }}>
+                                                <option value="Disponible" {{ $serialItem->estado === 'Disponible' ? 'selected' : '' }}>Disponible</option>
+                                                <option value="Inactivo" {{ $serialItem->estado === 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
+                                                @if($serialItem->estado === 'Asignado' || $serialItem->estado === 'Reservado')
+                                                <option value="{{ $serialItem->estado }}" selected>{{ $serialItem->estado }}</option>
+                                                @endif
+                                            </select>
+                                            @if($serialItem->estado === 'Asignado')
+                                            <input type="hidden" name="estado" value="Asignado">
+                                            @endif
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Observaciones</label>
+                                            <textarea name="observaciones" class="form-control" rows="2">{{ $serialItem->observaciones }}</textarea>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+                                    <div class="modal-footer">
+                                        <x-ui.button type="button" color="secondary" data-bs-dismiss="modal" text="Cancelar" />
+                                        <x-ui.button type="submit" color="primary" text="Guardar" />
+                                    </div>
+                                </form>
+                            </x-ui.modal>
                             @endforeach
                         </tbody>
                     </table>
@@ -249,7 +237,7 @@
                 @endif
             </div>
 
-            <!-- Pestaña Historial -->
+
             <div class="tab-pane fade" id="historial" role="tabpanel">
                 @if($historial->count() > 0)
                 <div class="table-responsive">

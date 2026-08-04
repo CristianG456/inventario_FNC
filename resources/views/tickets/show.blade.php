@@ -6,52 +6,42 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
         
-        <!-- HEADER DEL TICKET -->
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="p-4 d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="fw-bold mb-1">
-                        Ticket #{{ $ticket->id }}: {{ $ticket->titulo }}
-                    </h4>
-                    <p class="text-muted mb-0">
-                        <span class="badge 
-                            @if($ticket->estado == 'Abierto') bg-primary 
-                            @elseif($ticket->estado == 'En Diagnóstico') bg-info
-                            @elseif($ticket->estado == 'En Proceso') bg-warning
-                            @elseif($ticket->estado == 'Resuelto') bg-success
-                            @elseif($ticket->estado == 'Cerrado') bg-secondary
-                            @else bg-dark @endif">
-                            {{ $ticket->estado }}
-                        </span>
-                        
-                        @php
-                            $badgePrioridad = 'bg-success'; // Baja
-                            if($ticket->prioridad == 'Media') $badgePrioridad = 'bg-warning text-dark';
-                            if($ticket->prioridad == 'Alta') $badgePrioridad = 'bg-orange'; // Asumiendo estilo o usar bg-danger bg-opacity-75
-                            if($ticket->prioridad == 'Crítica') $badgePrioridad = 'bg-danger';
-                        @endphp
-                        <span class="badge {{ $badgePrioridad }} ms-1">{{ $ticket->prioridad }}</span>
-                        
-                        <span class="ms-2">
-                            &bull; 
-                            @if(in_array($ticket->estado, ['Resuelto', 'Cerrado']) && $ticket->fecha_cierre)
-                                Tiempo de resolución: {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans($ticket->fecha_cierre, true) }}
-                            @else
-                                Abierto hace {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans(null, true) }}
-                            @endif
-                        </span>
-                    </p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cambiarEstadoModal">
-                        <i class="bi bi-arrow-repeat"></i> Cambiar Estado
-                    </button>
-                    <a href="{{ route('tickets.index') }}" class="btn btn-light border">
-                        <i class="bi bi-arrow-left"></i> Volver
-                    </a>
-                </div>
-            </div>
-        </div>
+
+        <x-ui.toolbar>
+            <x-slot name="title">Ticket #{{ $ticket->id }}: {{ $ticket->titulo }}</x-slot>
+            <x-slot name="subtitle">
+                <span class="badge 
+                    @if($ticket->estado == 'Abierto') bg-primary 
+                    @elseif($ticket->estado == 'En Diagnóstico') bg-info
+                    @elseif($ticket->estado == 'En Proceso') bg-warning
+                    @elseif($ticket->estado == 'Resuelto') bg-success
+                    @elseif($ticket->estado == 'Cerrado') bg-secondary
+                    @else bg-dark @endif">
+                    {{ $ticket->estado }}
+                </span>
+                
+                @php
+                    $badgePrioridad = 'bg-success'; // Baja
+                    if($ticket->prioridad == 'Media') $badgePrioridad = 'bg-warning text-dark';
+                    if($ticket->prioridad == 'Alta') $badgePrioridad = 'bg-orange'; // Asumiendo estilo o usar bg-danger bg-opacity-75
+                    if($ticket->prioridad == 'Crítica') $badgePrioridad = 'bg-danger';
+                @endphp
+                <span class="badge {{ $badgePrioridad }} ms-1">{{ $ticket->prioridad }}</span>
+                
+                <span class="ms-2">
+                    &bull; 
+                    @if(in_array($ticket->estado, ['Resuelto', 'Cerrado']) && $ticket->fecha_cierre)
+                        Tiempo de resolución: {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans($ticket->fecha_cierre, true) }}
+                    @else
+                        Abierto hace {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans(null, true) }}
+                    @endif
+                </span>
+            </x-slot>
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cambiarEstadoModal">
+                <i class="bi bi-arrow-repeat"></i> Cambiar Estado
+            </button>
+            <x-ui.button href="{{ route('tickets.index') }}" color="light" class="border" icon="arrow-left" text="Volver" />
+        </x-ui.toolbar>
 
         @if($errors->any())
         <div class="alert alert-danger shadow-sm border-0 mb-4">
@@ -66,7 +56,7 @@
 
         <div class="accordion shadow-sm" id="accordionTicket">
             
-            <!-- 1. INFORMACIÓN GENERAL Y EVIDENCIAS -->
+
             <div class="accordion-item border-0 border-bottom">
                 <h2 class="accordion-header" id="headingInfo">
                     <button class="accordion-button bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInfo" aria-expanded="true" aria-controls="collapseInfo">
@@ -101,7 +91,7 @@
                             </div>
                         </div>
 
-                        <!-- GESTIÓN DE EVIDENCIAS -->
+
                         <div class="border-top pt-3">
                             <h6 class="fw-bold mb-3"><i class="bi bi-paperclip text-primary"></i> Evidencias Adjuntas</h6>
                             
@@ -151,7 +141,7 @@
                 </div>
             </div>
 
-            <!-- 2. ACTIVO RELACIONADO (ENRIQUECIDO) -->
+
             @if($ticket->equipo)
             <div class="accordion-item border-0 border-bottom">
                 <h2 class="accordion-header" id="headingActivo">
@@ -230,7 +220,7 @@
             </div>
             @endif
 
-            <!-- 3. DIAGNÓSTICO -->
+
             <div class="accordion-item border-0 border-bottom">
                 <h2 class="accordion-header" id="headingDiag">
                     <button class="accordion-button collapsed bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDiag" aria-expanded="false" aria-controls="collapseDiag">
@@ -269,7 +259,7 @@
                 </div>
             </div>
 
-            <!-- 4. SEGUIMIENTO TÉCNICO -->
+
             <div class="accordion-item border-0 border-bottom">
                 <h2 class="accordion-header" id="headingSeg">
                     <button class="accordion-button bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeg" aria-expanded="true" aria-controls="collapseSeg">
@@ -279,7 +269,7 @@
                 <div id="collapseSeg" class="accordion-collapse collapse show" aria-labelledby="headingSeg">
                     <div class="accordion-body bg-white">
                         
-                        <!-- Lista de Seguimientos (Solo manuales) -->
+
                         <div class="timeline px-2 py-3 mb-4 ms-3">
                             @forelse($ticket->seguimientos->where('is_system', false) as $seg)
                                 <div class="position-relative mb-4 ps-4">
@@ -307,7 +297,7 @@
                             @endforelse
                         </div>
 
-                        <!-- Nuevo Seguimiento -->
+
                         @if($ticket->estado != 'Cerrado')
                         <div class="card border border-light shadow-sm bg-light">
                             <div class="card-body p-3">
@@ -332,7 +322,7 @@
                 </div>
             </div>
 
-            <!-- 5. SOLUCIÓN -->
+
             <div class="accordion-item border-0 border-bottom">
                 <h2 class="accordion-header" id="headingSol">
                     <button class="accordion-button collapsed bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSol" aria-expanded="false" aria-controls="collapseSol">
@@ -382,7 +372,7 @@
                 </div>
             </div>
 
-            <!-- 6. HISTORIAL DEL SISTEMA -->
+
             <div class="accordion-item border-0">
                 <h2 class="accordion-header" id="headingHist">
                     <button class="accordion-button collapsed bg-light fw-bold text-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHist" aria-expanded="false" aria-controls="collapseHist">
@@ -413,12 +403,12 @@
                 </div>
             </div>
 
-        </div> <!-- end accordion -->
+        </div>
 
     </div>
 </div>
 
-<!-- Modal Cambiar Estado -->
+
 <div class="modal fade" id="cambiarEstadoModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

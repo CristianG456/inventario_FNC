@@ -140,41 +140,41 @@
 <div class="row g-4">
     {{-- Panel Dinámico de Equipos por Tipo --}}
     <div class="col-12 col-lg-5">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-header bg-white fw-semibold border-0 pt-4 px-4 fs-5" id="dynamic-stats-title">
-                <i class="bi bi-pie-chart me-2 text-primary"></i>Equipos por Tipo
-            </div>
-            <div class="card-body px-4 pb-4" id="dynamic-stats-container">
+        <x-ui.card noPadding="false" class="h-100 shadow-sm border-0">
+            <x-slot name="header">
+                <div class="bg-white fw-semibold border-0 pt-4 px-4 fs-5" id="dynamic-stats-title">
+                    <i class="bi bi-pie-chart me-2 text-primary"></i>Equipos por Tipo
+                </div>
+            </x-slot>
+            <div id="dynamic-stats-container">
                 <!-- Javascript inyectará las barras aquí -->
             </div>
-        </div>
+        </x-ui.card>
     </div>
 
     {{-- Panel Dinámico de Últimos Equipos --}}
     <div class="col-12 col-lg-7">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-header bg-white fw-semibold border-0 pt-4 px-4 d-flex justify-content-between align-items-center" id="dynamic-latest-title">
-                <span class="fs-5"><i class="bi bi-clock-history me-2 text-primary"></i>Últimos Equipos</span>
-                <a href="{{ route('equipos.index') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Equipo</th>
-                                <th>Tipo</th>
-                                <th>Usuario</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dynamic-latest-container">
-                            <!-- Javascript inyectará las filas aquí -->
-                        </tbody>
-                    </table>
+        <x-ui.card noPadding="true" class="h-100 shadow-sm border-0">
+            <x-slot name="header">
+                <div class="bg-white fw-semibold border-0 pt-4 px-4 d-flex justify-content-between align-items-center" id="dynamic-latest-title">
+                    <span class="fs-5"><i class="bi bi-clock-history me-2 text-primary"></i>Últimos Equipos</span>
+                    <a href="{{ route('equipos.index') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
                 </div>
-            </div>
-        </div>
+            </x-slot>
+            <x-ui.table>
+                <x-slot name="head">
+                    <tr>
+                        <th>Equipo</th>
+                        <th>Tipo</th>
+                        <th>Usuario</th>
+                        <th>Estado</th>
+                    </tr>
+                </x-slot>
+                <tbody id="dynamic-latest-container">
+                    <!-- Javascript inyectará las filas aquí -->
+                </tbody>
+            </x-ui.table>
+        </x-ui.card>
     </div>
 </div>
 

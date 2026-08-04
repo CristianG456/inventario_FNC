@@ -6,31 +6,22 @@
 @php
     $puedeModificarBitacora = in_array((string) $equipo->estado_operativo, ['mantenimiento', 'baja'], true);
 @endphp
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-bold mb-0">
-            <i class="bi bi-tools me-2 text-warning"></i>Historial Técnico
-        </h4>
-        <small class="text-muted">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</small>
-    </div>
-    <div class="d-flex gap-2 flex-wrap">
-        <a href="{{ route('historial-tecnico.create', ['equipo_id' => $equipo->id, 'return_to' => request()->fullUrl()]) }}"
-           class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i>Nuevo Evento
-        </a>
-        <a href="{{ $volverUrl }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
-    </div>
-</div>
+
+<x-ui.toolbar 
+    title="Historial Técnico" 
+    icon="tools"
+    iconClass="text-warning"
+>
+    <x-slot name="subtitle">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</x-slot>
+    <x-ui.button href="{{ route('historial-tecnico.create', ['equipo_id' => $equipo->id, 'return_to' => request()->fullUrl()]) }}" color="primary" icon="plus-lg" text="Nuevo Evento" />
+    <x-ui.button href="{{ $volverUrl }}" color="secondary" outline="true" icon="arrow-left" text="Volver" />
+</x-ui.toolbar>
 
 @if($registros->isEmpty())
-    <div class="card border-0 shadow-sm">
-        <div class="card-body text-center py-5 text-muted">
-            <i class="bi bi-tools fs-2 d-block mb-2"></i>
-            No hay eventos técnicos registrados para este equipo.
-        </div>
-    </div>
+    <x-ui.card class="border-0 shadow-sm text-center py-5 text-muted">
+        <i class="bi bi-tools fs-2 d-block mb-2"></i>
+        No hay eventos técnicos registrados para este equipo.
+    </x-ui.card>
 @else
 
 {{-- Timeline --}}

@@ -107,7 +107,7 @@ class HistorialTecnicoController extends Controller
         }
 
         $analistasSoporte = User::query()
-            ->whereHas('roles', fn ($q) => $q->where('name', 'Soporte TI'))
+            ->whereHas('roles', fn ($q) => $q->where('name', 'Analista Tic'))
             ->select('name')
             ->get();
         $responsableSugerido = $analistasSoporte->count() === 1
