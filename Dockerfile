@@ -19,7 +19,8 @@ RUN composer install \
     --no-interaction \
     --optimize-autoloader \
     --no-scripts \
-    --no-dev
+    --no-dev \
+    --ignore-platform-reqs
 
 # ------------------------------------------------------------------------------
 # STAGE 2: Imagen final de producción
@@ -33,18 +34,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     unzip \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    && docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
     && docker-php-ext-install \
-        zip \
-        pdo_mysql \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd \
-        opcache \
+    zip \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    opcache \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -88,14 +94,14 @@ RUN composer dump-autoload --optimize --no-interaction \
 
 # Crear directorios de Laravel y asignar permisos correctos
 RUN mkdir -p \
-        /var/www/storage/framework/cache/data \
-        /var/www/storage/framework/sessions \
-        /var/www/storage/framework/views \
-        /var/www/storage/framework/testing \
-        /var/www/storage/logs \
-        /var/www/storage/app/public \
-        /var/www/storage/app/actas_firmadas \
-        /var/www/bootstrap/cache \
+    /var/www/storage/framework/cache/data \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/views \
+    /var/www/storage/framework/testing \
+    /var/www/storage/logs \
+    /var/www/storage/app/public \
+    /var/www/storage/app/actas_firmadas \
+    /var/www/bootstrap/cache \
     && chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
