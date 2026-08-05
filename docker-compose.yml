@@ -1,20 +1,12 @@
 version: '3.8'
 
-x-logging: &default-logging
-  driver: "json-file"
-  options:
-    max-size: "10m"
-    max-file: "3"
-
 services:
   app:
     build: .
     container_name: laravel_app
     working_dir: /var/www
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
+    env_file:
+      - .env
     volumes:
       - .:/var/www
       - vendor_data:/var/www/vendor
@@ -24,12 +16,10 @@ services:
       - actas_firmadas_data:/var/www/storage/app/actas_firmadas
     networks:
       - laravel
-    logging: *default-logging
 
   webserver:
     image: nginx:alpine
     container_name: nginx_server
-    restart: unless-stopped
     ports:
       - "3300:80"
     volumes:
@@ -38,12 +28,12 @@ services:
       - ./docker/nginx:/etc/nginx/conf.d
     networks:
       - laravel
-    logging: *default-logging
 
   db:
     image: mysql:8.0
     container_name: mysql_db
-    restart: unless-stopped
+    env_file:
+      - .env
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -56,17 +46,9 @@ services:
     networks:
       - laravel
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql_mode=""
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME}", "-p${DB_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    logging: *default-logging
 
 networks:
   laravel:
-    driver: bridge
 
 volumes:
   vendor_data:
@@ -75,6 +57,3 @@ volumes:
   framework_views_data:
   actas_firmadas_data:
   mysql_data:
-    # Preparación para futuros Backups Cloudflare R2:
-    # Este volumen asegura la retención local, y el servicio de backup
-    # podrá montarlo para leer y subir el .sql a R2.

@@ -1,16 +1,6 @@
 FROM php:8.2-fpm
 
-# Instalar dependencias necesarias
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    zip \
-    unzip \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev
-
-# Extensiones PHP necesarias para Laravel
+# Instalar dependencias necesarias y extensiones
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -19,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libzip-dev
+    libzip-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install zip pdo_mysql mbstring exif pcntl bcmath gd opcache
 
@@ -52,6 +43,7 @@ RUN mkdir -p /var/www/storage/framework/cache/data \
     /var/www/storage/framework/sessions \
     /var/www/storage/framework/views \
     /var/www/bootstrap/cache \
-    && chmod -R 777 /var/www/storage /var/www/bootstrap/cache
+    && chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 CMD ["php-fpm"]

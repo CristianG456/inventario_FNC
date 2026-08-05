@@ -1,0 +1,134 @@
+version: '3.8'
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  app:
+    image: ${DOCKER_IMAGE:-cristian123456/inventario_equipos:latest}
+    container_name: laravel_app_prod
+    working_dir: /var/www
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - actas_firmadas_data:/var/www/storage/app/actas_firmadas
+      - laravel_storage:/var/www/storage
+    networks:
+      - laravel
+    logging: *default-logging
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost/up"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+
+  webserver:
+    image: nginx:alpine
+    container_name: nginx_server_prod
+    restart: unless-stopped
+    ports:
+      - "3300:80"
+    volumes:
+      # Nginx requiere configuración para el servidor
+      - ./docker/nginx:/etc/nginx/conf.d
+      # Se incluye el storage para acceso a archivos públicos de Laravel (storage:link)
+      - laravel_storage:/var/www/storage
+    networks:
+      - laravel
+    logging: *default-logging
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db_prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql_mode=""
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME}", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: *default-logging
+
+  # ---------------------------------------------------------
+  # ESTRUCTURA PREPARADA PARA FUTURA ESCALABILIDAD (INACTIVOS)
+  # ---------------------------------------------------------
+  
+  # redis:
+  #   image: redis:alpine
+  #   container_name: redis_server_prod
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - laravel
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   logging: *default-logging
+
+  # worker:
+  #   image: ${DOCKER_IMAGE:-cristian123456/inventario_equipos:latest}
+  #   container_name: laravel_worker_prod
+  #   working_dir: /var/www
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   command: php artisan queue:work --sleep=3 --tries=3
+  #   networks:
+  #     - laravel
+  #   logging: *default-logging
+
+  # scheduler:
+  #   image: ${DOCKER_IMAGE:-cristian123456/inventario_equipos:latest}
+  #   container_name: laravel_scheduler_prod
+  #   working_dir: /var/www
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
+  #   networks:
+  #     - laravel
+  #   logging: *default-logging
+
+networks:
+  laravel:
+    driver: bridge
+
+volumes:
+  actas_firmadas_data:
+  mysql_data:
+  laravel_storage:
+  # redis_data:
