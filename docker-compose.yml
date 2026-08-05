@@ -1,6 +1,17 @@
-version: '3.8'
+# ==============================================================================
+# docker-compose.yml — DESARROLLO
+# ==============================================================================
+# Uso: docker compose up -d
+# ==============================================================================
+# Este archivo es exclusivo para desarrollo local.
+# Monta el código fuente para Hot Reload, VS Code, Artisan, Composer.
+# NO usar en producción.
+# ==============================================================================
+
+version: "3.8"
 
 services:
+
   app:
     build: .
     container_name: laravel_app
@@ -16,6 +27,8 @@ services:
       - actas_firmadas_data:/var/www/storage/app/actas_firmadas
     networks:
       - laravel
+    depends_on:
+      - db
 
   webserver:
     image: nginx:alpine
@@ -28,6 +41,8 @@ services:
       - ./docker/nginx:/etc/nginx/conf.d
     networks:
       - laravel
+    depends_on:
+      - app
 
   db:
     image: mysql:8.0

@@ -1,0 +1,120 @@
+# ==============================================================================
+# docker-compose.zima.yml — ZimaOS / CasaOS
+# ==============================================================================
+# Importar directamente en ZimaOS.
+# Completar las variables de entorno en la interfaz.
+# Instalar.
+#
+# No requiere copiar archivos, rutas relativas, bind mounts ni env_file.
+# ==============================================================================
+
+version: "3.8"
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+
+  app:
+    image: cristian123456/inventario_equipos:v1.0.0
+    container_name: laravel_app
+    restart: unless-stopped
+    working_dir: /var/www
+    environment:
+      APP_NAME: "Inventario de Equipos"
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: "false"
+      APP_URL: ${APP_URL:-http://localhost:3300}
+      APP_TIMEZONE: America/Bogota
+      APP_LOCALE: es
+      APP_FALLBACK_LOCALE: en
+      APP_MAINTENANCE_DRIVER: file
+      BCRYPT_ROUNDS: "12"
+
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-inventario}
+      DB_USERNAME: ${DB_USERNAME:-inventario}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+      SYSTEM_ADMIN_NAME: ${SYSTEM_ADMIN_NAME:-ADMINISTRADOR}
+      SYSTEM_ADMIN_EMAIL: ${SYSTEM_ADMIN_EMAIL:-admin@inventario.com}
+      SYSTEM_ADMIN_PASSWORD: ${SYSTEM_ADMIN_PASSWORD}
+      SYSTEM_FORCE_PASSWORD_CHANGE: "true"
+
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: "120"
+      CACHE_STORE: file
+      QUEUE_CONNECTION: database
+      FILESYSTEM_DISK: local
+
+      LOG_CHANNEL: stack
+      LOG_LEVEL: warning
+
+      RUN_MIGRATIONS: "true"
+
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - laravel_storage:/var/www/storage
+      - actas_firmadas_data:/var/www/storage/app/actas_firmadas
+    networks:
+      - laravel
+    logging: *default-logging
+
+  webserver:
+    image: cristian123456/inventario-nginx:v1.0.0
+    container_name: nginx_server
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "3300:80"
+    volumes:
+      - laravel_storage:/var/www/storage
+    networks:
+      - laravel
+    logging: *default-logging
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-inventario}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME:-inventario}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --sql_mode=""
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    logging: *default-logging
+
+networks:
+  laravel:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  laravel_storage:
+  actas_firmadas_data:
