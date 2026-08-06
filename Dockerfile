@@ -25,7 +25,7 @@ RUN composer install \
 # ------------------------------------------------------------------------------
 # STAGE 2: Imagen final de producción
 # ------------------------------------------------------------------------------
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
 # Instalar dependencias del sistema + extensiones PHP en una sola capa
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -51,6 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bcmath \
     gd \
     opcache \
+    && a2enmod rewrite \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -109,7 +110,10 @@ RUN mkdir -p \
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE 9000
+# Copiar configuración de Apache
+COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+EXPOSE 80
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["apache2-foreground"]

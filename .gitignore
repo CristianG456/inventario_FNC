@@ -1,32 +1,68 @@
-*.log
+
+# Sistema Operativo
+
 .DS_Store
+Thumbs.db
+
+
+# Variables de entorno (NUNCA subir)
+
 .env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+.env.*
+!.env.example
+
+
+# Logs
+
+*.log
+
+
+# Laravel
+
+/vendor
 /node_modules
+
 /public/build
 /public/hot
 /public/storage
+
 /storage/*.key
 /storage/pail
-/vendor
-Homestead.json
+
+
+# IDEs
+
+.fleet/
+.idea/
+.nova/
+.vscode/
+.zed/
+
+
+# PHP
+
+.phpactor.json
+.phpunit.result.cache
+.phpunit.cache/
+
+auth.json
+
+
+# Homestead
+
 Homestead.yaml
-Thumbs.db
+Homestead.json
+
 
 # Playwright
-node_modules/
+
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+#Docker
+
+docker/mysql/
+docker/backups/
