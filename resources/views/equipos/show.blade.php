@@ -14,7 +14,7 @@
 
     <x-ui.button href="{{ route('equipos.historial-vida', $equipo) }}" color="primary" outline="true" icon="clock-history" text="Historial de Vida" />
     <x-ui.button href="{{ route('historial-tecnico.por-equipo', $equipo) }}" color="warning" outline="true" icon="tools" text="Historial Técnico" />
-    <x-ui.button href="{{ route('asignaciones.por-equipo', $equipo) }}" color="success" outline="true" icon="person-fill-gear" text="Préstamos" />
+    <x-ui.button href="{{ route('asignaciones.por-equipo', $equipo) }}" color="success" outline="true" icon="person-fill-gear" text="Historial Asignaciones" />
     <x-ui.button href="{{ route('equipos.edit', $equipo) }}" color="warning" class="text-white" icon="pencil" text="Editar" />
 </x-ui.toolbar>
 
@@ -209,7 +209,52 @@
                 </dl>
             </div>
         </div>
-        @else
+        @endif
+
+        {{-- Préstamo Temporal --}}
+        @if($equipo->prestamoVigente)
+        <div class="card border-0 shadow-sm border-start border-primary border-3 mb-4">
+            <div class="card-header bg-primary bg-opacity-10 fw-semibold border-0 py-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar2-range me-2 text-primary"></i>Préstamo Temporal Activo</span>
+                <x-ui.badge color="{{ $equipo->prestamoVigente->estado_badge }}" class="text-white" text="{{ $equipo->prestamoVigente->estado }}" />
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Persona Receptora</dt>
+                    <dd class="col-sm-8 fw-bold text-primary">{{ $equipo->prestamoVigente->persona_nombre }}</dd>
+                    
+                    @if($equipo->prestamoVigente->persona_documento)
+                    <dt class="col-sm-4 text-muted">Documento</dt>
+                    <dd class="col-sm-8">{{ $equipo->prestamoVigente->persona_documento }}</dd>
+                    @endif
+                    
+                    <dt class="col-sm-4 text-muted">Desde</dt>
+                    <dd class="col-sm-8">{{ $equipo->prestamoVigente->fecha_inicio->format('d/m/Y H:i') }}</dd>
+                    
+                    <dt class="col-sm-4 text-muted">Devolución Prevista</dt>
+                    <dd class="col-sm-8">
+                        {{ $equipo->prestamoVigente->fecha_devolucion_prevista->format('d/m/Y H:i') }}
+                        @if($equipo->prestamoVigente->fecha_devolucion_prevista < now())
+                            <span class="badge bg-danger ms-2">Vencido</span>
+                        @endif
+                    </dd>
+                    
+                    @if($equipo->prestamoVigente->motivo)
+                    <dt class="col-sm-4 text-muted">Motivo</dt>
+                    <dd class="col-sm-8">{{ $equipo->prestamoVigente->motivo }}</dd>
+                    @endif
+                </dl>
+                
+                <div class="mt-3 text-end border-top pt-3">
+                    <a href="{{ route('prestamos.show', $equipo->prestamoVigente) }}" class="btn btn-sm btn-outline-primary">
+                        Ver Detalles del Préstamo
+                    </a>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Funcionario Asignado (Normal) --}}
         <x-ui.card title="Funcionario Asignado" icon="person" headerClass="bg-success" iconColor="success">
     <x-slot name="headerActions">
         @if($equipo->usuarioAsignado)
@@ -256,7 +301,6 @@
                     <p class="text-muted mb-0">Sin funcionario asignado.</p>
                 @endif
 </x-ui.card>
-        @endif
 
         {{-- Responsable del Activo --}}
         @if($equipo->responsable_nombre)

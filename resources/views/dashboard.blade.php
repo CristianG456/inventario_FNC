@@ -25,6 +25,17 @@
 </div>
 @endif
 
+{{-- Alertas de Préstamos --}}
+@if(isset($prestamosProximosVencer) && $prestamosProximosVencer->isNotEmpty() && !session('prestamos_por_vencer_alert_shown'))
+@php session()->put('prestamos_por_vencer_alert_shown', true); @endphp
+<div class="alert alert-warning d-flex align-items-center mb-4 licencia-alerta" role="alert">
+    <i class="bi bi-calendar-x-fill fs-4 me-3 text-warning"></i>
+    <div>
+        <strong>Aviso de Préstamos:</strong> Hay {{ $prestamosProximosVencer->count() }} préstamo(s) temporal(es) por vencer próximamente. <a href="{{ route('prestamos.index') }}" class="alert-link">Revisar préstamos</a>.
+    </div>
+</div>
+@endif
+
 {{-- Resumen General del Inventario --}}
 <div class="dashboard-summary-panel mb-4">
     <div class="dashboard-summary-header">
@@ -133,6 +144,59 @@
                 <div class="dashboard-state-value text-warning fw-bolder fs-4">{{ $respPorVencer }}</div>
             </div>
         </div>
+    </div>
+</div>
+@endif
+
+{{-- Indicadores de Préstamos Temporales --}}
+@if(isset($prestamosTotal))
+<div class="dashboard-summary-panel mb-4 mt-4">
+    <div class="dashboard-summary-header">
+        <h2 class="dashboard-summary-title text-primary">
+            <i class="bi bi-calendar2-range"></i> PRÉSTAMOS DE ACTIVOS
+        </h2>
+        <p class="dashboard-summary-subtitle">Estado actual de préstamos temporales de activos</p>
+    </div>
+    
+    <div class="dashboard-summary-divider border-primary"></div>
+    
+    <div class="dashboard-summary-states">
+        <a href="{{ route('prestamos.index') }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #0d6efd;">
+            <div class="dashboard-state-icon text-primary" style="background-color: rgba(13, 110, 253, 0.1);">
+                <i class="bi bi-list-ol fs-4"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label text-primary fw-bold text-uppercase" style="font-size: 0.8rem;">Total Registrados</div>
+                <div class="dashboard-state-value text-primary fw-bolder fs-4">{{ $prestamosTotal }}</div>
+            </div>
+        </a>
+        <a href="{{ route('prestamos.index', ['estado' => 'Activo']) }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #198754;">
+            <div class="dashboard-state-icon text-success" style="background-color: rgba(25, 135, 84, 0.1);">
+                <i class="bi bi-play-circle-fill fs-4"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label text-success fw-bold text-uppercase" style="font-size: 0.8rem;">Activos</div>
+                <div class="dashboard-state-value text-success fw-bolder fs-4">{{ $prestamosActivos }}</div>
+            </div>
+        </a>
+        <a href="{{ route('prestamos.index', ['estado' => 'Vencido']) }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #dc3545;">
+            <div class="dashboard-state-icon text-danger" style="background-color: rgba(220, 53, 69, 0.1);">
+                <i class="bi bi-exclamation-circle-fill fs-4"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label text-danger fw-bold text-uppercase" style="font-size: 0.8rem;">Vencidos</div>
+                <div class="dashboard-state-value text-danger fw-bolder fs-4">{{ $prestamosVencidos }}</div>
+            </div>
+        </a>
+        <a href="{{ route('prestamos.index', ['estado' => 'Devuelto']) }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #20c997;">
+            <div class="dashboard-state-icon text-teal" style="background-color: rgba(32, 201, 151, 0.1);">
+                <i class="bi bi-check-circle-fill fs-4"></i>
+            </div>
+            <div class="dashboard-state-content">
+                <div class="dashboard-state-label text-teal fw-bold text-uppercase" style="font-size: 0.8rem;">Devueltos</div>
+                <div class="dashboard-state-value text-teal fw-bolder fs-4">{{ $prestamosDevueltos }}</div>
+            </div>
+        </a>
     </div>
 </div>
 @endif

@@ -41,6 +41,11 @@ class HistorialAdministrativo extends Model
         'complemento_eliminado'     => 'Complemento Eliminado',
         'complemento_editado'       => 'Complemento Editado',
         'transferencia_complemento' => 'Transferencia de Complemento',
+        'prestamo_iniciado' => 'Préstamo Iniciado',
+        'prestamo_ampliado' => 'Préstamo Ampliado',
+        'prestamo_vencido'  => 'Préstamo Vencido',
+        'prestamo_devuelto' => 'Préstamo Devuelto',
+        'prestamo_cancelado'=> 'Préstamo Cancelado',
         'otro'             => 'Otro cambio',
     ];
 
@@ -79,6 +84,11 @@ class HistorialAdministrativo extends Model
             'complemento_eliminado'     => 'danger',
             'complemento_editado'       => 'primary',
             'transferencia_complemento' => 'info',
+            'prestamo_iniciado'         => 'success',
+            'prestamo_ampliado'         => 'info',
+            'prestamo_vencido'          => 'danger',
+            'prestamo_devuelto'         => 'success',
+            'prestamo_cancelado'        => 'dark',
             default         => 'secondary',
         };
     }

@@ -1,16 +1,16 @@
 @extends('layouts.inventario')
 
-@section('title', 'Historial de Préstamos — ' . $equipo->nombre_equipo)
+@section('title', 'Historial de Asignaciones — ' . $equipo->nombre_equipo)
 
 @section('content')
 <x-ui.toolbar 
-    title="Préstamos del Equipo" 
+    title="Historial de Asignaciones" 
     icon="person-fill-gear"
     backRoute="{{ route('equipos.show', $equipo) }}"
 >
     <x-slot name="title">
         <h4 class="fw-bold mb-0">
-            <i class="bi bi-person-fill-gear me-2 text-primary"></i>Préstamos del Equipo
+            <i class="bi bi-person-fill-gear me-2 text-primary"></i>Historial de Asignaciones
         </h4>
         <small class="text-muted">{{ $equipo->nombre_equipo }} — Serial: {{ $equipo->serial }}</small>
     </x-slot>
@@ -70,7 +70,7 @@
             <tr>
                 <td colspan="7" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                    No hay registros de préstamos para este equipo.
+                    No hay registros de asignaciones para este equipo.
                 </td>
             </tr>
         @endforelse

@@ -22,7 +22,13 @@
                 @foreach($permissions as $module => $modulePermissions)
                 <div class="col-md-6 col-lg-4">
                     <x-ui.card class="bg-light h-100 border-0 shadow-sm" noPadding="false">
-                        <h6 class="card-title text-uppercase fw-bold text-primary mb-3">{{ str_replace('_', ' ', $module) }}</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h6 class="card-title text-uppercase fw-bold text-primary mb-0">{{ str_replace('_', ' ', $module) }}</h6>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input select-all-module" type="checkbox" id="selectAll_{{ $module }}">
+                                <label class="form-check-label small text-muted" for="selectAll_{{ $module }}">Todos</label>
+                            </div>
+                        </div>
                         
                         <div class="d-flex flex-column gap-2">
                             @foreach($modulePermissions as $permission)
@@ -50,3 +56,32 @@
     </form>
 </x-ui.card>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.select-all-module').forEach(function(toggle) {
+            toggle.addEventListener('change', function() {
+                const card = this.closest('.card');
+                const checkboxes = card.querySelectorAll('.form-check-input:not(.select-all-module)');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+            });
+        });
+
+        document.querySelectorAll('.card').forEach(function(card) {
+            const toggle = card.querySelector('.select-all-module');
+            if (toggle) {
+                const checkboxes = Array.from(card.querySelectorAll('.form-check-input:not(.select-all-module)'));
+                if(checkboxes.length > 0) {
+                    toggle.checked = checkboxes.every(cb => cb.checked);
+                    checkboxes.forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            toggle.checked = checkboxes.every(c => c.checked);
+                        });
+                    });
+                }
+            }
+        });
+    });
+</script>
+@endpush

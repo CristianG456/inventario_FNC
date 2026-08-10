@@ -8,41 +8,6 @@
     icon="box-seam" 
 />
 
-<!-- Dashboard de Complementos -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3 col-sm-6">
-        <x-ui.card noPadding="true" class="bg-primary text-white h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Total</h6>
-                <h3 class="fw-bold mb-0">{{ $total }}</h3>
-            </div>
-        </x-ui.card>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <x-ui.card noPadding="true" class="bg-success text-white h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Disponibles</h6>
-                <h3 class="fw-bold mb-0">{{ $disponibles }}</h3>
-            </div>
-        </x-ui.card>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <x-ui.card noPadding="true" class="bg-info text-white h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Asignados a Activo</h6>
-                <h3 class="fw-bold mb-0">{{ $asignados }}</h3>
-            </div>
-        </x-ui.card>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <x-ui.card noPadding="true" class="bg-danger text-white h-100 shadow-sm border-0">
-            <div class="card-body">
-                <h6 class="card-title text-uppercase fw-semibold" style="font-size: 0.75rem;">Dañados / Extraviados</h6>
-                <h3 class="fw-bold mb-0">{{ $danados + $extraviados }}</h3>
-            </div>
-        </x-ui.card>
-    </div>
-</div>
 
 <!-- Filtros -->
 <x-ui.filter-container id="formFiltros" action="{{ route('equipos.complementos.global') }}">

@@ -16,6 +16,7 @@ use App\Http\Controllers\LicenciaController;
 use App\Http\Controllers\LicenciaSerialController;
 use App\Http\Controllers\LicenciaAsignacionController;
 use App\Http\Controllers\LicenciaHistorialController;
+use App\Http\Controllers\PrestamoController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\RoleController;
@@ -121,6 +122,16 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
 
     Route::get('/asignaciones/{asignacion}/pdf', [AsignacionController::class, 'generarPdf'])
         ->name('asignaciones.pdf')->middleware('permission:equipos.exportar');
+
+    // ── Préstamos ─────────────────────────────────────────────────────────────
+    Route::post('/prestamos/{prestamo}/devolver', [PrestamoController::class, 'registrarDevolucion'])
+        ->name('prestamos.devolver')->middleware('permission:equipos.crear');
+    Route::post('/prestamos/{prestamo}/cancelar', [PrestamoController::class, 'cancelar'])
+        ->name('prestamos.cancelar')->middleware('permission:equipos.crear');
+    Route::resource('prestamos', PrestamoController::class)
+        ->except(['destroy'])
+        ->middlewareFor(['index', 'show'], 'permission:equipos.ver')
+        ->middlewareFor(['create', 'store', 'edit', 'update'], 'permission:equipos.crear');
 
     // ── Actas Firmadas ────────────────────────────────────────────────────────
     Route::get('/actas-firmadas', [\App\Http\Controllers\ActaFirmadaController::class, 'index'])->name('actas-firmadas.index')->middleware('permission:equipos.ver');

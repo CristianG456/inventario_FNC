@@ -86,6 +86,18 @@ class Equipo extends Model
         return $this->hasMany(ActivoComplemento::class, 'equipo_id');
     }
 
+    public function prestamos(): HasMany
+    {
+        return $this->hasMany(Prestamo::class);
+    }
+    
+    public function prestamoVigente()
+    {
+        return $this->hasOne(Prestamo::class)
+            ->whereIn('estado', ['Pendiente', 'Activo', 'Vencido'])
+            ->latest();
+    }
+
     public function checklists(): HasMany
     {
         return $this->hasMany(Checklist::class);
@@ -117,6 +129,18 @@ class Equipo extends Model
     public function estaAsignado(): bool
     {
         return $this->usuarioAsignado()->exists();
+    }
+
+    public function estaDisponibleParaPrestamo(): bool
+    {
+        // Regla OBLIGATORIA: Validar que el activo:
+        // - Existe (implícito al llamar al método en un modelo instanciado)
+        // - Se encuentra disponible (estado_operativo == disponible)
+        // - NO tiene una asignación incompatible vigente (estaAsignado)
+        // - NO tiene otro préstamo activo vigente
+        return $this->estado_operativo === 'disponible' 
+            && !$this->estaAsignado() 
+            && !$this->prestamos()->whereIn('estado', ['Pendiente', 'Activo', 'Vencido'])->exists();
     }
 
     public function camposPersonalizadosValores(): HasMany

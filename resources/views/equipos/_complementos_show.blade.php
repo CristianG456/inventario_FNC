@@ -219,14 +219,7 @@
                                 <small class="text-danger mt-1 d-block">Este tipo de recurso no tiene complementos configurados.</small>
                             @endif
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Estado <span class="text-danger">*</span></label>
-                            <select name="estado" class="form-select">
-                                <option value="Asignado" selected>Asignado</option>
-                                <option value="Bueno">Bueno</option>
-                                <option value="Nuevo">Nuevo</option>
-                            </select>
-                        </div>
+                        <input type="hidden" name="estado" value="Asignado">
                         <input type="hidden" name="cantidad" value="1">
                         <div class="mb-3">
                             <label class="form-label">Marca</label>

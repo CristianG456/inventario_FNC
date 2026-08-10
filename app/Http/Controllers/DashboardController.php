@@ -65,6 +65,17 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Préstamos
+        $prestamosTotal = \App\Models\Prestamo::count();
+        $prestamosActivos = \App\Models\Prestamo::whereIn('estado', ['Pendiente', 'Activo'])->count();
+        $prestamosVencidos = \App\Models\Prestamo::where('estado', 'Vencido')->count();
+        $prestamosDevueltos = \App\Models\Prestamo::where('estado', 'Devuelto')->count();
+        $prestamosCancelados = \App\Models\Prestamo::where('estado', 'Cancelado')->count();
+        $prestamosProximosVencer = \App\Models\Prestamo::whereIn('estado', ['Pendiente', 'Activo'])
+            ->where('fecha_devolucion_prevista', '>', $hoy)
+            ->where('fecha_devolucion_prevista', '<=', $hoy->copy()->addDays(2))
+            ->get(); // Traer la colección para mostrar la alerta
+
         return view('dashboard', compact(
             'totalEquipos',
             'activos',
@@ -79,7 +90,13 @@ class DashboardController extends Controller
             'respFinalizadas',
             'respPorVencer',
             'respPorProyecto',
-            'respPorResponsable'
+            'respPorResponsable',
+            'prestamosTotal',
+            'prestamosActivos',
+            'prestamosVencidos',
+            'prestamosDevueltos',
+            'prestamosCancelados',
+            'prestamosProximosVencer'
         ));
     }
 }

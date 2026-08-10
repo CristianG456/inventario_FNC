@@ -61,23 +61,23 @@
             </div>
 
             <div class="col-12 col-md-4">
-                <x-ui.input name="activo_fijo" label="Activo Fijo" required="false" maxlength="100" containerClass="" />
+                <x-ui.input name="activo_fijo" value="{{ old('activo_fijo', $equipo->activo_fijo ?? '') }}" label="Activo Fijo" required="false" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <x-ui.input name="placa" label="Placa" required="false" maxlength="100" containerClass="" />
+                <x-ui.input name="placa" value="{{ old('placa', $equipo->placa ?? '') }}" label="Placa" required="false" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <x-ui.input name="marca" label="Marca" required="true" maxlength="100" containerClass="" />
+                <x-ui.input name="marca" value="{{ old('marca', $equipo->marca ?? '') }}" label="Marca" required="true" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <x-ui.input name="modelo" label="Modelo" required="true" maxlength="100" containerClass="" />
+                <x-ui.input name="modelo" value="{{ old('modelo', $equipo->modelo ?? '') }}" label="Modelo" required="true" maxlength="100" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
-                <x-ui.input name="nombre_equipo" label="Nombre del Equipo" required="true" maxlength="150" containerClass="" />
+                <x-ui.input name="nombre_equipo" value="{{ old('nombre_equipo', $equipo->nombre_equipo ?? '') }}" label="Nombre del Equipo" required="true" maxlength="150" containerClass="" />
             </div>
 
             <div class="col-12 col-md-4">
@@ -123,16 +123,16 @@
         <div class="accordion-body">
             <div class="row g-3">
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="procesador" label="Procesador" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="procesador" value="{{ old('procesador', $equipo->procesador ?? '') }}" label="Procesador" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="ram" label="RAM" required="false" maxlength="50" placeholder="Ej: 16 GB" containerClass="" />
+                    <x-ui.input name="ram" value="{{ old('ram', $equipo->ram ?? '') }}" label="RAM" required="false" maxlength="50" placeholder="Ej: 16 GB" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="disco" label="Disco" required="false" maxlength="50" placeholder="Ej: 512 GB SSD" containerClass="" />
+                    <x-ui.input name="disco" value="{{ old('disco', $equipo->disco ?? '') }}" label="Disco" required="false" maxlength="50" placeholder="Ej: 512 GB SSD" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="sistema_operativo" label="Sistema Operativo" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="sistema_operativo" value="{{ old('sistema_operativo', $equipo->sistema_operativo ?? '') }}" label="Sistema Operativo" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
                     <label class="form-label fw-medium">Fecha de Compra</label>
@@ -149,7 +149,7 @@
                     @error('fin_garantia') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="tiempo_uso" label="Tiempo de Uso" required="false" maxlength="100" placeholder="Ej: 2 años" containerClass="" />
+                    <x-ui.input name="tiempo_uso" value="{{ old('tiempo_uso', $equipo->tiempo_uso ?? '') }}" label="Tiempo de Uso" required="false" maxlength="100" placeholder="Ej: 2 años" containerClass="" />
                 </div>
             </div>
         </div>
@@ -174,49 +174,49 @@
             @endif
             <div class="row g-3">
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_empresa_propietaria" label="Empresa Propietaria del Equipo" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_empresa_propietaria" value="{{ old('usuario_empresa_propietaria', $equipo->usuarioAsignado->empresa_propietaria ?? '') }}" label="Empresa Propietaria del Equipo" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_dependencia" label="Dependencia" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_dependencia" value="{{ old('usuario_dependencia', $equipo->usuarioAsignado->dependencia ?? '') }}" label="Dependencia" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_fuente_recurso" label="Fuente de Recurso" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_fuente_recurso" value="{{ old('usuario_fuente_recurso', $equipo->usuarioAsignado->fuente_recurso ?? '') }}" label="Fuente de Recurso" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_empresa_funcionario" label="Empresa Funcionario" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_empresa_funcionario" value="{{ old('usuario_empresa_funcionario', $equipo->usuarioAsignado->empresa_funcionario ?? '') }}" label="Empresa Funcionario" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_tipo_vinculacion" label="Empleado o Contratista" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_tipo_vinculacion" value="{{ old('usuario_tipo_vinculacion', $equipo->usuarioAsignado->tipo_vinculacion ?? '') }}" label="Empleado o Contratista" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_shortname" label="Shortname" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_shortname" value="{{ old('usuario_shortname', $equipo->usuarioAsignado->shortname ?? '') }}" label="Shortname" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-6">
-                      <x-ui.input name="usuario_nombre" label="Nombre" required="false" maxlength="150" containerClass="" />
+                      <x-ui.input name="usuario_nombre" value="{{ old('usuario_nombre', $equipo->usuarioAsignado->nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                      <x-ui.input name="usuario_cedula" label="Cédula" required="false" maxlength="20" containerClass="" />
+                      <x-ui.input name="usuario_cedula" value="{{ old('usuario_cedula', $equipo->usuarioAsignado->cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_ciudad" label="Ciudad" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_ciudad" value="{{ old('usuario_ciudad', $equipo->usuarioAsignado->ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_departamento" label="Departamento" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_departamento" value="{{ old('usuario_departamento', $equipo->usuarioAsignado->departamento ?? '') }}" label="Departamento" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_cargo" label="Cargo" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_cargo" value="{{ old('usuario_cargo', $equipo->usuarioAsignado->cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_area" label="Área" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_area" value="{{ old('usuario_area', $equipo->usuarioAsignado->area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_piso" label="Piso" required="false" maxlength="20" containerClass="" />
+                    <x-ui.input name="usuario_piso" value="{{ old('usuario_piso', $equipo->usuarioAsignado->piso ?? '') }}" label="Piso" required="false" maxlength="20" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_distrito" label="Distrito" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_distrito" value="{{ old('usuario_distrito', $equipo->usuarioAsignado->distrito ?? '') }}" label="Distrito" required="false" maxlength="150" containerClass="" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_seccional" label="Seccional" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_seccional" value="{{ old('usuario_seccional', $equipo->usuarioAsignado->seccional ?? '') }}" label="Seccional" required="false" maxlength="150" containerClass="" />
                 </div>
             </div>
         </div>
@@ -248,22 +248,22 @@
                 {{-- EDIT: Mostrar campos editables --}}
                 <div class="row g-3">
                     <div class="col-12 col-md-3">
-                        <x-ui.input name="responsable_cedula" label="Cédula" required="false" maxlength="20" containerClass="" />
+                        <x-ui.input name="responsable_cedula" value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" />
                     </div>
                     <div class="col-12 col-md-5">
-                        <x-ui.input name="responsable_nombre" label="Nombre" required="false" maxlength="150" containerClass="" />
+                        <x-ui.input name="responsable_nombre" value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" />
                     </div>
                     <div class="col-12 col-md-4">
-                        <x-ui.input name="responsable_cargo" label="Cargo" required="false" maxlength="100" containerClass="" />
+                        <x-ui.input name="responsable_cargo" value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <x-ui.input name="responsable_ciudad" label="Ciudad" required="false" maxlength="100" containerClass="" />
+                        <x-ui.input name="responsable_ciudad" value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <x-ui.input name="responsable_area" label="Área" required="false" maxlength="100" containerClass="" />
+                        <x-ui.input name="responsable_area" value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <x-ui.input name="responsable_tipo_recurso" label="Tipo de Recurso" required="false" maxlength="100" containerClass="" />
+                        <x-ui.input name="responsable_tipo_recurso" value="{{ old('responsable_tipo_recurso', $equipo->responsable_tipo_recurso ?? '') }}" label="Tipo de Recurso" required="false" maxlength="100" containerClass="" />
                     </div>
                     <div class="col-12 col-md-3">
                         <label class="form-label fw-medium">Fecha Inicio</label>
@@ -297,16 +297,16 @@
         <div class="accordion-body">
             <div class="row g-3">
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_telefono" label="Teléfono Fijo" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_telefono" value="{{ old('periferico_telefono', $equipo->periferico->telefono ?? '') }}" label="Teléfono Fijo" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_teclado" label="Teclado" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_teclado" value="{{ old('periferico_teclado', $equipo->periferico->teclado ?? '') }}" label="Teclado" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_mouse" label="Mouse" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_mouse" value="{{ old('periferico_mouse', $equipo->periferico->mouse ?? '') }}" label="Mouse" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_camara" label="Cámara" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_camara" value="{{ old('periferico_camara', $equipo->periferico->camara ?? '') }}" label="Cámara" required="false" maxlength="100" containerClass="" />
                 </div>
             </div>
         </div>
@@ -662,6 +662,38 @@
             return;
         }
         @endif
+
+        // Auto-cambiar estado operativo según si hay usuario o no
+        const inputNombre = document.querySelector('input[name="usuario_nombre"]');
+        const inputCedula = document.querySelector('input[name="usuario_cedula"]');
+        const estadoSelect = document.getElementById('estadoSelect');
+        
+        function actualizarEstadoAutomatico() {
+            if (!estadoSelect || !inputNombre || !inputCedula) return;
+            
+            // Si el estado actual es mantenimiento o baja, no forzamos el cambio
+            if (['mantenimiento', 'baja'].includes(estadoSelect.value)) return;
+
+            const tieneUsuario = inputNombre.value.trim().length > 0 || inputCedula.value.trim().length > 0;
+            
+            if (tieneUsuario) {
+                estadoSelect.value = 'asignado';
+            } else {
+                estadoSelect.value = 'disponible';
+            }
+            // Disparar evento change para que se oculte/muestre la razón
+            estadoSelect.dispatchEvent(new Event('change'));
+        }
+
+        if (inputNombre && inputCedula) {
+            inputNombre.addEventListener('input', actualizarEstadoAutomatico);
+            inputCedula.addEventListener('input', actualizarEstadoAutomatico);
+            
+            // Ejecutar al cargar la página si estamos creando (o si está disponible/asignado)
+            if (['activo', 'asignado', 'disponible'].includes(estadoSelect.value)) {
+                actualizarEstadoAutomatico();
+            }
+        }
 
     });
 </script>

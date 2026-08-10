@@ -81,6 +81,11 @@
                                 <i class="bi bi-box-seam"></i> <span>Complementos</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('prestamos.index') }}" class="nav-link {{ request()->routeIs('prestamos.*') ? 'active' : '' }}" style="padding-top: 6px; padding-bottom: 6px; margin-bottom: 2px;">
+                                <i class="bi bi-calendar2-range"></i> <span>Préstamos</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>

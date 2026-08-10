@@ -13,17 +13,17 @@
 
 <div class="modal fade" id="{{ $id }}" tabindex="-1" aria-labelledby="{{ $id }}Label" aria-hidden="true">
     <div class="modal-dialog {{ $size }} modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            
-            @if($formId || $action)
-                <form id="{{ $formId ?? $id . 'Form' }}" {{ $action ? 'action='.$action : '' }} method="{{ $method === 'GET' ? 'GET' : 'POST' }}">
-                    @if(in_array(strtoupper($method), ['PUT', 'PATCH', 'DELETE']))
-                        @method(strtoupper($method))
-                    @endif
-                    @if(strtoupper($method) !== 'GET')
-                        @csrf
-                    @endif
-            @endif
+        @if($formId || $action)
+            <form id="{{ $formId ?? $id . 'Form' }}" class="modal-content border-0 shadow-lg" {{ $action ? 'action='.$action : '' }} method="{{ $method === 'GET' ? 'GET' : 'POST' }}">
+                @if(in_array(strtoupper($method), ['PUT', 'PATCH', 'DELETE']))
+                    @method(strtoupper($method))
+                @endif
+                @if(strtoupper($method) !== 'GET')
+                    @csrf
+                @endif
+        @else
+            <div class="modal-content border-0 shadow-lg">
+        @endif
 
             <div class="modal-header bg-light border-bottom-0">
                 <h5 class="modal-title fw-bold" id="{{ $id }}Label">{{ $title }}</h5>
@@ -45,9 +45,10 @@
                 @endif
             </div>
 
-            @if($formId || $action)
-                </form>
-            @endif
-        </div>
+        @if($formId || $action)
+            </form>
+        @else
+            </div>
+        @endif
     </div>
 </div>

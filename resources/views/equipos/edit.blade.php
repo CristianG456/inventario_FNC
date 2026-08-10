@@ -15,7 +15,7 @@
     @include('equipos._form')
 
     <div class="d-flex justify-content-end gap-2 mt-2">
-        <x-ui.button href="{{ route('equipos.show', $equipo) }}" color="secondary" text="Cancelar" />
+        <x-ui.button href="{{ route('equipos.index') }}" color="secondary" text="Cancelar" />
         <x-ui.button type="submit" color="primary" icon="floppy" text="Actualizar Equipo" />
     </div>
 </form>

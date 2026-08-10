@@ -12,7 +12,6 @@ class PermisosNuevosModulosSeeder extends Seeder
      */
     public function run(): void
     {
-        // El usuario solicitó remover los permisos de vitalicias y suscripciones
-        // Por lo que este seeder queda vacío para no recrearlos.
+        
     }
 }

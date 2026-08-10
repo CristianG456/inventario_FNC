@@ -200,28 +200,32 @@
                                     @else
                                         <span class="text-muted fst-italic">Sin Asignar</span>
                                     @endif
-                                @elseif($equipo->asignacionResponsabilidadActiva)
-                                    <span class="fw-medium text-info"><i class="bi bi-person-badge"></i> {{ $equipo->asignacionResponsabilidadActiva->nombre_usuario }}</span>
-                                    <br><small class="text-muted">Doc: {{ $equipo->asignacionResponsabilidadActiva->documento ?? 'N/A' }} | {{ $equipo->asignacionResponsabilidadActiva->tipo_usuario ?? 'Temp.' }}</small>
-                                    @if($equipo->asignacionResponsabilidadActiva->proyecto)
-                                        <br><small class="text-primary" style="font-size: 0.75rem;"><i class="bi bi-briefcase me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->proyecto }}</small>
-                                    @endif
-                                    
-                                    @php
-                                        $asignacionTemp = $equipo->asignacionResponsabilidadActiva;
-                                        if ($asignacionTemp->fecha_final_estimada) {
-                                            $diasRestantes = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
-                                            if ($diasRestantes < 0) {
-                                                echo '<br><span class="badge bg-danger mt-1">Vencida (' . abs($diasRestantes) . ' días)</span>';
-                                            } elseif ($diasRestantes <= 3) {
-                                                echo '<br><span class="badge bg-danger mt-1">Vence en ' . $diasRestantes . ' días</span>';
-                                            } elseif ($diasRestantes <= 7) {
-                                                echo '<br><span class="badge bg-warning text-dark mt-1">Vence en ' . $diasRestantes . ' días</span>';
-                                            }
-                                        }
-                                    @endphp
                                 @else
                                     <span class="text-muted fst-italic">Sin Asignar</span>
+                                @endif
+
+                                @if($equipo->asignacionResponsabilidadActiva)
+                                    <div class="mt-2 pt-2 border-top">
+                                        <span class="fw-medium text-info"><i class="bi bi-person-badge"></i> {{ $equipo->asignacionResponsabilidadActiva->nombre_usuario }}</span>
+                                        <br><small class="text-muted">Doc: {{ $equipo->asignacionResponsabilidadActiva->documento ?? 'N/A' }} | {{ $equipo->asignacionResponsabilidadActiva->tipo_usuario ?? 'Temp.' }}</small>
+                                        @if($equipo->asignacionResponsabilidadActiva->proyecto)
+                                            <br><small class="text-primary" style="font-size: 0.75rem;"><i class="bi bi-briefcase me-1"></i>{{ $equipo->asignacionResponsabilidadActiva->proyecto }}</small>
+                                        @endif
+                                        
+                                        @php
+                                            $asignacionTemp = $equipo->asignacionResponsabilidadActiva;
+                                            if ($asignacionTemp->fecha_final_estimada) {
+                                                $diasRestantes = \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($asignacionTemp->fecha_final_estimada)->startOfDay(), false);
+                                                if ($diasRestantes < 0) {
+                                                    echo '<br><span class="badge bg-danger mt-1">Vencida (' . abs($diasRestantes) . ' días)</span>';
+                                                } elseif ($diasRestantes <= 3) {
+                                                    echo '<br><span class="badge bg-danger mt-1">Vence en ' . $diasRestantes . ' días</span>';
+                                                } elseif ($diasRestantes <= 7) {
+                                                    echo '<br><span class="badge bg-warning text-dark mt-1">Vence en ' . $diasRestantes . ' días</span>';
+                                                }
+                                            }
+                                        @endphp
+                                    </div>
                                 @endif
                             </td>
                             {!! $renderValor('funcionario_asignado') !!}
@@ -250,45 +254,58 @@
                             {!! $renderValor('estado_operativo') !!}
                             {!! $renderValor('') !!}
                             <td class="text-center align-middle">
-                                <div class="d-flex gap-1 justify-content-center flex-wrap mx-auto" style="max-width: 150px;">
-                                    {{-- Acciones siempre disponibles --}}
-                                    <x-ui.button href="{{ route('equipos.show', $equipo) }}" color="info" outline="true" size="sm" icon="eye" title="Ver detalle" />
-                                    @can('equipos.editar')
-                                    <x-ui.button href="{{ route('equipos.edit', $equipo) }}" color="warning" outline="true" size="sm" icon="pencil" title="Editar" />
-                                    @endcan
-
-                                    @can('equipos.crear')
-                                    @if(!$equipo->usuarioAsignado && !$equipo->asignacionResponsabilidadActiva)
-                                        {{-- Sin préstamo: mostrar botón Registrar préstamo solo si está activo --}}
-                                        @if(in_array($equipo->estado_operativo, ['activo', 'disponible'], true))
-                                        <x-ui.button type="button" color="success" size="sm" icon="person-plus" title="Asignar Funcionario" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')" />
-
-                                        <x-ui.button type="button" color="info" outline="true" size="sm" icon="person-badge" title="Asignación Bajo Responsabilidad" onclick="abrirModalResponsabilidad({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}')" />
-                                        @else
-                                        <x-ui.button type="button" color="success" outline="true" size="sm" icon="arrow-repeat" title="Restaurar a Activo" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')" />
-                                        @endif
-                                    @elseif($equipo->asignacionResponsabilidadActiva)
-                                        <x-ui.button type="button" color="info" class="text-white" size="sm" icon="person-badge-fill" title="Gestionar Asignación Bajo Responsabilidad" onclick="abrirModalResponsabilidadEdit({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', {{ json_encode($equipo->asignacionResponsabilidadActiva) }})" />
-                                    @elseif($equipo->usuarioAsignado)
-                                        {{-- Ya asignado normalmente: opciones de gestión y ACTA --}}
-                                        @if(in_array($equipo->estado_operativo, ['activo', 'asignado'], true))
-                                        <x-ui.button type="button" color="primary" outline="true" size="sm" icon="arrow-left-right" title="Reemplazar Funcionario" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')" />
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        {{-- Acciones siempre disponibles --}}
+                                        <li><a class="dropdown-item" href="{{ route('equipos.show', $equipo) }}"><i class="bi bi-eye text-info me-2"></i> Ver detalle</a></li>
                                         
-                                        <x-ui.button href="{{ route('equipos.acta', $equipo->id) }}" color="dark" outline="true" size="sm" icon="file-earmark-pdf" title="Generar Acta de Entrega PDF" target="_blank" />
+                                        @can('equipos.editar')
+                                        <li><a class="dropdown-item" href="{{ route('equipos.edit', $equipo) }}"><i class="bi bi-pencil text-warning me-2"></i> Editar</a></li>
+                                        @endcan
 
-                                        <x-ui.button type="button" color="warning" outline="true" size="sm" icon="tools" title="Pasar a mantenimiento" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'mantenimiento')" />
-                                        @else
-                                        <x-ui.button type="button" color="success" outline="true" size="sm" icon="arrow-repeat" title="Restaurar a Activo" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')" />
-                                        @endif
+                                        @can('equipos.crear')
+                                        <li><hr class="dropdown-divider"></li>
                                         
-                                        <x-ui.button type="button" color="secondary" outline="true" size="sm" icon="person-dash" title="Retiro de funcionario" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro')" />
-                                        <x-ui.button type="button" color="danger" outline="true" size="sm" icon="x-circle" title="Retiro definitivo del activo" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'baja')" />
-                                    @endif
-                                    @endcan
+                                        @if(!$equipo->usuarioAsignado)
+                                            {{-- Sin préstamo: mostrar botón Registrar préstamo solo si está activo --}}
+                                            @if(in_array($equipo->estado_operativo, ['activo', 'disponible'], true))
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'asignacion')"><i class="bi bi-person-plus text-success me-2"></i> Asignar Funcionario</button></li>
+                                            @else
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')"><i class="bi bi-arrow-repeat text-success me-2"></i> Restaurar a Activo</button></li>
+                                            @endif
+                                        @else
+                                            {{-- Ya asignado normalmente: opciones de gestión y ACTA --}}
+                                            @if(in_array($equipo->estado_operativo, ['activo', 'asignado'], true))
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalAsignacion({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'reemplazo')"><i class="bi bi-arrow-left-right text-primary me-2"></i> Reemplazar Funcionario</button></li>
+                                            
+                                            <li><a class="dropdown-item" href="{{ route('equipos.acta', $equipo->id) }}" target="_blank"><i class="bi bi-file-earmark-pdf text-dark me-2"></i> Generar Acta de Entrega PDF</a></li>
 
-                                    @can('equipos.eliminar')
-                                    <x-ui.button type="button" color="danger" outline="true" size="sm" icon="trash" title="Eliminar" data-delete-url="{{ route('equipos.destroy', $equipo) }}" data-delete-name="{{ $equipo->nombre_equipo }}" data-delete-require-confirm="true" />
-                                    @endcan
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'mantenimiento')"><i class="bi bi-tools text-warning me-2"></i> Pasar a mantenimiento</button></li>
+                                            @else
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'restauracion')"><i class="bi bi-arrow-repeat text-success me-2"></i> Restaurar a Activo</button></li>
+                                            @endif
+                                            
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'retiro')"><i class="bi bi-person-dash text-secondary me-2"></i> Retiro de funcionario</button></li>
+                                            <li><button class="dropdown-item text-danger" type="button" onclick="abrirModalSimple({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', 'baja')"><i class="bi bi-x-circle text-danger me-2"></i> Retiro definitivo del activo</button></li>
+                                        @endif
+
+                                        @if(!$equipo->asignacionResponsabilidadActiva)
+                                            @if(in_array($equipo->estado_operativo, ['activo', 'disponible', 'asignado'], true))
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalResponsabilidad({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}')"><i class="bi bi-person-badge text-info me-2"></i> Asignación Bajo Respons.</button></li>
+                                            @endif
+                                        @else
+                                            <li><button class="dropdown-item" type="button" onclick="abrirModalResponsabilidadEdit({{ $equipo->id }}, '{{ addslashes($equipo->nombre_equipo) }}', {{ json_encode($equipo->asignacionResponsabilidadActiva) }})"><i class="bi bi-person-badge-fill text-info me-2"></i> Gestionar Asignación Bajo Respons.</button></li>
+                                        @endif
+                                        @endcan
+
+                                        @can('equipos.eliminar')
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><button class="dropdown-item text-danger delete-btn-dropdown" type="button" data-delete-url="{{ route('equipos.destroy', $equipo) }}" data-delete-name="{{ $equipo->nombre_equipo }}" data-delete-require-confirm="true"><i class="bi bi-trash text-danger me-2"></i> Eliminar</button></li>
+                                        @endcan
+                                    </ul>
                                 </div>
                             </td>
                         </tr>
@@ -625,9 +642,18 @@ function renderFuncionariosElegibles(lista) {
     }
 
     tbody.innerHTML = lista.map((f) => {
-        const estado = f.activos_count === 0
-            ? '<span class="badge bg-success">Sin activos</span>'
-            : `<span class="badge bg-info text-dark">${f.autorizaciones_count} acta(s) disponible(s)</span>`;
+        let estado = '';
+        if (window.selectorTarget === 'responsable') {
+            estado = `<span class="badge bg-info text-dark">${f.autorizaciones_count} autorización(es)</span>`;
+        } else {
+            if (f.autorizaciones_count > 0) {
+                estado = `<span class="badge bg-info text-dark">${f.autorizaciones_count} acta(s) disponible(s)</span>`;
+            } else if (f.activos_count === 0) {
+                estado = '<span class="badge bg-success">Sin activos</span>';
+            } else {
+                estado = '<span class="badge bg-secondary">No elegible</span>';
+            }
+        }
 
         const cargoArea = [f.cargo, f.area].filter(Boolean).join(' / ') || '—';
 
@@ -796,10 +822,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modalSelectorFuncionarioEl) {
         modalSelectorFuncionarioEl.addEventListener('hidden.bs.modal', function () {
             if (window.selectorTarget === 'responsable') {
-                // Volver a mostrar el modal principal
-                new bootstrap.Modal(document.getElementById('modalResponsabilidad')).show();
-                // Limpiar flag en caso de que se haya cancelado
-                // window.selectorTarget = null;
+                // Volver a mostrar el modal principal y forzar scrollbar
+                const modalRespEl = document.getElementById('modalResponsabilidad');
+                if (modalRespEl) {
+                    new bootstrap.Modal(modalRespEl).show();
+                    setTimeout(() => {
+                        document.body.classList.add('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }, 400);
+                }
             }
         });
     }
