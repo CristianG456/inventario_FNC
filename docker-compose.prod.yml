@@ -76,7 +76,7 @@ services:
       - "3307:3306"
     volumes:
       - /DATA/AppData/inventario/mysql:/var/lib/mysql
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--sql_mode="]
+    command: [ "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--sql_mode=" ]
 
 networks:
   inventario_net:

@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report tests/e2e/reports/playwright-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
