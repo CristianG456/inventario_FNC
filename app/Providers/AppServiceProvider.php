@@ -23,5 +23,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(SolicitudCambioPassword::class, SolicitudCambioPasswordPolicy::class);
+        \App\Models\ActivoComplemento::observe(\App\Observers\ActivoComplementoObserver::class);
     }
 }

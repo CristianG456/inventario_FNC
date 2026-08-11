@@ -51,6 +51,7 @@
                 <th>Estado</th>
                 <th>Activo Asociado</th>
                 <th>Fecha Reg.</th>
+                <th>Acciones</th>
             </tr>
         </x-slot>
         
@@ -97,10 +98,15 @@
                     @endif
                 </td>
                 <td class="text-muted small">{{ $comp->fecha_registro ? $comp->fecha_registro->format('Y-m-d') : $comp->created_at->format('Y-m-d') }}</td>
+                <td>
+                    <a href="{{ route('equipos.complementos.historial_individual', $comp->id) }}" class="btn btn-sm btn-outline-info" title="Ver Historial">
+                        <i class="bi bi-clock-history"></i> Historial
+                    </a>
+                </td>
             </tr>
         @empty
             <tr>
-                <td colspan="8" class="text-center py-5 text-muted">
+                <td colspan="9" class="text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                     No hay complementos registrados.
                 </td>

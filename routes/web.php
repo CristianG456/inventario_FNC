@@ -86,6 +86,12 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/equipos/complementos-global', [\App\Http\Controllers\ComplementoGlobalController::class, 'index'])
         ->name('equipos.complementos.global')->middleware('permission:equipos.ver');
 
+    // Historial de Complementos
+    Route::get('/equipos/complementos/historial-global', [\App\Http\Controllers\HistorialComplementoController::class, 'global'])
+        ->name('equipos.complementos.historial_global')->middleware('permission:equipos.ver');
+    Route::get('/equipos/complementos/{id}/historial', [\App\Http\Controllers\HistorialComplementoController::class, 'individual'])
+        ->name('equipos.complementos.historial_individual')->middleware('permission:equipos.ver');
+
     // Equipos (CRUD) con permisos por acción
     Route::resource('equipos', EquipoController::class)
         ->middlewareFor(['index', 'show'], 'permission:equipos.ver')
