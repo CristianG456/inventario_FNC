@@ -101,143 +101,46 @@
                 <div class="dashboard-state-value inactive">{{ $deBaja }}</div>
             </div>
         </div>
-    </div>
-</div>
 
-{{-- Indicadores de Asignación Bajo Responsabilidad --}}
-@if(isset($respActivas))
-<div class="dashboard-summary-panel mb-4 mt-4">
-    <div class="dashboard-summary-header">
-        <h2 class="dashboard-summary-title text-info">
-            <i class="bi bi-person-badge"></i> ASIGNACIONES BAJO RESPONSABILIDAD
-        </h2>
-        <p class="dashboard-summary-subtitle">Estado actual de préstamos temporales / contratistas</p>
-    </div>
-    
-    <div class="dashboard-summary-divider border-info"></div>
-    
-    <div class="dashboard-summary-states">
-        <div class="dashboard-state-item" style="border: 1px solid #17a2b8;">
+        {{-- Cajas Consolidadas (Agregadas por solicitud) --}}
+        @if(isset($respActivas))
+        <div class="dashboard-state-item" style="border: 1px solid #17a2b8; cursor: pointer;" onclick="mostrarEstadisticas('asignacion', 'Asignaciones', {{ $respActivas }})">
             <div class="dashboard-state-icon text-info" style="background-color: rgba(23, 162, 184, 0.1);">
-                <i class="bi bi-person-check-fill fs-4"></i>
+                <i class="bi bi-person-badge fs-4"></i>
             </div>
             <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-info fw-bold text-uppercase" style="font-size: 0.8rem;">Activas</div>
+                <div class="dashboard-state-label text-info fw-bold text-uppercase" style="font-size: 0.8rem;">Asignaciones</div>
                 <div class="dashboard-state-value text-info fw-bolder fs-4">{{ $respActivas }}</div>
             </div>
         </div>
-        <div class="dashboard-state-item" style="border: 1px solid #6c757d;">
-            <div class="dashboard-state-icon text-secondary" style="background-color: rgba(108, 117, 125, 0.1);">
-                <i class="bi bi-person-x-fill fs-4"></i>
-            </div>
-            <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-secondary fw-bold text-uppercase" style="font-size: 0.8rem;">Finalizadas</div>
-                <div class="dashboard-state-value text-secondary fw-bolder fs-4">{{ $respFinalizadas }}</div>
-            </div>
-        </div>
-        <div class="dashboard-state-item" style="border: 1px solid #ffc107;">
-            <div class="dashboard-state-icon text-warning" style="background-color: rgba(255, 193, 7, 0.1);">
-                <i class="bi bi-exclamation-circle-fill fs-4"></i>
-            </div>
-            <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-warning fw-bold text-uppercase" style="font-size: 0.8rem;">Por Vencer (< 15 días)</div>
-                <div class="dashboard-state-value text-warning fw-bolder fs-4">{{ $respPorVencer }}</div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
+        @endif
 
-{{-- Indicadores de Préstamos Temporales --}}
-@if(isset($prestamosTotal))
-<div class="dashboard-summary-panel mb-4 mt-4">
-    <div class="dashboard-summary-header">
-        <h2 class="dashboard-summary-title text-primary">
-            <i class="bi bi-calendar2-range"></i> PRÉSTAMOS DE ACTIVOS
-        </h2>
-        <p class="dashboard-summary-subtitle">Estado actual de préstamos temporales de activos</p>
-    </div>
-    
-    <div class="dashboard-summary-divider border-primary"></div>
-    
-    <div class="dashboard-summary-states">
-        <a href="{{ route('prestamos.index') }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #0d6efd;">
-            <div class="dashboard-state-icon text-primary" style="background-color: rgba(13, 110, 253, 0.1);">
-                <i class="bi bi-list-ol fs-4"></i>
+        @if(isset($prestamosTotal))
+        <div class="dashboard-state-item" style="border: 1px solid #6f42c1; cursor: pointer;" onclick="mostrarEstadisticas('prestamo', 'Préstamos', {{ $prestamosTotal }})">
+            <div class="dashboard-state-icon" style="color: #6f42c1; background-color: rgba(111, 66, 193, 0.1);">
+                <i class="bi bi-calendar2-range fs-4"></i>
             </div>
             <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-primary fw-bold text-uppercase" style="font-size: 0.8rem;">Total Registrados</div>
-                <div class="dashboard-state-value text-primary fw-bolder fs-4">{{ $prestamosTotal }}</div>
+                <div class="dashboard-state-label fw-bold text-uppercase" style="color: #6f42c1; font-size: 0.8rem;">Préstamos</div>
+                <div class="dashboard-state-value fw-bolder fs-4" style="color: #6f42c1;">{{ $prestamosTotal }}</div>
             </div>
-        </a>
-        <a href="{{ route('prestamos.index', ['estado' => 'Activo']) }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #198754;">
-            <div class="dashboard-state-icon text-success" style="background-color: rgba(25, 135, 84, 0.1);">
-                <i class="bi bi-play-circle-fill fs-4"></i>
-            </div>
-            <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-success fw-bold text-uppercase" style="font-size: 0.8rem;">Activos</div>
-                <div class="dashboard-state-value text-success fw-bolder fs-4">{{ $prestamosActivos }}</div>
-            </div>
-        </a>
-        <a href="{{ route('prestamos.index', ['estado' => 'Vencido']) }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #dc3545;">
-            <div class="dashboard-state-icon text-danger" style="background-color: rgba(220, 53, 69, 0.1);">
-                <i class="bi bi-exclamation-circle-fill fs-4"></i>
-            </div>
-            <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-danger fw-bold text-uppercase" style="font-size: 0.8rem;">Vencidos</div>
-                <div class="dashboard-state-value text-danger fw-bolder fs-4">{{ $prestamosVencidos }}</div>
-            </div>
-        </a>
-        <a href="{{ route('prestamos.index', ['estado' => 'Devuelto']) }}" class="text-decoration-none text-dark dashboard-state-item" style="border: 1px solid #20c997;">
-            <div class="dashboard-state-icon text-teal" style="background-color: rgba(32, 201, 151, 0.1);">
-                <i class="bi bi-check-circle-fill fs-4"></i>
-            </div>
-            <div class="dashboard-state-content">
-                <div class="dashboard-state-label text-teal fw-bold text-uppercase" style="font-size: 0.8rem;">Devueltos</div>
-                <div class="dashboard-state-value text-teal fw-bolder fs-4">{{ $prestamosDevueltos }}</div>
-            </div>
-        </a>
+        </div>
+        @endif
     </div>
 </div>
-@endif
 
 <div class="row g-4">
     {{-- Panel Dinámico de Equipos por Tipo --}}
-    <div class="col-12 col-lg-5">
+    <div class="col-12">
         <x-ui.card noPadding="false" class="h-100 shadow-sm border-0">
             <x-slot name="header">
                 <div class="bg-white fw-semibold border-0 pt-4 px-4 fs-5" id="dynamic-stats-title">
                     <i class="bi bi-pie-chart me-2 text-primary"></i>Equipos por Tipo
                 </div>
             </x-slot>
-            <div id="dynamic-stats-container">
+            <div id="dynamic-stats-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
                 <!-- Javascript inyectará las barras aquí -->
             </div>
-        </x-ui.card>
-    </div>
-
-    {{-- Panel Dinámico de Últimos Equipos --}}
-    <div class="col-12 col-lg-7">
-        <x-ui.card noPadding="true" class="h-100 shadow-sm border-0">
-            <x-slot name="header">
-                <div class="bg-white fw-semibold border-0 pt-4 px-4 d-flex justify-content-between align-items-center" id="dynamic-latest-title">
-                    <span class="fs-5"><i class="bi bi-clock-history me-2 text-primary"></i>Últimos Equipos</span>
-                    <a href="{{ route('equipos.index') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
-                </div>
-            </x-slot>
-            <x-ui.table>
-                <x-slot name="head">
-                    <tr>
-                        <th>Equipo</th>
-                        <th>Tipo</th>
-                        <th>Usuario</th>
-                        <th>Estado</th>
-                    </tr>
-                </x-slot>
-                <tbody id="dynamic-latest-container">
-                    <!-- Javascript inyectará las filas aquí -->
-                </tbody>
-            </x-ui.table>
         </x-ui.card>
     </div>
 </div>
@@ -249,27 +152,10 @@
         ->groupBy('estado_operativo', 'tipo_recurso_id')
         ->get();
     
-    // Obtener últimos equipos por estado dinámicamente
-    $estadosArray = ['activo', 'disponible', 'mantenimiento', 'baja'];
-    
     $datosPorEstado = [
         'total' => $equiposPorTipo->map(fn($t) => ['nombre' => $t->nombre, 'count' => $t->equipos_count])->values()->toArray(),
-        'activo' => [], 'disponible' => [], 'mantenimiento' => [], 'baja' => []
-    ];
-    
-    $ultimosPorEstado = [
-        'total' => $ultimosEquipos->map(function($e) {
-            return [
-                'id' => $e->id,
-                'nombre_equipo' => $e->nombre_equipo,
-                'serial' => $e->serial_visual,
-                'tipo' => $e->tipoRecurso ? $e->tipoRecurso->nombre : '—',
-                'usuario' => $e->usuarioAsignado ? $e->usuarioAsignado->nombre : '—',
-                'estado_badge' => $e->estado_badge,
-                'estado_label' => $e->estado_label,
-                'url' => route('equipos.show', $e->id)
-            ];
-        })->toArray(),
+        'activo' => [], 'disponible' => [], 'mantenimiento' => [], 'baja' => [],
+        'asignacion' => [], 'prestamo' => []
     ];
     
     foreach($stats as $stat) {
@@ -280,31 +166,38 @@
             ];
         }
     }
+
+    // Estadísticas para Asignaciones (Activas)
+    $asignacionesStats = \App\Models\AsignacionResponsabilidad::join('equipos', 'asignaciones_responsabilidad.equipo_id', '=', 'equipos.id')
+        ->leftJoin('tipo_recursos', 'equipos.tipo_recurso_id', '=', 'tipo_recursos.id')
+        ->where('asignaciones_responsabilidad.estado', 'activa')
+        ->select('tipo_recursos.nombre', \DB::raw('count(*) as count'))
+        ->groupBy('tipo_recursos.nombre')
+        ->get();
+
+    foreach($asignacionesStats as $stat) {
+        $datosPorEstado['asignacion'][] = [
+            'nombre' => $stat->nombre ?: 'Sin Clasificar',
+            'count' => $stat->count
+        ];
+    }
+
+    // Estadísticas para Préstamos
+    $prestamosStats = \App\Models\Prestamo::join('equipos', 'prestamos.equipo_id', '=', 'equipos.id')
+        ->leftJoin('tipo_recursos', 'equipos.tipo_recurso_id', '=', 'tipo_recursos.id')
+        ->select('tipo_recursos.nombre', \DB::raw('count(*) as count'))
+        ->groupBy('tipo_recursos.nombre')
+        ->get();
+
+    foreach($prestamosStats as $stat) {
+        $datosPorEstado['prestamo'][] = [
+            'nombre' => $stat->nombre ?: 'Sin Clasificar',
+            'count' => $stat->count
+        ];
+    }
     
     foreach($datosPorEstado as $key => &$arr) {
         usort($arr, fn($a, $b) => $b['count'] <=> $a['count']);
-    }
-    
-    foreach($estadosArray as $est) {
-        $ultimos = \App\Models\Equipo::where('estado_operativo', $est)
-            ->select(['id', 'tipo_recurso_id', 'nombre_equipo', 'serial', 'activo_fijo', 'placa', 'estado_operativo'])
-            ->with(['tipoRecurso:id,nombre', 'usuarioAsignado:id,equipo_id,nombre'])
-            ->latest()
-            ->limit(5)
-            ->get();
-            
-        $ultimosPorEstado[$est] = $ultimos->map(function($e) {
-            return [
-                'id' => $e->id,
-                'nombre_equipo' => $e->nombre_equipo,
-                'serial' => $e->serial_visual,
-                'tipo' => $e->tipoRecurso ? $e->tipoRecurso->nombre : '—',
-                'usuario' => $e->usuarioAsignado ? $e->usuarioAsignado->nombre : '—',
-                'estado_badge' => $e->estado_badge,
-                'estado_label' => $e->estado_label,
-                'url' => route('equipos.show', $e->id)
-            ];
-        })->toArray();
     }
 @endphp
 @endsection
@@ -312,7 +205,6 @@
 @push('scripts')
 <script>
     const estadisticas = @json($datosPorEstado);
-    const ultimosEquipos = @json($ultimosPorEstado);
 
     function mostrarEstadisticas(estado, titulo, total) {
         // --- Barras de Tipos (Izquierda) ---
@@ -352,38 +244,7 @@
             container.innerHTML = html;
         }
         
-        // --- Tabla Dinámica de Últimos Equipos (Derecha) ---
-        const ultimos = ultimosEquipos[estado] || [];
-        const latestContainer = document.getElementById('dynamic-latest-container');
-        const latestTitle = document.getElementById('dynamic-latest-title').querySelector('span');
-        
-        latestTitle.innerHTML = `<i class="bi bi-clock-history me-2 text-primary"></i> Últimos Equipos: <span class="fw-bold">${titulo}</span>`;
 
-        if (ultimos.length === 0) {
-            latestContainer.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Sin equipos recientes para este estado.</td></tr>`;
-        } else {
-            let tableHtml = '';
-            ultimos.forEach(eq => {
-                tableHtml += `
-                    <tr>
-                        <td>
-                            <a href="${eq.url}" class="text-decoration-none fw-medium">
-                                ${eq.nombre_equipo}
-                            </a>
-                            <br><small class="text-muted">${eq.serial || 'Sin serial'}</small>
-                        </td>
-                        <td>${eq.tipo}</td>
-                        <td>${eq.usuario}</td>
-                        <td>
-                            <span class="badge bg-${eq.estado_badge}">
-                                ${eq.estado_label}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            });
-            latestContainer.innerHTML = tableHtml;
-        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
