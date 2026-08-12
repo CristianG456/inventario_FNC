@@ -20,9 +20,6 @@ class ActaFirmadaController extends Controller
         if ($request->filled('numero_acta')) {
             $query->where('numero_acta', 'like', '%' . $request->numero_acta . '%');
         }
-        if ($request->filled('tipo_acta')) {
-            $query->where('tipo_acta', $request->tipo_acta);
-        }
         if ($request->filled('fecha_documento')) {
             $query->where('fecha_documento', $request->fecha_documento);
         }
@@ -35,8 +32,7 @@ class ActaFirmadaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'numero_acta'     => 'required|string|unique:actas_firmadas',
-            'tipo_acta'       => 'required|string',
+            'numero_acta'     => 'required|string',
             'fecha_documento' => 'required|date',
             'archivo_pdf'     => 'required|mimes:pdf|max:10240',
         ]);
@@ -58,7 +54,7 @@ class ActaFirmadaController extends Controller
 
         $acta = ActaFirmada::create([
             'numero_acta'     => $request->numero_acta,
-            'tipo_acta'       => $request->tipo_acta,
+            'tipo_acta'       => 'Entrega',
             'fecha_documento' => $request->fecha_documento,
             'observaciones'   => $request->observaciones,
             'archivo_pdf'     => $path,
@@ -96,19 +92,8 @@ class ActaFirmadaController extends Controller
             'user_id'         => Auth::id()
         ]);
 
-        // Attempt compression for new PDF
-        $uploadedFile = $request->file('archivo_pdf');
-        $originalPath = $uploadedFile->path();
-        $tempTarget = storage_path('app/temp_compressed_' . uniqid() . '.pdf');
-        $finalPath = PdfCompressor::compress($originalPath, $tempTarget);
-        
-        // Store the final file (compressed or original)
-        $newPath = Storage::disk('local')->putFile('actas_firmadas', new \Illuminate\Http\File($finalPath));
-        
-        // Cleanup temp file if compression was used
-        if ($finalPath === $tempTarget && file_exists($tempTarget)) {
-            @unlink($tempTarget);
-        }
+        // Store new PDF
+        $newPath = $request->file('archivo_pdf')->store('actas_firmadas', 'local');
 
         $acta->update([
             'archivo_pdf' => $newPath
@@ -142,48 +127,22 @@ class ActaFirmadaController extends Controller
         return Storage::disk('local')->download($acta->archivo_pdf, $acta->numero_acta . '.pdf');
     }
 
-    public function downloadZip(Request $request)
+    public function showFile($id)
     {
-        $request->validate([
-            'actas_ids' => 'required|array',
-            'actas_ids.*' => 'exists:actas_firmadas,id',
-        ]);
-
-        $actas = ActaFirmada::whereIn('id', $request->actas_ids)->get();
-
-        if ($actas->isEmpty()) {
-            return back()->with('error', 'No se seleccionaron actas válidas para descargar.');
-        }
-
-        $zip = new ZipArchive;
-        $zipFileName = 'Actas_Firmadas_' . date('Y-md_His') . '.zip';
-        $zipPath = storage_path('app/temp/' . $zipFileName);
-
-        // Ensure temp directory exists
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
-        }
-
-        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
-            foreach ($actas as $acta) {
-                if (Storage::disk('local')->exists($acta->archivo_pdf)) {
-                    $fileContent = Storage::disk('local')->path($acta->archivo_pdf);
-                    $zip->addFile($fileContent, $acta->numero_acta . '.pdf');
-                }
-            }
-            $zip->close();
-        } else {
-            return back()->with('error', 'No se pudo crear el archivo ZIP.');
+        $acta = ActaFirmada::findOrFail($id);
+        
+        if (!Storage::disk('local')->exists($acta->archivo_pdf)) {
+            return back()->with('error', 'El archivo no existe en el disco.');
         }
 
         AuditLog::create([
             'user_id'   => Auth::id(),
             'user_name' => Auth::user()->name,
-            'action'    => 'DOWNLOAD_ACTAS_ZIP',
-            'details'   => json_encode(['count' => $actas->count()])
+            'action'    => 'VIEW_ACTA_FIRMADA',
+            'details'   => json_encode(['numero_acta' => $acta->numero_acta])
         ]);
 
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+        return Storage::disk('local')->response($acta->archivo_pdf);
     }
 
     public function downloadVersion($id)

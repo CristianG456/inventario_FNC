@@ -142,9 +142,10 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     // ── Actas Firmadas ────────────────────────────────────────────────────────
     Route::get('/actas-firmadas', [\App\Http\Controllers\ActaFirmadaController::class, 'index'])->name('actas-firmadas.index')->middleware('permission:equipos.ver');
     Route::post('/actas-firmadas', [\App\Http\Controllers\ActaFirmadaController::class, 'store'])->name('actas-firmadas.store')->middleware('permission:equipos.crear');
+    Route::post('/actas-firmadas/zip', [\App\Http\Controllers\ActaFirmadaController::class, 'downloadZip'])->name('actas-firmadas.zip')->middleware('permission:equipos.ver');
     Route::put('/actas-firmadas/{id}', [\App\Http\Controllers\ActaFirmadaController::class, 'update'])->name('actas-firmadas.update')->middleware('permission:equipos.crear');
-    Route::delete('/actas-firmadas/{id}', [\App\Http\Controllers\ActaFirmadaController::class, 'destroy'])->name('actas-firmadas.destroy')->middleware('permission:equipos.crear');
     Route::get('/actas-firmadas/{id}/download', [\App\Http\Controllers\ActaFirmadaController::class, 'download'])->name('actas-firmadas.download')->middleware('permission:equipos.ver');
+    Route::get('/actas-firmadas/{id}/view', [\App\Http\Controllers\ActaFirmadaController::class, 'showFile'])->name('actas-firmadas.show-file')->middleware('permission:equipos.ver');
     Route::get('/actas-firmadas/versions/{id}/download', [\App\Http\Controllers\ActaFirmadaController::class, 'downloadVersion'])->name('actas-firmadas.download-version')->middleware('permission:equipos.ver');
     Route::get('/actas-firmadas/{id}/history', [\App\Http\Controllers\ActaFirmadaController::class, 'history'])->name('actas-firmadas.history')->middleware('permission:equipos.ver');
 

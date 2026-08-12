@@ -5,34 +5,29 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Actas Firmadas</h4>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
-        <i class="bi bi-upload me-1"></i>Subir Acta Firmada
-    </button>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-success" onclick="submitZipForm();">
+            <i class="bi bi-file-earmark-zip me-1"></i>Descargar ZIP
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <i class="bi bi-upload me-1"></i>Subir Acta Firmada
+        </button>
+    </div>
 </div>
 
 <!-- Filtros -->
 <div class="card mb-4 border-0 shadow-sm">
     <div class="card-body">
         <form method="GET" action="{{ route('actas-firmadas.index') }}" class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label">Número de Acta</label>
-                <input type="text" name="numero_acta" class="form-control" value="{{ request('numero_acta') }}">
+            <div class="col-md-4">
+                <label class="form-label">Funcionario que firma</label>
+                <input type="text" name="numero_acta" class="form-control" value="{{ request('numero_acta') }}" placeholder="Nombre del funcionario...">
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Tipo de Acta</label>
-                <select name="tipo_acta" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="Entrega" {{ request('tipo_acta') == 'Entrega' ? 'selected' : '' }}>Entrega</option>
-                    <option value="Vitalicia" {{ request('tipo_acta') == 'Vitalicia' ? 'selected' : '' }}>Vitalicia</option>
-                    <option value="Novedad" {{ request('tipo_acta') == 'Novedad' ? 'selected' : '' }}>Novedad</option>
-                    <option value="Auditoria" {{ request('tipo_acta') == 'Auditoria' ? 'selected' : '' }}>Auditoría</option>
-                </select>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label class="form-label">Fecha del Documento</label>
                 <input type="date" name="fecha_documento" class="form-control" value="{{ request('fecha_documento') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <button type="submit" class="btn btn-dark w-100"><i class="bi bi-search me-2"></i>Buscar</button>
             </div>
         </form>
@@ -42,13 +37,18 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
+            <form id="formDescargaZip" action="{{ route('actas-firmadas.zip') }}" method="POST" class="d-none">
+                @csrf
+            </form>
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>N° Acta</th>
-                        <th>Tipo</th>
-                        <th>Fecha Documento</th>
-                        <th>Subido Por</th>
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40px;" class="text-center">
+                                <input class="form-check-input select-all-actas" type="checkbox" id="selectAllActas">
+                            </th>
+                            <th>Funcionario que firma</th>
+                            <th>Fecha Documento</th>
+                            <th>Subido Por</th>
                         <th>Observaciones</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -56,35 +56,33 @@
                 <tbody>
                     @forelse($actas as $acta)
                         <tr>
+                            <td class="text-center">
+                                <input class="form-check-input acta-checkbox" type="checkbox" name="actas_ids[]" value="{{ $acta->id }}">
+                            </td>
                             <td class="fw-bold">{{ $acta->numero_acta }}</td>
-                            <td><span class="badge bg-secondary">{{ $acta->tipo_acta }}</span></td>
                             <td>{{ $acta->fecha_documento->format('d/m/Y') }}</td>
                             <td>{{ $acta->user->name ?? 'Sistema' }}</td>
                             <td><small class="text-muted">{{ Str::limit($acta->observaciones, 50) }}</small></td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
+                                    <a href="{{ route('actas-firmadas.show-file', $acta->id) }}" target="_blank" class="btn btn-outline-success" title="Ver Acta">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                     <a href="{{ route('actas-firmadas.download', $acta->id) }}" class="btn btn-outline-primary" title="Descargar PDF Actual">
                                         <i class="bi bi-download"></i>
                                     </a>
                                     <button type="button" class="btn btn-outline-warning" title="Reemplazar PDF" onclick="openReplaceModal({{ $acta->id }}, '{{ $acta->numero_acta }}')">
                                         <i class="bi bi-arrow-repeat"></i>
                                     </button>
-                                    <a href="{{ route('actas-firmadas.history', $acta->id) }}" class="btn btn-outline-info" title="Historial de Versiones">
+                                    <a href="{{ route('actas-firmadas.history', $acta->id) }}" class="btn btn-outline-info" title="Historial de Versiones" style="border-top-right-radius: var(--bs-border-radius-sm); border-bottom-right-radius: var(--bs-border-radius-sm);">
                                         <i class="bi bi-clock-history"></i>
                                     </a>
-                                    <form action="{{ route('actas-firmadas.destroy', $acta->id) }}" method="POST" class="form-eliminar-acta" style="display: inline-block; m-0; p-0;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar Acta" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-2 d-block mb-2"></i>No hay actas firmadas registradas.
                             </td>
                         </tr>
@@ -116,18 +114,8 @@
                 <input type="file" name="archivo_pdf" class="form-control" accept=".pdf" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Número de Acta *</label>
-                <input type="text" name="numero_acta" class="form-control" placeholder="Ej. ACT-2026-001" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Tipo de Acta *</label>
-                <select name="tipo_acta" class="form-select" required>
-                    <option value="Entrega">Entrega</option>
-                    <option value="Vitalicia">Vitalicia</option>
-                    <option value="Novedad">Novedad</option>
-                    <option value="Auditoria">Auditoría</option>
-                    <option value="Otro">Otro</option>
-                </select>
+                <label class="form-label">Funcionario que firma *</label>
+                <input type="text" name="numero_acta" class="form-control" placeholder="Ej. Juan Pérez" required>
             </div>
             <div class="mb-3">
                 <label class="form-label">Fecha del Documento *</label>
@@ -159,7 +147,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p>Se reemplazará el archivo para el acta: <strong id="replaceNumActa"></strong></p>
+            <p>Se reemplazará el archivo para el acta de: <strong id="replaceNumActa"></strong></p>
             <p class="text-muted small">El PDF actual se guardará en el historial como una versión anterior.</p>
             
             <div class="mb-3">
@@ -191,25 +179,45 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.form-eliminar-acta').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: '¿Eliminar Acta?',
-                    text: "Esta acción enviará el acta a la papelera. Podrás recuperarla si es necesario.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: '<i class="bi bi-trash"></i> Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
+        // Lógica para seleccionar todas las actas
+        const selectAllCheckbox = document.getElementById('selectAllActas');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.acta-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
                 });
             });
-        });
+        }
     });
+
+    function submitZipForm() {
+        const checkedBoxes = document.querySelectorAll('.acta-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atención',
+                text: 'Selecciona al menos un acta para descargar.'
+            });
+            return;
+        }
+
+        const form = document.getElementById('formDescargaZip');
+        
+        // Remove old hidden inputs if any
+        form.querySelectorAll('.acta-hidden-input').forEach(el => el.remove());
+
+        // Create new hidden inputs for each selected acta
+        checkedBoxes.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'actas_ids[]';
+            input.value = cb.value;
+            input.className = 'acta-hidden-input';
+            form.appendChild(input);
+        });
+
+        form.submit();
+    }
 </script>
 @endpush
