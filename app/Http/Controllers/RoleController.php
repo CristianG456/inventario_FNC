@@ -63,6 +63,10 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
+        if ($role->name === 'Administrador' && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->route('roles.index')->with('error', 'No tienes permisos para editar el rol de Administrador.');
+        }
+
         $permissions = Permission::select('id', 'name')->get()->groupBy(function($data) {
             return explode('.', $data->name)[0];
         });
@@ -72,6 +76,10 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
+        if ($role->name === 'Administrador' && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->route('roles.index')->with('error', 'No tienes permisos para modificar el rol de Administrador.');
+        }
+
         $request->validate([
             'name' => 'required|unique:roles,name,' . $role->id,
             'permissions' => 'nullable|array'
@@ -108,6 +116,10 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        if ($role->name === 'Administrador' && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->route('roles.index')->with('error', 'No tienes permisos para eliminar el rol de Administrador.');
+        }
+
         if ($role->users()->count() > 0) {
             return redirect()->route('roles.index')->with('error', 'No se puede eliminar el rol porque tiene usuarios asociados.');
         }

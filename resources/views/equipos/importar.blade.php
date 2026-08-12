@@ -8,9 +8,6 @@
         <h2 class="mb-0 fw-bold"><i class="bi bi-file-earmark-arrow-up me-2 equipo-text-primary"></i>Importar Equipos desde Excel</h2>
         <p class="text-muted mb-0 mt-1">Sube un archivo <strong>.xlsx</strong> o <strong>.xls</strong> para registrar equipos en masa.</p>
     </div>
-    <a href="{{ route('equipos.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Volver
-    </a>
 </div>
 
 {{-- ░░ RESUMEN RESULTADO ░░ --}}
@@ -119,9 +116,13 @@
                             </h6>
                             @if (!empty($columnReport['ignoradas']))
                                 <div style="max-height: 250px; overflow-y: auto;">
-                                    @foreach ($columnReport['ignoradas'] as $col)
-                                        <span class="badge bg-light text-dark border me-1 mb-1">{{ $col }}</span>
+                                    @php $ignoradasTotal = count($columnReport['ignoradas']); @endphp
+                                    @foreach (array_slice($columnReport['ignoradas'], 0, 50) as $col)
+                                        <span class="badge bg-light text-dark border me-1 mb-1">{{ Str::limit((string)$col, 30) }}</span>
                                     @endforeach
+                                    @if ($ignoradasTotal > 50)
+                                        <span class="badge bg-secondary me-1 mb-1">+{{ $ignoradasTotal - 50 }} más</span>
+                                    @endif
                                 </div>
                             @else
                                 <p class="text-muted small">Ninguna</p>

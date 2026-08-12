@@ -107,6 +107,19 @@ class FuncionarioController extends Controller
             ->with('success', 'Autorización anulada correctamente.');
     }
 
+    public function descargarAutorizacion(Funcionario $funcionario, AutorizacionActivo $autorizacion)
+    {
+        if ((int) $autorizacion->funcionario_id !== (int) $funcionario->id) {
+            abort(403, 'La autorización no corresponde al funcionario seleccionado.');
+        }
+
+        if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($autorizacion->archivo)) {
+            abort(404, 'El archivo no se encuentra disponible.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response($autorizacion->archivo);
+    }
+
     public function create()
     {
         return view('funcionarios.create');

@@ -10,7 +10,7 @@
 >
     <x-slot name="subtitle">{{ $historialTecnico->equipo?->nombre_equipo }} — {{ $historialTecnico->fecha_evento?->format('d/m/Y') }}</x-slot>
     @if($puedeModificarBitacora)
-        <x-ui.button href="{{ route('historial-tecnico.edit', $historialTecnico) }}" color="warning" class="text-white" icon="pencil" text="Editar" />
+        <x-ui.button href="{{ route('historial-tecnico.edit', ['historialTecnico' => $historialTecnico->id, 'return_to' => request()->fullUrl()]) }}" color="warning" class="text-white" icon="pencil" text="Editar" />
     @endif
     <x-ui.button href="{{ route('historial-tecnico.por-equipo', ['equipo' => $historialTecnico->equipo_id, 'return_to' => request()->fullUrl()]) }}" outline="true" color="secondary" icon="clock-history" text="Historial del Equipo" />
     <x-ui.button href="{{ route('historial-tecnico.index') }}" outline="true" color="secondary" icon="arrow-left" text="Volver" />

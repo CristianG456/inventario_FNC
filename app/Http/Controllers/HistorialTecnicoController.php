@@ -73,7 +73,7 @@ class HistorialTecnicoController extends Controller
     {
         $registros   = $equipo->historialTecnico()->with('registradoPor')->get();
         $tiposEvento = HistorialTecnico::TIPOS_EVENTO_FORM;
-        $volverUrl   = route('equipos.show', $equipo);
+        $volverUrl   = route('historial-tecnico.index');
 
         $returnTo = $request->query('return_to');
         if (is_string($returnTo) && $returnTo !== '') {
@@ -154,7 +154,7 @@ class HistorialTecnicoController extends Controller
     /**
      * Formulario de edición.
      */
-    public function edit(HistorialTecnico $historialTecnico): View|RedirectResponse
+    public function edit(Request $request, HistorialTecnico $historialTecnico): View|RedirectResponse
     {
         if (!$this->puedeModificarBitacora($historialTecnico)) {
             return redirect()
@@ -162,9 +162,18 @@ class HistorialTecnicoController extends Controller
                 ->with('warning', 'La bitácora del activo restaurado es de solo lectura y no se puede editar.');
         }
 
+        $volverUrl = route('historial-tecnico.show', $historialTecnico);
+        $returnTo = $request->query('return_to');
+        if (is_string($returnTo) && $returnTo !== '') {
+            $path = parse_url($returnTo, PHP_URL_PATH);
+            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
+                $volverUrl = $returnTo;
+            }
+        }
+
         $tiposEvento = HistorialTecnico::TIPOS_EVENTO_FORM;
         $historialTecnico->load('equipo');
-        return view('historial_tecnico.edit', compact('historialTecnico', 'tiposEvento'));
+        return view('historial_tecnico.edit', compact('historialTecnico', 'tiposEvento', 'volverUrl'));
     }
 
     /**
@@ -180,8 +189,17 @@ class HistorialTecnicoController extends Controller
 
         $historialTecnico->update($request->validated());
 
-        return redirect()
-            ->route('historial-tecnico.show', $historialTecnico)
+        $returnTo = $request->input('return_to');
+        $redirectUrl = route('historial-tecnico.show', $historialTecnico);
+        
+        if (is_string($returnTo) && $returnTo !== '') {
+            $path = parse_url($returnTo, PHP_URL_PATH);
+            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
+                $redirectUrl = $returnTo;
+            }
+        }
+
+        return redirect($redirectUrl)
             ->with('success', 'Evento técnico actualizado correctamente.');
     }
 

@@ -103,7 +103,7 @@
                                     <i class="bi bi-eye me-1"></i>Ver
                                 </a>
                                 @if($puedeModificarBitacora)
-                                    <a href="{{ route('historial-tecnico.edit', $registro) }}"
+                                    <a href="{{ route('historial-tecnico.edit', ['historialTecnico' => $registro->id, 'return_to' => request()->fullUrl()]) }}"
                                        class="btn btn-sm btn-outline-warning">
                                         <i class="bi bi-pencil me-1"></i>Editar
                                     </a>

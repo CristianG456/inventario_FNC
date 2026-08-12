@@ -110,6 +110,9 @@
                             @endif
                         </td>
                         <td class="text-end pe-3">
+                            <a href="{{ route('funcionarios.autorizaciones.descargar', [$funcionario, $acta]) }}" target="_blank" class="btn btn-sm btn-outline-info me-1" title="Ver Acta">
+                                <i class="bi bi-eye"></i>
+                            </a>
                             @if($acta->estado === 'cargada')
                                 <form method="POST" action="{{ route('funcionarios.autorizaciones.anular', [$funcionario, $acta]) }}" class="d-inline">
                                     @csrf

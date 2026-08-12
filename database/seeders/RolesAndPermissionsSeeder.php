@@ -57,39 +57,15 @@ class RolesAndPermissionsSeeder extends Seeder
         $roleAdmin = Role::firstOrCreate(['name' => 'Administrador']);
         $roleAdmin->syncPermissions(Permission::all());
 
-        // 2. Consulta (solo lectura)
-        $roleConsulta = Role::firstOrCreate(['name' => 'Consulta']);
-        $roleConsulta->syncPermissions([
+        // 2. Analista Tic (Mesa de Ayuda, Equipos, Historiales, etc.)
+        $roleAnalista = Role::firstOrCreate(['name' => 'Analista Tic']);
+        $roleAnalista->syncPermissions([
             'dashboard.ver',
-            'equipos.ver',
-            'usuarios.ver',
-            'checklist.ver',
-            'licencias.ver',
-            'mesaayuda.ver',
-            'historial.ver',
-            'configuracion.ver',
-            'roles.ver'
-        ]);
-
-        // 3. Inventarios (Dashboard, Equipos, Checklists)
-        $roleInventarios = Role::firstOrCreate(['name' => 'Inventarios']);
-        $roleInventarios->syncPermissions([
-            'dashboard.ver',
-            'equipos.ver', 'equipos.crear', 'equipos.editar', 'equipos.eliminar', 'equipos.exportar', 'equipos.importar',
-            'checklist.ver', 'checklist.crear', 'checklist.editar', 'checklist.eliminar'
-        ]);
-
-        // 4. Mesa de Ayuda (Mesa de Ayuda, Equipos, Historiales)
-        $roleMesaAyuda = Role::firstOrCreate(['name' => 'Mesa de Ayuda']);
-        $roleMesaAyuda->syncPermissions([
             'mesaayuda.ver', 'mesaayuda.crear', 'mesaayuda.editar', 'mesaayuda.cerrar',
             'equipos.ver', 'equipos.crear', 'equipos.editar', 'equipos.eliminar', 'equipos.exportar', 'equipos.importar',
-            'historial.ver', 'historial.exportar'
+            'usuarios.ver', 'usuarios.crear', 'usuarios.editar', 'usuarios.eliminar',
+            'historial.ver', 'historial.exportar',
+            'checklist.ver', 'checklist.crear', 'checklist.editar', 'checklist.eliminar'
         ]);
-        
-        // 5. Otros roles mencionados en el requerimiento
-        Role::firstOrCreate(['name' => 'Soporte TI']);
-        Role::firstOrCreate(['name' => 'Auditor']);
-        Role::firstOrCreate(['name' => 'Licencias']);
     }
 }

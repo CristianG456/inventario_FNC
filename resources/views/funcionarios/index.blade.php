@@ -172,7 +172,7 @@
         </div>
         <x-slot name="footer">
             <x-ui.button type="button" outline="true" color="secondary" data-bs-dismiss="modal" text="Cancelar" />
-            <x-ui.button type="submit" color="primary" icon="save" text="Guardar autorización" />
+            <x-ui.button type="submit" color="primary" icon="save" text="Guardar autorización" form="formAutorizacionFuncionario" />
         </x-slot>
     </form>
 </x-ui.modal>

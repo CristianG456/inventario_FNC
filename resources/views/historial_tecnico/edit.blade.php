@@ -8,13 +8,14 @@
     icon="pencil"
     iconClass="text-warning"
 >
-    <x-ui.button href="{{ route('historial-tecnico.show', $historialTecnico) }}" outline="true" color="secondary" icon="arrow-left" text="Volver" />
+    <x-ui.button href="{{ $volverUrl }}" outline="true" color="secondary" icon="arrow-left" text="Volver" />
 </x-ui.toolbar>
 
 <x-ui.card class="border-0 shadow-sm">
     <form action="{{ route('historial-tecnico.update', $historialTecnico) }}" method="POST">
         @csrf
         @method('PUT')
+        <input type="hidden" name="return_to" value="{{ $volverUrl }}">
 
         <div class="row g-3">
             <div class="col-md-6">
@@ -44,7 +45,7 @@
 
         <div class="d-flex gap-2">
             <x-ui.button type="submit" color="warning" class="text-white" icon="check-lg" text="Actualizar Evento" />
-            <x-ui.button href="{{ route('historial-tecnico.show', $historialTecnico) }}" outline="true" color="secondary" text="Cancelar" />
+            <x-ui.button href="{{ $volverUrl }}" outline="true" color="secondary" text="Cancelar" />
         </div>
     </form>
 </x-ui.card>

@@ -64,19 +64,6 @@
 
 
 
-            <h6 class="text-uppercase fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2 ticket-section-title">
-                <i class="bi bi-paperclip text-primary"></i> EVIDENCIAS ADJUNTAS (OPCIONAL)
-            </h6>
-
-            <div class="mb-5">
-                <div class="border border-2 border-dashed rounded-4 p-5 text-center bg-light ticket-file-dropzone">
-                    <i class="bi bi-paperclip text-muted mb-2 ticket-file-icon"></i>
-                    <h6 class="fw-semibold text-dark mb-1">Arrastra archivos o haz clic para adjuntar</h6>
-                    <p class="text-muted small mb-0">Imágenes, PDF, Word — máx. 5 MB por archivo</p>
-                    <input type="file" name="archivos[]" class="d-none" multiple>
-                </div>
-            </div>
-
 
             <div class="d-flex justify-content-end gap-3 pt-3 border-top">
                 <x-ui.button href="{{ route('tickets.index') }}" color="light" class="border rounded-pill px-4" text="Cancelar" />

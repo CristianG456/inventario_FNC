@@ -70,12 +70,20 @@ class UserController extends Controller
 
     public function edit(User $usuario)
     {
+        if ($usuario->hasRole('Administrador') && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->route('usuarios.index')->with('error', 'No tienes permisos para editar a un administrador.');
+        }
+
         $roles = Role::select('id', 'name')->get();
         return view('usuarios.form', ['user' => $usuario, 'roles' => $roles]);
     }
 
     public function update(Request $request, User $usuario)
     {
+        if ($usuario->hasRole('Administrador') && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->route('usuarios.index')->with('error', 'No tienes permisos para modificar a un administrador.');
+        }
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$usuario->id],
@@ -127,6 +135,10 @@ class UserController extends Controller
 
     public function destroy(User $usuario)
     {
+        if ($usuario->hasRole('Administrador') && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->route('usuarios.index')->with('error', 'No tienes permisos para eliminar a un administrador.');
+        }
+
         if ($usuario->id === Auth::id()) {
             return redirect()->route('usuarios.index')->with('error', 'No puedes eliminar tu propio usuario.');
         }

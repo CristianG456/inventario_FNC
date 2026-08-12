@@ -188,6 +188,9 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::patch('/funcionarios/{funcionario}/autorizaciones/{autorizacion}/anular', [FuncionarioController::class, 'anularAutorizacion'])
         ->name('funcionarios.autorizaciones.anular')
         ->middleware('permission:usuarios.editar');
+    Route::get('/funcionarios/{funcionario}/autorizaciones/{autorizacion}/descargar', [FuncionarioController::class, 'descargarAutorizacion'])
+        ->name('funcionarios.autorizaciones.descargar')
+        ->middleware('permission:usuarios.ver');
 
     // ── HelpDesk (Tickets) ────────────────────────────────────────────────────
     Route::put('/tickets/{ticket}/estado', [TicketController::class, 'cambiarEstado'])->name('tickets.estado')->middleware('permission:mesaayuda.editar');
