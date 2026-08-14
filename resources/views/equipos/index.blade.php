@@ -168,9 +168,20 @@
                                     if ($equipo->asignacionResponsabilidadActiva && !empty($equipo->asignacionResponsabilidadActiva->responsable_nombre)) {
                                         $responsableNombre = trim((string) $equipo->asignacionResponsabilidadActiva->responsable_nombre);
                                         $responsableCedula = trim((string) $equipo->asignacionResponsabilidadActiva->responsable_cedula);
+                                        $responsableRol = '';
                                     } else {
                                         $responsableNombre = trim((string) ($equipo->responsable_nombre ?? ''));
                                         $responsableCedula = trim((string) ($equipo->responsable_cedula ?? ''));
+                                        $responsableRol = '';
+                                    }
+                                    
+                                    // Fallback solicitado por el usuario: mostrar el usuario logueado si no hay responsable
+                                    if ($responsableNombre === '') {
+                                        $user = auth()->user();
+                                        if ($user) {
+                                            $responsableNombre = trim($user->name);
+                                            $responsableRol = $user->roles->first()->name ?? '';
+                                        }
                                     }
                                 @endphp
                                 @if($responsableNombre !== '')
@@ -178,7 +189,9 @@
                                 @else
                                     <span class="text-muted fst-italic">Sin responsable</span>
                                 @endif
-                                @if($responsableCedula !== '')
+                                @if($responsableRol !== '')
+                                    <br><small class="text-muted">{{ $responsableRol }}</small>
+                                @elseif($responsableCedula !== '')
                                     <br><small class="text-muted">CC: {{ $responsableCedula }}</small>
                                 @endif
                             </td>

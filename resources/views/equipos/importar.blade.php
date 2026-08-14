@@ -98,7 +98,7 @@
                     <i class="bi bi-chevron-down"></i>
                 </button>
             </div>
-            <div class="collapse" id="colReporte">
+            <div class="collapse" id="colReporte" style="visibility: visible;">
                 <div class="card-body">
                     <div class="row g-3">
                         {{-- Columnas reconocidas --}}
