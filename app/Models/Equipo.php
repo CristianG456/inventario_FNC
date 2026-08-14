@@ -52,7 +52,22 @@ class Equipo extends Model
         'responsable_tipo_recurso',
         'fecha_inicio_responsable',
         'fecha_fin_responsable',
+        'consecutivo',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($equipo) {
+            if (empty($equipo->consecutivo)) {
+                // withTrashed() asegura que no haya colisiones si el último activo 
+                // con el consecutivo más alto fue eliminado lógicamente.
+                $maxConsecutivo = static::withTrashed()->max('consecutivo');
+                $equipo->consecutivo = $maxConsecutivo ? $maxConsecutivo + 1 : 1;
+            }
+        });
+    }
 
     protected $casts = [
         'fecha_compra' => 'date',
@@ -195,7 +210,8 @@ class Equipo extends Model
     {
         $prefijo = $this->tipoRecurso ? $this->tipoRecurso->prefijo : 'ACT';
         // Formatea el ID rellenando con ceros a la izquierda hasta 4 dígitos (Ej. LAP-0015)
-        return $prefijo . '-' . str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
+        $numero = $this->consecutivo ?? $this->id;
+        return $prefijo . '-' . str_pad((string) $numero, 4, '0', STR_PAD_LEFT);
     }
 
     public function getSerialVisualAttribute(): string
@@ -205,7 +221,8 @@ class Equipo extends Model
         
         if ($serialReal === '' || str_starts_with(strtoupper($serialReal), 'SIN_SERIAL_') || in_array(strtoupper($serialReal), $invalidos, true)) {
             $prefijo = $this->tipoRecurso ? $this->tipoRecurso->prefijo : 'ACT';
-            $codigo = str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
+            $numero = $this->consecutivo ?? $this->id;
+            $codigo = str_pad((string) $numero, 4, '0', STR_PAD_LEFT);
             return "{$prefijo}-S{$codigo}";
         }
         return $serialReal;
@@ -221,7 +238,8 @@ class Equipo extends Model
         
         if ($placaReal === '' || in_array(strtoupper($placaReal), $invalidos, true)) {
             $prefijo = $this->tipoRecurso ? $this->tipoRecurso->prefijo : 'ACT';
-            $codigo = str_pad((string) $this->id, 4, '0', STR_PAD_LEFT);
+            $numero = $this->consecutivo ?? $this->id;
+            $codigo = str_pad((string) $numero, 4, '0', STR_PAD_LEFT);
             return "{$prefijo}-P{$codigo}";
         }
         return $placaReal;

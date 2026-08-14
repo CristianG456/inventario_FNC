@@ -641,25 +641,49 @@ class EquipoController extends Controller
         }
 
         $filePath = $request->file('archivo')->getRealPath();
-        $import = new EquiposImport($filePath, $responsableInstitucional);
-        Excel::import($import, $request->file('archivo'));
+        $selector = new \App\Imports\EquiposImportSelector($filePath, $responsableInstitucional);
+        Excel::import($selector, $request->file('archivo'));
+
+        $import = $selector->getImport();
+        if (!$import) {
+            return redirect()->route('equipos.importar.form')
+                ->withErrors(['archivo' => 'No se pudo procesar ninguna hoja del archivo.']);
+        }
 
         $rowFailures  = $import->getRowFailures();
         $phpErrors    = $import->errors();
         $insertados   = $import->getInsertados();
         $omitidos     = $import->getOmitidos();
+        $metricas     = $import->getMetricas();
         $columnReport = $import->getMapper()->getColumnReport();
 
         $errorsData = collect($phpErrors)->map(fn($e) => [
             'mensaje' => class_basename(get_class($e)) . ': ' . $e->getMessage(),
-        ])->toArray();
+        ])->take(50)->toArray();
+
+        $fallosFila = collect($rowFailures)->take(50)->toArray();
+        $totalFallos = count($rowFailures);
+
+        if (isset($columnReport['ignoradas']) && is_array($columnReport['ignoradas'])) {
+            $columnReport['total_ignoradas'] = count($columnReport['ignoradas']);
+            $columnReport['ignoradas'] = array_slice($columnReport['ignoradas'], 0, 50);
+        }
+
+        $reportData = [
+            'import_insertados'    => $insertados,
+            'import_metricas'      => $metricas,
+            'import_omitidos'      => $omitidos,
+            'import_failures'      => $fallosFila,
+            'import_total_fallos'  => $totalFallos,
+            'import_errors'        => $errorsData,
+            'import_column_report' => $columnReport,
+        ];
+
+        $cacheKey = 'import_report_' . (auth()->id() ?? 'guest') . '_' . time();
+        \Illuminate\Support\Facades\Cache::put($cacheKey, $reportData, now()->addMinutes(15));
 
         return redirect()->route('equipos.importar.form')
-            ->with('import_insertados', $insertados)
-            ->with('import_omitidos', $omitidos)
-            ->with('import_failures', $rowFailures)
-            ->with('import_errors', $errorsData)
-            ->with('import_column_report', $columnReport);
+            ->with('import_cache_key', $cacheKey);
     }
 
     /**

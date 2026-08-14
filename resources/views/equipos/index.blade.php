@@ -240,7 +240,10 @@
                                     $estadoMostrado = $equipo->estado_label;
                                     $badgeClass = $equipo->estado_badge;
                                     
-                                    if ($equipo->asignacionResponsabilidadActiva) {
+                                    if ($equipo->asignacionResponsabilidadActiva && !$tieneFuncionarioReal) {
+                                        // Solo mostrar "Asignado Bajo Responsabilidad" si NO hay
+                                        // un funcionario asignado normalmente. Cuando ambos
+                                        // coexisten, la asignación normal es el estado primario.
                                         $estadoMostrado = 'Asignado Bajo Responsabilidad';
                                         $badgeClass = 'info text-white';
                                     } elseif ($equipo->estado_operativo === 'mantenimiento' && !$tieneFuncionarioReal) {

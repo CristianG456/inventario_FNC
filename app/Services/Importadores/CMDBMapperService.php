@@ -70,6 +70,11 @@ class CMDBMapperService
 
     private const COLUMN_MAP = [
 
+        'tipo_asignacion' => [
+            'tipo_de_asignacion', 'tipo_asignacion', 'tipo_de_asignacion_responsabilidad', 'asignacion',
+            'modalidad_asignacion',
+        ],
+
         // ─── Campos del equipo ───────────────────────────────────────────
 
         'tipo_recurso' => [
@@ -86,6 +91,10 @@ class CMDBMapperService
         'serial' => [
             'serial',               // CMDB & propio
             'serial_number',
+            'numero_serial',
+            'numero_de_serial',
+            'no_serial',
+            'n_serial',
             'nro_serial',
             'numero_serial',
             'nro._serial',
@@ -98,6 +107,11 @@ class CMDBMapperService
             'activo_fijo',
             'placa_inventario',
             'tag',
+        ],
+
+        'activo_fijo' => [
+            'activo_fijo', 'activo_fijo_numero', 'numero_activo_fijo',
+            'codigo_activo', 'codigo_de_activo', 'activo', 'asset_number',
         ],
 
         'marca' => [
@@ -206,36 +220,47 @@ class CMDBMapperService
             'responsable_del_activo_cedula',
             'responsable_cedula',
             'cedula_responsable',
+            'cedula_1', // Segunda columna CEDULA si hubiera
         ],
 
         'responsable_nombre' => [
             'responsable_del_activo_nombre',
             'responsable_nombre',
             'nombre_responsable',
+            'nombres_y_apellidos_1', // Segunda columna NOMBRES Y APELLIDOS del CMDB
+            'cheklist_responsable_ti',
+            'responsable_administrativo',
+            'funcionario_responsable',
+            'funcionario_responsable_nombre',
+            'nombre_funcionario_responsable',
         ],
 
         'responsable_cargo' => [
             'responsable_del_activo_cargo',
             'responsable_cargo',
             'cargo_responsable',
+            'cargo_1', // Segunda columna CARGO del CMDB
         ],
 
         'responsable_ciudad' => [
             'responsable_del_activo_ciudad',
             'responsable_ciudad',
             'ciudad_responsable',
+            'ciudad_1', // Segunda columna CIUDAD del CMDB
         ],
 
         'responsable_area' => [
             'responsable_del_activo_area',
             'responsable_area',
             'area_responsable',
+            'area_1', // Segunda columna AREA del CMDB
         ],
 
         'responsable_tipo_recurso' => [
             'responsable_del_activo_tipo_recurso',
             'responsable_tipo_recurso',
             'tipo_recurso_responsable',
+            'tipo_de_recurso_1', // Segunda columna TIPO DE RECURSO del CMDB
         ],
 
         'fecha_inicio_responsable' => [
@@ -259,6 +284,9 @@ class CMDBMapperService
             'full_name',
             'nombre_completo',
             'nombre_funcionario',
+            'funcionario',
+            'funcionario_asignado',
+            'nombre_del_funcionario',
             'nombres_apellidos',
         ],
 
@@ -274,6 +302,13 @@ class CMDBMapperService
             'id_number',
             'cedula_ciudadania',
             'cc',
+            'identificacion_funcionario',
+            'identificacion_responsable',
+            'documento_funcionario',
+            'cc_funcionario',
+            'cc_responsable',
+            'funcionario_responsable_cedula',
+            'cedula_funcionario_responsable',
         ],
 
         'empresa_propietaria' => [
@@ -370,6 +405,9 @@ class CMDBMapperService
             'ubicacion',
             'nivel',
         ],
+
+        'distrito' => ['distrito', 'usuario_distrito', 'district'],
+        'seccional' => ['seccional', 'seccion', 'usuario_seccional', 'branch'],
     ];
 
     // ── Valores por defecto cuando el campo no existe o es vacío ──────────
@@ -438,6 +476,56 @@ class CMDBMapperService
         }
 
         return null;
+    }
+
+    public function has(string $campo): bool
+    {
+        return $this->resolvedMap !== null && isset($this->resolvedMap[$campo]);
+    }
+
+    /**
+     * La modalidad proviene de un valor explícito de la fila. La sola presencia
+     * de una columna llamada "responsable" no convierte una asignación normal
+     * en una asignación bajo responsabilidad.
+     */
+    public function isResponsibilityRow(array $row): bool
+    {
+        // Valores exactos que indican explícitamente una asignación bajo responsabilidad.
+        // No se usa str_contains para evitar falsos positivos con valores como
+        // "ASIGNACIÓN NORMAL" o "RESPONSABLE ADMINISTRATIVO".
+        $valoresResponsabilidad = [
+            'ASIGNACION RESPONSABLE',
+            'ASIGNACION BAJO RESPONSABILIDAD',
+            'RESPONSABILIDAD',
+        ];
+
+        foreach (['tipo_asignacion', 'razon_estado'] as $campo) {
+            $valor = $this->get($row, $campo);
+            if ($valor === null) {
+                continue;
+            }
+
+            $normalizado = $this->normalizeRelationshipValue($valor);
+
+            foreach ($valoresResponsabilidad as $patron) {
+                if ($normalizado === $patron) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static function normalizeIdentifier(mixed $value, bool $document = false): ?string
+    {
+        if ($value === null) return null;
+        $value = trim(preg_replace('/[\x00-\x1F\x7F\x{00A0}]+/u', ' ', (string) $value));
+        if ($value === '') return null;
+        if (preg_match('/^\d+\.0+$/', $value)) $value = strstr($value, '.', true);
+        $value = strtoupper($value);
+        if ($document) $value = preg_replace('/[.\s-]+/', '', $value);
+        return $value !== '' ? $value : null;
     }
 
     /**
@@ -629,7 +717,12 @@ class CMDBMapperService
      */
     private function normalizeKey(string $alias): string
     {
-        return strtolower(trim(preg_replace('/[\s\-]+/', '_', $alias)));
+        return \Illuminate\Support\Str::slug($alias, '_');
+    }
+
+    private function normalizeRelationshipValue(string $value): string
+    {
+        return strtoupper(str_replace('_', ' ', \Illuminate\Support\Str::ascii(trim($value))));
     }
 
     /**

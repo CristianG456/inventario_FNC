@@ -11,15 +11,24 @@
 </div>
 
 {{-- ░░ RESUMEN RESULTADO ░░ --}}
-@if (session()->has('import_insertados'))
+@if (session()->has('import_cache_key') || session()->has('import_insertados'))
     @php
-        $insertados    = session('import_insertados');
-        $omitidos      = session('import_omitidos', 0);
-        $failures      = session('import_failures', []);
-        $importErrors  = session('import_errors', []);
-        $columnReport  = session('import_column_report', []);
-        $fallidas      = count($failures) + count($importErrors);
-        $total         = $insertados + $fallidas + $omitidos;
+        if (session()->has('import_cache_key')) {
+            $cacheKey = session('import_cache_key');
+            $reportData = \Illuminate\Support\Facades\Cache::get($cacheKey, []);
+        } else {
+            $reportData = session()->all();
+        }
+        
+        $insertados    = $reportData['import_insertados'] ?? 0;
+        $omitidos      = $reportData['import_omitidos'] ?? 0;
+        $failures      = $reportData['import_failures'] ?? [];
+        $importErrors  = $reportData['import_errors'] ?? [];
+        $columnReport  = $reportData['import_column_report'] ?? [];
+        $totalFallos   = $reportData['import_total_fallos'] ?? count($failures);
+        $fallidas      = $totalFallos + count($importErrors);
+        $metricas       = $reportData['import_metricas'] ?? [];
+        $total         = $metricas['procesados'] ?? ($insertados + $fallidas + $omitidos);
     @endphp
 
     {{-- Formato detectado --}}
@@ -49,7 +58,7 @@
         <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm text-center py-3 border-success">
                 <div class="fs-1 fw-bold text-success">{{ $insertados }}</div>
-                <div class="text-muted small">Registradas</div>
+                <div class="text-muted small">Activos creados</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
@@ -65,6 +74,20 @@
             </div>
         </div>
     </div>
+
+    @if (!empty($metricas))
+        <div class="alert alert-light border small">
+            <strong>Resultado de sincronización:</strong>
+            Activos creados: {{ $metricas['creados'] ?? 0 }} ·
+            actualizados: {{ $metricas['actualizados'] ?? 0 }} ·
+            funcionarios creados: {{ $metricas['funcionarios_creados'] ?? 0 }} ·
+            actualizados: {{ $metricas['funcionarios_actualizados'] ?? 0 }} ·
+            asignaciones creadas: {{ $metricas['asignaciones_creadas'] ?? 0 }} ·
+            actualizadas: {{ $metricas['asignaciones_actualizadas'] ?? 0 }} ·
+            responsabilidades creadas: {{ $metricas['responsabilidades_creadas'] ?? 0 }} ·
+            actualizadas: {{ $metricas['responsabilidades_actualizadas'] ?? 0 }}
+        </div>
+    @endif
 
     {{-- ░░ REPORTE DE COLUMNAS ░░ --}}
     @if (!empty($columnReport))
@@ -112,12 +135,12 @@
                         <div class="col-md-4">
                             <h6 class="text-secondary fw-bold mb-2">
                                 <i class="bi bi-dash-circle me-1"></i>
-                                Ignoradas ({{ count($columnReport['ignoradas'] ?? []) }})
+                                Ignoradas ({{ $columnReport['total_ignoradas'] ?? count($columnReport['ignoradas'] ?? []) }})
                             </h6>
                             @if (!empty($columnReport['ignoradas']))
                                 <div style="max-height: 250px; overflow-y: auto;">
-                                    @php $ignoradasTotal = count($columnReport['ignoradas']); @endphp
-                                    @foreach (array_slice($columnReport['ignoradas'], 0, 50) as $col)
+                                    @php $ignoradasTotal = $columnReport['total_ignoradas'] ?? count($columnReport['ignoradas']); @endphp
+                                    @foreach ($columnReport['ignoradas'] as $col)
                                         <span class="badge bg-light text-dark border me-1 mb-1">{{ Str::limit((string)$col, 30) }}</span>
                                     @endforeach
                                     @if ($ignoradasTotal > 50)
