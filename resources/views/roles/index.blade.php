@@ -27,13 +27,13 @@
             <td>
                 <span class="fw-medium">{{ $role->name }}</span>
             </td>
-            <td>
+            <td class="text-nowrap">
                 <span class="badge bg-primary rounded-pill">{{ $role->users_count }}</span>
             </td>
-            <td class="text-muted small">
+            <td class="text-muted small text-nowrap">
                 {{ $role->created_at->format('d/m/Y') }}
             </td>
-            <td class="text-center">
+            <td class="text-center text-nowrap">
                 <div class="d-flex gap-1 justify-content-center">
                     @can('roles.editar')
                     @if($role->name === 'Administrador' && !auth()->user()->hasRole('Administrador'))

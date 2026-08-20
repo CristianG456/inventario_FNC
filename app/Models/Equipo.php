@@ -244,4 +244,27 @@ class Equipo extends Model
         }
         return $placaReal;
     }
+
+    /**
+     * Calcula o sanea el tiempo de uso para evitar mostrar fórmulas de Excel.
+     */
+    public function getTiempoUsoAttribute($value)
+    {
+        $valueStr = trim((string) $value);
+        if ($valueStr === '' || str_starts_with($valueStr, '=') || strtoupper($valueStr) === 'PENDIENTE') {
+            if ($this->fecha_compra) {
+                $diff = $this->fecha_compra->diff(\Carbon\Carbon::now());
+                if ($diff->y > 0) {
+                    return $diff->y . ($diff->y === 1 ? ' año' : ' años') . 
+                           ($diff->m > 0 ? ', ' . $diff->m . ($diff->m === 1 ? ' mes' : ' meses') : '');
+                } elseif ($diff->m > 0) {
+                    return $diff->m . ($diff->m === 1 ? ' mes' : ' meses');
+                } else {
+                    return 'Menos de 1 mes';
+                }
+            }
+            return 'Pendiente / No definido';
+        }
+        return $value;
+    }
 }

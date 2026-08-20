@@ -50,8 +50,8 @@
                 {{ $reg->observaciones ?: $reg->descripcion }}
             </td>
             <td>{{ $reg->usuario_responsable_label }}</td>
-            <td>{{ \Carbon\Carbon::parse($reg->fecha_evento)->format('d M Y') }}</td>
-            <td class="text-end pe-4">
+            <td class="text-nowrap">{{ \Carbon\Carbon::parse($reg->fecha_evento)->format('d M Y') }}</td>
+            <td class="text-end pe-4 text-nowrap">
                 <div class="d-inline-flex align-items-center gap-1">
                     <x-ui.button href="{{ route('historial-tecnico.show', $reg) }}" color="light" class="btn-sm rounded-circle" icon="eye" title="Ver detalle" />
                     @if($reg->equipo_id)

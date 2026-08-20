@@ -35,7 +35,7 @@
         <label class="form-label fw-medium small mb-1">Buscar</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" name="buscar" id="buscadorFuncionarios" value="{{ request('buscar') }}"
+            <input type="search" enterkeyhint="search" name="buscar" id="buscadorFuncionarios" value="{{ request('buscar') }}"
                    class="form-control" placeholder="Nombre, cédula, cargo, área, distrito..." autocomplete="off">
         </div>
     </div>
@@ -90,12 +90,12 @@
                         <br><small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ $func->distrito }}</small>
                     @endif
                 </td>
-                <td class="text-muted">{{ $func->identificacion }}</td>
+                <td class="text-muted text-nowrap">{{ $func->identificacion }}</td>
                 <td>
                     <div>{{ $func->cargo ?? '—' }}</div>
                     <small class="text-muted">{{ $func->area ?? '—' }}</small>
                 </td>
-                <td>
+                <td class="text-nowrap">
                     <x-ui.badge color="{{ $func->estado == 'Activo' ? 'success' : 'secondary' }}">
                         {{ $func->estado }}
                     </x-ui.badge>
@@ -103,12 +103,12 @@
                         <br><small class="text-muted mt-1 d-block">{{ $func->tipo_vinculacion }}</small>
                     @endif
                 </td>
-                <td>
+                <td class="text-nowrap">
                     <x-ui.badge color="{{ $func->equipos_asignados_count > 0 ? 'primary' : 'light text-dark border' }}">
                         <i class="bi bi-laptop me-1"></i> {{ $func->equipos_asignados_count }}
                     </x-ui.badge>
                 </td>
-                <td>
+                <td class="text-nowrap">
                     <x-ui.badge color="{{ $func->autorizaciones_disponibles_count > 0 ? 'success' : 'light text-dark border' }}" title="Disponibles para asignar">
                         <i class="bi bi-file-earmark-check me-1"></i> {{ $func->autorizaciones_disponibles_count }}
                     </x-ui.badge>
@@ -116,8 +116,8 @@
                         T: {{ $func->autorizaciones_total_count }}
                     </x-ui.badge>
                 </td>
-                <td class="text-end pe-4">
-                    <div class="d-flex gap-1 justify-content-end flex-wrap">
+                <td class="text-end pe-4 text-nowrap">
+                    <div class="d-flex gap-1 justify-content-end flex-nowrap">
                         <x-ui.button href="{{ route('funcionarios.show', $func) }}" color="light" size="sm" class="rounded-circle" title="Ver funcionario" icon="eye" />
                         <x-ui.button href="{{ route('funcionarios.edit', $func) }}" color="light" size="sm" class="rounded-circle" title="Editar funcionario" icon="pencil" />
                         <x-ui.button type="button" outline="true" color="primary" size="sm" class="rounded-circle btn-subir-autorizacion"
@@ -143,9 +143,7 @@
     </x-ui.table>
     <div id="paginadorFuncionarios">
         @if($funcionarios->hasPages())
-            <div class="p-3 border-top d-flex justify-content-between align-items-center">
-                <small class="text-muted">
-                    Mostrando {{ $funcionarios->firstItem() }}–{{ $funcionarios->lastItem() }} de {{ $funcionarios->total() }} funcionarios
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $funcionarios->firstItem() }}–{{ $funcionarios->lastItem() }} de {{ $funcionarios->total() }} funcionarios
                 </small>
                 {{ $funcionarios->links('pagination::bootstrap-5') }}
             </div>
@@ -267,9 +265,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 spinner.classList.add('d-none');
 
-                // Update URL without reload
-                const newUrl = `{{ route('funcionarios.index') }}${params.toString() ? '?' + params.toString() : ''}`;
-                history.replaceState(null, '', newUrl.replace('&_live=1', '').replace('?_live=1', ''));
+                // Ya no actualizamos la URL en el navegador porque el usuario solicitó ocultar las rutas
+                // const newUrl = `{{ route('funcionarios.index') }}${params.toString() ? '?' + params.toString() : ''}`;
+                // history.replaceState(null, '', newUrl.replace('&_live=1', '').replace('?_live=1', ''));
             })
             .catch(() => {
                 spinner.classList.add('d-none');
@@ -281,6 +279,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (buscador) {
         buscador.addEventListener('input', function () {
             fetchFuncionarios(this.value.trim(), estadoSel ? estadoSel.value : '', getAreaValue());
+        });
+        
+        // Ocultar el teclado móvil al presionar Enter (Buscar)
+        buscador.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscador.blur();
+            }
         });
     }
 
@@ -341,3 +347,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 @endpush
 @endsection
+

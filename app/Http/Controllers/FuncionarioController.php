@@ -7,6 +7,8 @@ use App\Models\Funcionario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
+use App\Services\Importadores\CMDBMapperService;
 
 class FuncionarioController extends Controller
 {
@@ -17,19 +19,6 @@ class FuncionarioController extends Controller
             'autorizacionesActivos as autorizaciones_disponibles_count' => fn ($q) => $q->disponibles(),
             'autorizacionesActivos as autorizaciones_total_count',
         ]);
-
-        if ($request->filled('buscar')) {
-            $buscar = $request->buscar;
-            $query->where(function ($q) use ($buscar) {
-                $q->where('nombres', 'like', "%{$buscar}%")
-                  ->orWhere('apellidos', 'like', "%{$buscar}%")
-                  ->orWhere('identificacion', 'like', "%{$buscar}%")
-                  ->orWhere('cargo', 'like', "%{$buscar}%")
-                  ->orWhere('area', 'like', "%{$buscar}%")
-                  ->orWhere('seccional', 'like', "%{$buscar}%")
-                  ->orWhere('distrito', 'like', "%{$buscar}%");
-            });
-        }
 
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
@@ -47,7 +36,39 @@ class FuncionarioController extends Controller
         $areasDisponibles = Funcionario::select('area')->whereNotNull('area')->distinct()->orderBy('area')->pluck('area');
         $tiposVinculacion = Funcionario::select('tipo_vinculacion')->whereNotNull('tipo_vinculacion')->distinct()->orderBy('tipo_vinculacion')->pluck('tipo_vinculacion');
 
-        $funcionarios = $query->orderBy('nombres')->paginate(15)->withQueryString();
+        // Obtenemos todos los resultados que cumplen los filtros base
+        $todos = $query->get();
+
+        if ($request->filled('buscar')) {
+            $palabras = array_filter(explode(' ', strtolower(trim($request->buscar))), fn($p) => strlen(trim($p)) > 0);
+            
+            $todos = $todos->filter(function ($f) use ($palabras) {
+                foreach ($palabras as $palabra) {
+                    $coincidePalabra = str_contains(strtolower($f->nombres ?? ''), $palabra) ||
+                                       str_contains(strtolower($f->apellidos ?? ''), $palabra) ||
+                                       str_contains(strtolower($f->identificacion ?? ''), $palabra) ||
+                                       str_contains(strtolower($f->cargo ?? ''), $palabra) ||
+                                       str_contains(strtolower($f->area ?? ''), $palabra) ||
+                                       str_contains(strtolower($f->seccional ?? ''), $palabra) ||
+                                       str_contains(strtolower($f->distrito ?? ''), $palabra);
+                    
+                    if (!$coincidePalabra) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        $page = request()->get('page', 1);
+        $perPage = 15;
+        $funcionarios = new \Illuminate\Pagination\LengthAwarePaginator(
+            $todos->sortBy('nombres')->slice(($page - 1) * $perPage, $perPage)->values(),
+            $todos->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('funcionarios.index', compact('funcionarios', 'areasDisponibles', 'tiposVinculacion'));
     }
@@ -165,13 +186,25 @@ class FuncionarioController extends Controller
 
     private function validarFuncionario(Request $request, ?int $funcionarioId = null): array
     {
-        $identificacionRule = 'required|string|unique:funcionarios,identificacion';
+        $request->merge([
+            'identificacion' => trim($request->identificacion),
+            'nombres' => trim($request->nombres),
+        ]);
+
+        $identificacionNormalizada = CMDBMapperService::normalizeIdentifier($request->identificacion, true) ?? '';
+        $hash = hash_hmac('sha256', $identificacionNormalizada, config('app.key'));
+
+        $uniqueRule = Rule::unique('funcionarios', 'identificacion_hash');
         if ($funcionarioId) {
-            $identificacionRule .= ',' . $funcionarioId;
+            $uniqueRule->ignore($funcionarioId);
         }
 
-        return $request->validate([
-            'identificacion' => $identificacionRule,
+        // Custom validation message for the hash unique rule
+        $validator = \Illuminate\Support\Facades\Validator::make(
+            ['identificacion_hash' => $hash] + $request->all(),
+            [
+                'identificacion_hash' => [$uniqueRule],
+                'identificacion' => 'required|string',
             'nombres' => 'required|string|max:100',
             'apellidos' => 'nullable|string|max:100',
             'cargo' => 'nullable|string|max:100',
@@ -183,6 +216,12 @@ class FuncionarioController extends Controller
             'empresa_funcionario' => 'nullable|string|max:150',
             'tipo_vinculacion' => 'nullable|string|max:100',
             'estado' => 'required|in:Activo,Inactivo',
-        ]);
+            ],
+            [
+                'identificacion_hash.unique' => 'La identificación ingresada ya se encuentra registrada.',
+            ]
+        );
+
+        return $validator->validate();
     }
 }

@@ -1,13 +1,23 @@
-@extends('layouts.app')
+@extends('layouts.inventario')
+
+@section('title', 'Historial Global de Complementos')
 
 @section('content')
-<div class="container-fluid">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Historial Global de Complementos</h6>
-            <a href="{{ route('equipos.complementos.global') }}" class="btn btn-secondary btn-sm">Volver a Complementos</a>
-        </div>
-        <div class="card-body">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-clock-history me-2 text-primary"></i>
+            Historial Global de Complementos
+        </h4>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ route('equipos.complementos.global') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<x-ui.card>
             <form method="GET" action="{{ route('equipos.complementos.historial_global') }}" class="mb-4">
                 <div class="row g-3">
                     <div class="col-md-4">
@@ -81,7 +91,5 @@
             <div class="d-flex justify-content-center mt-3">
                 {{ $historial->links() }}
             </div>
-        </div>
-    </div>
-</div>
+</x-ui.card>
 @endsection

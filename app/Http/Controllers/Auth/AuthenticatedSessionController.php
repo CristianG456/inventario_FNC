@@ -38,9 +38,11 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
+        // En un entorno de sesiones aisladas por pestaña, no podemos invalidar 
+        // toda la sesión compartida ni regenerar el token CSRF, porque esto 
+        // destruiría o invalidaría las demás pestañas activas.
+        // $request->session()->invalidate();
+        // $request->session()->regenerateToken();
 
         return redirect('/');
     }

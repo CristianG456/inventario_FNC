@@ -137,6 +137,7 @@
                             placeholder="Ej: Laptop, PC, Tablet, Impresora..."
                             value="{{ old('nombre') }}"
                             maxlength="100"
+                            oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
                             required
                             style="border:1.5px solid #e2e8f0; border-left:0; border-radius:0 10px 10px 0;"
                         >
@@ -153,15 +154,17 @@
                 {{-- Complementos --}}
                 <div class="mb-4">
                     <div class="complementos-section">
-                        <div class="section-header">
-                            <div class="section-icon">
-                                <i class="bi bi-puzzle"></i>
+                        <div class="section-header d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                <div class="section-icon">
+                                    <i class="bi bi-puzzle"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark" style="font-size:0.9rem;">Complementos Definidos</div>
+                                    <div class="text-muted" style="font-size:0.78rem;">Accesorios incluidos al registrar este tipo de activo</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="fw-semibold text-dark" style="font-size:0.9rem;">Complementos Definidos</div>
-                                <div class="text-muted" style="font-size:0.78rem;">Accesorios incluidos al registrar este tipo de activo</div>
-                            </div>
-                            <span class="selected-counter" id="contadorSeleccionados">0 seleccionados</span>
+                            <span class="selected-counter ms-0 ms-sm-auto mt-1 mt-sm-0 text-nowrap" id="contadorSeleccionados">0 seleccionados</span>
                         </div>
 
                         @if($catalogoComplementos->isEmpty())
@@ -194,18 +197,18 @@
                 </div>
 
                 {{-- Botones --}}
-                <div class="d-flex gap-2 justify-content-end pt-2 border-top mt-2">
+                <div class="d-flex gap-2 justify-content-end pt-3 border-top mt-2">
                     <x-ui.button 
                         href="{{ route('tipo-recursos.index') }}" 
                         color="light" 
-                        class="border px-4"
+                        class="border px-3 text-nowrap"
                         icon="x-lg"
                         text="Cancelar" 
                     />
                     <x-ui.button 
                         type="submit" 
                         color="primary" 
-                        class="px-4"
+                        class="px-3 text-nowrap"
                         icon="floppy"
                         text="Guardar Tipo" 
                     />

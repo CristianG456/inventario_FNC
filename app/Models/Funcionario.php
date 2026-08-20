@@ -12,6 +12,7 @@ class Funcionario extends Model
 
     protected $fillable = [
         'identificacion',
+        'identificacion_hash',
         'nombres',
         'apellidos',
         'cargo',
@@ -24,6 +25,26 @@ class Funcionario extends Model
         'seccional',
         'distrito',
     ];
+
+    protected $casts = [
+        'identificacion' => 'encrypted',
+        'nombres' => 'encrypted',
+        'cargo' => 'encrypted',
+    ];
+
+    protected static function booted()
+    {
+        static::saving(function ($funcionario) {
+            if ($funcionario->isDirty('identificacion') && $funcionario->identificacion) {
+                // Normalizamos exactamente como en CMDBMapperService
+                $identificacionNormalizada = trim(preg_replace('/[\x00-\x1F\x7F\x{00A0}]+/u', ' ', (string) $funcionario->identificacion));
+                $identificacionNormalizada = strtoupper($identificacionNormalizada);
+                $identificacionNormalizada = preg_replace('/[.\s-]+/', '', $identificacionNormalizada);
+                
+                $funcionario->identificacion_hash = hash_hmac('sha256', $identificacionNormalizada, config('app.key'));
+            }
+        });
+    }
 
     public function getNombreCompletoAttribute()
     {

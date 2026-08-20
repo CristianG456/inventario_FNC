@@ -3,7 +3,7 @@
 @section('title', 'Plantillas PDF')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Plantillas de Documentos PDF
     </h4>
@@ -32,8 +32,8 @@
                         </small>
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                data-bs-toggle="dropdown">
+                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" 
+                                data-bs-toggle="dropdown" data-bs-boundary="window">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -99,3 +99,4 @@
     @endforelse
 </div>
 @endsection
+

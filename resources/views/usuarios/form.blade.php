@@ -28,6 +28,7 @@
                 autocomplete="off" 
                 required="true"
                 containerClass="col-md-6"
+                oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
             />
 
             <div class="col-md-6">
@@ -45,30 +46,42 @@
             </div>
 
             <div class="col-md-6">
-                <x-ui.input 
-                    name="password" 
-                    type="password"
-                    label="Contraseña"
-                    autocomplete="new-password"
-                    minlength="8"
-                    required="{{ $esEdicion ? 'false' : 'true' }}"
-                    containerClass="mb-1"
-                />
+                <label for="password" class="form-label fw-medium">Contraseña @if(!$esEdicion)<span class="text-danger">*</span>@endif</label>
+                <div class="input-group mb-1">
+                    <input 
+                        type="password" 
+                        name="password" 
+                        id="password" 
+                        class="form-control"
+                        autocomplete="new-password"
+                        minlength="8"
+                        {{ $esEdicion ? '' : 'required' }}
+                    >
+                    <button class="btn btn-outline-secondary toggle-password" type="button" tabindex="-1">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
                 @if($esEdicion) <div class="text-muted fw-normal small mb-1">(Dejar en blanco para mantener la actual)</div> @endif
                 <small class="text-muted d-block mt-1">Mínimo 8 caracteres, incluyendo mayúscula, minúscula, número y símbolo.</small>
                 <div class="invalid-feedback d-none" id="password-feedback">La contraseña no cumple la complejidad requerida.</div>
             </div>
 
             <div class="col-md-6">
-                <x-ui.input 
-                    name="password_confirmation" 
-                    type="password"
-                    label="Confirmar Contraseña"
-                    autocomplete="new-password"
-                    minlength="8"
-                    required="{{ $esEdicion ? 'false' : 'true' }}"
-                    containerClass="mb-0"
-                />
+                <label for="password_confirmation" class="form-label fw-medium">Confirmar Contraseña @if(!$esEdicion)<span class="text-danger">*</span>@endif</label>
+                <div class="input-group mb-0">
+                    <input 
+                        type="password" 
+                        name="password_confirmation" 
+                        id="password_confirmation" 
+                        class="form-control"
+                        autocomplete="new-password"
+                        minlength="8"
+                        {{ $esEdicion ? '' : 'required' }}
+                    >
+                    <button class="btn btn-outline-secondary toggle-password" type="button" tabindex="-1">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
                 <div class="invalid-feedback d-none" id="password-confirmation-feedback">La confirmación de la contraseña no coincide.</div>
             </div>
 
@@ -80,6 +93,9 @@
             >
                 <option value="">Seleccione un rol...</option>
                 @foreach($roles as $role)
+                    @if(Auth::user()->roles->first()->name !== 'Administrador' && $role->name === 'Administrador')
+                        @continue
+                    @endif
                     <option value="{{ $role->name }}" {{ ($esEdicion ? old('role', $usuarioForm->roles->first()->name ?? '') : '') == $role->name ? 'selected' : '' }}>
                         {{ $role->name }}
                     </option>
@@ -178,6 +194,23 @@
                 event.preventDefault();
                 event.stopPropagation();
             }
+        });
+
+        // Lógica para visualizar contraseña
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                const icon = this.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
         });
     });
 </script>

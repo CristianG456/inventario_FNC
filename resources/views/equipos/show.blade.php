@@ -12,10 +12,17 @@
         <x-ui.badge color="{{ $equipo->estado_badge }}" class="ms-2 fs-6" text="{{ $equipo->estado_label }}" />
     </x-slot>
 
-    <x-ui.button href="{{ route('equipos.historial-vida', $equipo) }}" color="primary" outline="true" icon="clock-history" text="Historial de Vida" />
-    <x-ui.button href="{{ route('historial-tecnico.por-equipo', $equipo) }}" color="warning" outline="true" icon="tools" text="Historial Técnico" />
-    <x-ui.button href="{{ route('asignaciones.por-equipo', $equipo) }}" color="success" outline="true" icon="person-fill-gear" text="Historial Asignaciones" />
-    <x-ui.button href="{{ route('equipos.edit', $equipo) }}" color="warning" class="text-white" icon="pencil" text="Editar" />
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-journal-text me-1"></i> Historiales
+        </button>
+        <ul class="dropdown-menu shadow-sm">
+            <li><a class="dropdown-item" href="{{ route('equipos.historial-vida', ['equipo' => $equipo->id, 'return_to' => url()->current()]) }}"><i class="bi bi-clock-history text-primary me-2"></i> Historial de Vida</a></li>
+            <li><a class="dropdown-item" href="{{ route('historial-tecnico.por-equipo', ['equipo' => $equipo->id, 'return_to' => url()->current()]) }}"><i class="bi bi-tools text-warning me-2"></i> Historial Técnico</a></li>
+            <li><a class="dropdown-item" href="{{ route('asignaciones.por-equipo', ['equipo' => $equipo->id, 'return_to' => url()->current()]) }}"><i class="bi bi-person-fill-gear text-success me-2"></i> Historial Asignaciones</a></li>
+        </ul>
+    </div>
+    <x-ui.button href="{{ route('equipos.edit', ['equipo' => $equipo->id, 'return_to' => url()->current()]) }}" color="warning" class="text-white" icon="pencil" text="Editar" />
 </x-ui.toolbar>
 
 <div class="row g-4">

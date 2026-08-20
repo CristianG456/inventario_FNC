@@ -8,15 +8,20 @@
     'backRoute' => null,
 ])
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">
-        @if($icon)
-            <i class="bi bi-{{ $icon }} me-2 text-primary"></i>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">
+            @if($icon)
+                <i class="bi bi-{{ $icon }} me-2 {{ $iconClass ?? 'text-primary' }}"></i>
+            @endif
+            {{ $title }}
+            {{ $titleSuffix ?? '' }}
+        </h4>
+        @if(isset($subtitle))
+            <p class="text-muted mb-0 mt-1">{{ $subtitle }}</p>
         @endif
-        {{ $title }}
-        {{ $titleSuffix ?? '' }}
-    </h4>
-    <div class="d-flex gap-2">
+    </div>
+    <div class="d-flex flex-wrap gap-2 w-100 justify-content-start justify-content-md-end" style="max-width: 100%;">
         {{ $slot }}
         
         @if($backRoute)

@@ -402,9 +402,13 @@ class AsignacionService
         $nombres        = $partes[0] ?? $nombreCompleto;
         $apellidos      = $partes[1] ?? null;
 
+        $identificacionNormalizada = \App\Services\Importadores\CMDBMapperService::normalizeIdentifier($cedula, true) ?? '';
+        $hash = hash_hmac('sha256', $identificacionNormalizada, config('app.key'));
+
         $funcionario = Funcionario::withTrashed()->updateOrCreate(
-            ['identificacion' => $cedula],
+            ['identificacion_hash' => $hash],
             [
+                'identificacion'      => $cedula,
                 'nombres'             => $nombres,
                 'apellidos'           => $apellidos,
                 'cargo'               => $datos['cargo'] ?? null,

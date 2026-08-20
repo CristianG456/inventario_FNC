@@ -389,11 +389,13 @@ class EquiposImport implements ToModel, WithStartRow, WithChunkReading, SkipsOnE
                     $equipo->update(['estado_operativo' => 'asignado']);
 
                     // 6b. Sincronizar con el catálogo de Funcionarios
-                    $funcionarioAnterior = \App\Models\Funcionario::withTrashed()->where('identificacion', $cedulaNormalizada)->first();
+                    $hash = hash_hmac('sha256', $cedulaNormalizada, config('app.key'));
+                    $funcionarioAnterior = \App\Models\Funcionario::withTrashed()->where('identificacion_hash', $hash)->first();
                     $funcionarioExistente = (bool) $funcionarioAnterior;
                     $funcionario = \App\Models\Funcionario::withTrashed()->updateOrCreate(
-                        ['identificacion' => $cedulaNormalizada],
+                        ['identificacion_hash' => $hash],
                         [
+                            'identificacion' => $cedulaNormalizada,
                             'nombres' => $nombre,
                             'apellidos' => '',
                             'cargo' => $this->mapper->get($row, 'cargo'),

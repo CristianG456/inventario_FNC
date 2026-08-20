@@ -47,7 +47,7 @@
         </x-slot>
         @forelse($asignaciones as $asignacion)
             <tr>
-                <td class="text-muted small">{{ $asignacion->id }}</td>
+                <td class="text-muted small text-nowrap">{{ $asignacion->id }}</td>
                 <td>
                     <span class="fw-medium">{{ $asignacion->equipo?->nombre_equipo ?? '—' }}</span>
                     <br><small class="text-muted font-monospace">{{ $asignacion->equipo?->serial_visual ?? '' }}</small>
@@ -68,8 +68,8 @@
                 <td>
                     <span class="small">{{ $asignacion->fecha_accion?->format('d/m/Y H:i') ?? '—' }}</span>
                 </td>
-                <td class="small text-muted">{{ $asignacion->registradoPor?->name ?? '—' }}</td>
-                <td class="text-center">
+                <td class="small text-muted text-nowrap">{{ $asignacion->registradoPor?->name ?? '—' }}</td>
+                <td class="text-center text-nowrap">
                     <div class="btn-group btn-group-sm">
                         <x-ui.button href="{{ route('asignaciones.show', $asignacion) }}" outline="true" color="info" title="Ver detalle" icon="eye" />
                         @if(in_array($asignacion->tipo_accion, ['asignacion','reemplazo']))
@@ -88,12 +88,11 @@
         @endforelse
     </x-ui.table>
     @if($asignaciones->hasPages())
-        <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-            <small class="text-muted">
-                Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }}
             </small>
             {{ $asignaciones->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </x-ui.card>
 @endsection
+

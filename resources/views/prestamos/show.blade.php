@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <div>
             <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary btn-sm mb-2"><i class="bi bi-arrow-left me-1"></i>Volver</a>
             <h2 class="h3 mb-0 text-gray-800">Préstamo #{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}</h2>
@@ -254,3 +254,4 @@
 @endif
 
 @endsection
+

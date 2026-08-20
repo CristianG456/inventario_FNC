@@ -12,7 +12,7 @@
 ])
 
 <div class="modal fade" id="{{ $id }}" tabindex="-1" aria-labelledby="{{ $id }}Label" aria-hidden="true">
-    <div class="modal-dialog {{ $size }} modal-dialog-centered">
+    <div class="modal-dialog {{ $size }} modal-dialog-centered modal-dialog-scrollable">
         @if($formId || $action)
             <form id="{{ $formId ?? $id . 'Form' }}" class="modal-content border-0 shadow-lg" {{ $action ? 'action='.$action : '' }} method="{{ $method === 'GET' ? 'GET' : 'POST' }}">
                 @if(in_array(strtoupper($method), ['PUT', 'PATCH', 'DELETE']))

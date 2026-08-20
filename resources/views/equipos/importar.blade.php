@@ -314,13 +314,13 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-lg text-white equipo-bg-primary" id="btnImportar">
-                    <i class="bi bi-cloud-upload me-2"></i>Importar Excel
-                </button>
-                <a href="{{ route('equipos.index') }}" class="btn btn-lg btn-outline-secondary">
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{{ route('equipos.index') }}" class="btn text-nowrap px-3 btn-outline-secondary">
                     Cancelar
                 </a>
+                <button type="submit" class="btn text-nowrap px-3 text-white equipo-bg-primary" id="btnImportar">
+                    <i class="bi bi-cloud-upload me-2"></i>Importar Excel
+                </button>
             </div>
         </form>
     </div>

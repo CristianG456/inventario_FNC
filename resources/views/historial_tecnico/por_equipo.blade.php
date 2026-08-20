@@ -24,107 +24,70 @@
     </x-ui.card>
 @else
 
-{{-- Timeline --}}
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
-        <span><i class="bi bi-clock-history me-2 text-warning"></i><strong>Timeline de Eventos Técnicos</strong></span>
+{{-- Historial en Tabla --}}
+<x-ui.card noPadding="true">
+    <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
+        <h5 class="card-title mb-0"><i class="bi bi-list-ul me-2 text-warning"></i>Lista de Eventos Técnicos</h5>
         <span class="badge bg-warning text-dark">{{ $registros->count() }} eventos</span>
     </div>
-    <div class="card-body py-4">
-        <div class="timeline-container">
+    <x-ui.table>
+        <x-slot name="head">
+            <tr>
+                <th class="ps-4">Fecha</th>
+                <th>Tipo de Evento</th>
+                <th>Detalles</th>
+                <th>Involucrados</th>
+                <th class="text-end pe-4">Acciones</th>
+            </tr>
+        </x-slot>
+        <tbody>
             @foreach($registros as $registro)
-            <div class="d-flex gap-3 mb-4 position-relative">
-                @if(!$loop->last)
-                <div class="timeline-line"></div>
-                @endif
-
-                {{-- Ícono --}}
-                <div class="flex-shrink-0">
-                    <div class="rounded-circle bg-{{ $registro->tipo_evento_color }} bg-opacity-15 border border-{{ $registro->tipo_evento_color }} d-flex align-items-center justify-content-center shadow-sm timeline-icon-box">
-                        <i class="bi {{ $registro->tipo_evento_icono }} text-{{ $registro->tipo_evento_color }}"></i>
+            <tr>
+                <td class="ps-4">
+                    <span class="fw-medium">{{ $registro->fecha_evento?->format('d/m/Y') }}</span>
+                    <br><small class="text-muted">{{ $registro->fecha_evento?->format('h:i A') }}</small>
+                </td>
+                <td>
+                    <span class="badge bg-{{ $registro->tipo_evento_color }}">
+                        <i class="bi {{ $registro->tipo_evento_icono }} me-1"></i>
+                        {{ $registro->tipo_evento_label }}
+                    </span>
+                </td>
+                <td class="text-wrap" style="min-width: 250px;">
+                    <strong>{{ $registro->observaciones ?: $registro->descripcion }}</strong>
+                    @if($registro->archivos && count($registro->archivos) > 0)
+                    <div class="mt-2">
+                        @foreach($registro->archivos as $archivo)
+                        <a href="{{ asset('storage/' . $archivo['ruta']) }}" target="_blank" class="badge bg-light text-dark border text-decoration-none me-1">
+                            <i class="bi bi-paperclip"></i> {{ strlen($archivo['nombre']) > 15 ? substr($archivo['nombre'], 0, 15).'...' : $archivo['nombre'] }}
+                        </a>
+                        @endforeach
                     </div>
-                </div>
-
-                {{-- Contenido --}}
-                <div class="flex-grow-1">
-                    <div class="card border-{{ $registro->tipo_evento_color }} border-opacity-25 shadow-sm">
-                        <div class="card-body py-3 px-3">
-                            {{-- Header --}}
-                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-2 gap-2">
-                                <div>
-                                    <span class="badge bg-{{ $registro->tipo_evento_color }} me-2">
-                                        {{ $registro->tipo_evento_label }}
-                                    </span>
-                                    <strong>{{ $registro->observaciones ?: $registro->descripcion }}</strong>
-                                </div>
-                                <small class="text-muted ms-sm-2">
-                                    <i class="bi bi-calendar2 me-1"></i>
-                                    {{ $registro->fecha_evento?->format('d \d\e F \d\e Y') }}
-                                </small>
-                            </div>
-
-                            {{-- Responsable --}}
-                            <p class="mb-2 small">
-                                <i class="bi bi-person-fill me-1 text-muted"></i>
-                                <strong>Responsable:</strong> {{ $registro->usuario_responsable_label }}
-                            </p>
-
-                            {{-- Usuario asignado en ese momento --}}
-                            @if($registro->usuario_asignado_snapshot)
-                            <div class="bg-light rounded p-2 mb-2 small">
-                                <i class="bi bi-person-check me-1 text-success"></i>
-                                <strong>Usuario asignado en ese momento:</strong>
-                                {{ $registro->usuario_asignado_snapshot['nombre'] ?? '—' }}
-                                (CC: {{ $registro->usuario_asignado_snapshot['cedula'] ?? '—' }})
-                                @if(!empty($registro->usuario_asignado_snapshot['area']))
-                                    — Área: {{ $registro->usuario_asignado_snapshot['area'] }}
-                                @endif
-                            </div>
-                            @endif
-
-                            {{-- Observaciones --}}
-                            {{-- Archivos --}}
-                            @if($registro->archivos && count($registro->archivos) > 0)
-                            <div class="mb-2">
-                                @foreach($registro->archivos as $archivo)
-                                <a href="{{ asset('storage/' . $archivo['ruta']) }}"
-                                   target="_blank"
-                                   class="btn btn-sm btn-outline-secondary me-1">
-                                    <i class="bi bi-paperclip me-1"></i>{{ $archivo['nombre'] }}
-                                </a>
-                                @endforeach
-                            </div>
-                            @endif
-
-                            {{-- Acciones --}}
-                            <div class="d-flex gap-2 mt-2 flex-wrap">
-                                <a href="{{ route('historial-tecnico.show', $registro) }}"
-                                   class="btn btn-sm btn-outline-info">
-                                    <i class="bi bi-eye me-1"></i>Ver
-                                </a>
-                                @if($puedeModificarBitacora)
-                                    <a href="{{ route('historial-tecnico.edit', ['historialTecnico' => $registro->id, 'return_to' => request()->fullUrl()]) }}"
-                                       class="btn btn-sm btn-outline-warning">
-                                        <i class="bi bi-pencil me-1"></i>Editar
-                                    </a>
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            data-delete-url="{{ route('historial-tecnico.destroy', $registro) }}"
-                                            data-delete-name="el evento del {{ $registro->fecha_evento?->format('d/m/Y') }}">
-                                        <i class="bi bi-trash me-1"></i>Eliminar
-                                    </button>
-                                @endif
-                                <small class="text-muted ms-auto align-self-center">
-                                    Registrado por: {{ $registro->registradoPor?->name ?? '—' }}
-                                </small>
-                            </div>
-                        </div>
+                    @endif
+                </td>
+                <td>
+                    <div class="small">
+                        <i class="bi bi-person text-muted me-1"></i><strong>Resp:</strong> {{ $registro->usuario_responsable_label }}
                     </div>
-                </div>
-            </div>
+                    @if($registro->usuario_asignado_snapshot)
+                    <div class="small text-muted mt-1">
+                        <i class="bi bi-person-check text-success me-1"></i><strong>Asignado:</strong> {{ $registro->usuario_asignado_snapshot['nombre'] ?? '—' }}
+                    </div>
+                    @endif
+                </td>
+                <td class="text-end pe-4">
+                    <div class="d-flex gap-1 justify-content-end flex-nowrap">
+                        <x-ui.button href="{{ route('historial-tecnico.show', $registro) }}" color="light" size="sm" class="rounded-circle" title="Ver" icon="eye" />
+                        @if($puedeModificarBitacora)
+                            <x-ui.button href="{{ route('historial-tecnico.edit', ['historialTecnico' => $registro->id, 'return_to' => request()->fullUrl()]) }}" color="light" size="sm" class="rounded-circle" title="Editar" icon="pencil" />
+                            <x-ui.button type="button" outline="true" color="danger" size="sm" class="rounded-circle" data-delete-url="{{ route('historial-tecnico.destroy', $registro) }}" data-delete-name="el evento del {{ $registro->fecha_evento?->format('d/m/Y') }}" title="Eliminar" icon="trash" />
+                        @endif
+                    </div>
+                </td>
+            </tr>
             @endforeach
-        </div>
-    </div>
-</div>
+        </tbody>
+    </x-ui.table>
+</x-ui.card>
 @endif
 @endsection

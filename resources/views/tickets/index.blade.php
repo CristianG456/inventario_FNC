@@ -49,7 +49,7 @@
         </x-slot>
         @forelse($tickets as $ticket)
         <tr>
-            <td class="ps-4">
+            <td class="ps-4 text-nowrap">
                 <span class="fw-bold text-dark">#{{ str_pad($ticket->id, 4, '0', STR_PAD_LEFT) }}</span><br>
                 <small class="text-muted fw-medium">{{ Str::limit($ticket->titulo, 50) }}</small>
             </td>
@@ -57,7 +57,7 @@
                 {{ $ticket->funcionario->nombres ?? 'Desconocido' }}<br>
                 <small class="text-muted">{{ $ticket->funcionario->cargo ?? '' }}</small>
             </td>
-            <td>
+            <td class="text-nowrap">
                 <span class="badge {{ 
                     in_array($ticket->estado, ['Abierto', 'En Diagnóstico']) ? 'bg-primary' : 
                     (in_array($ticket->estado, ['Resuelto', 'Cerrado']) ? 'bg-secondary' : 'bg-warning text-dark') 
@@ -71,13 +71,13 @@
                 @endphp
                 <span class="badge {{ $badgePrioridad }}">{{ $ticket->prioridad }}</span>
             </td>
-            <td class="text-muted">
+            <td class="text-muted text-nowrap">
                 <div class="d-flex align-items-center gap-2">
                     <i class="bi bi-person-circle fs-5"></i>
                     {{ $ticket->responsable->name ?? 'Sin asignar' }}
                 </div>
             </td>
-            <td>
+            <td class="text-nowrap">
                 @if(in_array($ticket->estado, ['Resuelto', 'Cerrado']) && $ticket->fecha_cierre)
                     <span class="text-success small fw-bold">
                         Cerrado en {{ Carbon\Carbon::parse($ticket->created_at)->diffForHumans($ticket->fecha_cierre, true) }}
@@ -90,7 +90,7 @@
                 <br>
                 <small class="text-muted" style="font-size: 0.7rem;">Solicitado: {{ $ticket->fecha_solicitud ? $ticket->fecha_solicitud->format('d/m/Y') : $ticket->created_at->format('d/m/Y') }}</small>
             </td>
-            <td class="text-end pe-4">
+            <td class="text-end pe-4 text-nowrap">
                 <x-ui.button href="{{ route('tickets.show', $ticket) }}" color="primary" outline="true" size="sm" class="rounded-pill px-3" text="Ver Detalle" />
             </td>
         </tr>

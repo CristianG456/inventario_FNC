@@ -1,13 +1,24 @@
-@extends('layouts.app')
+@extends('layouts.inventario')
+
+@section('title', 'Historial del Complemento')
 
 @section('content')
-<div class="container-fluid">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">HISTORIAL DEL COMPLEMENTO</h6>
-            <a href="{{ route('equipos.complementos.global') }}" class="btn btn-secondary btn-sm">Volver</a>
-        </div>
-        <div class="card-body">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-clock-history me-2 text-primary"></i>
+            Historial del Complemento
+        </h4>
+        <small class="text-muted">{{ $complemento->nombre }} — Serial: {{ $complemento->serial ?? 'N/A' }}</small>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ route('equipos.complementos.global') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+
+<x-ui.card>
             
             <div class="row mb-4">
                 <div class="col-md-6">
@@ -74,7 +85,5 @@
                 {{ $historial->links() }}
             </div>
             
-        </div>
-    </div>
-</div>
+</x-ui.card>
 @endsection

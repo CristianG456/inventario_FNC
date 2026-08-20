@@ -65,11 +65,11 @@
             </div>
 
             <div class="col-12 col-md-4">
-                <x-ui.input name="placa" value="{{ old('placa', $equipo->placa ?? '') }}" label="Placa" required="false" maxlength="100" containerClass="" />
+                <x-ui.input name="placa" value="{{ old('placa', $equipo->placa ?? '') }}" label="Placa" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
             </div>
 
             <div class="col-12 col-md-4">
-                <x-ui.input name="marca" value="{{ old('marca', $equipo->marca ?? '') }}" label="Marca" required="true" maxlength="100" containerClass="" />
+                <x-ui.input name="marca" value="{{ old('marca', $equipo->marca ?? '') }}" label="Marca" required="true" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
             </div>
 
             <div class="col-12 col-md-4">
@@ -174,49 +174,49 @@
             @endif
             <div class="row g-3">
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_empresa_propietaria" value="{{ old('usuario_empresa_propietaria', $equipo->usuarioAsignado->empresa_propietaria ?? '') }}" label="Empresa Propietaria del Equipo" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_empresa_propietaria" value="{{ old('usuario_empresa_propietaria', $equipo->usuarioAsignado->empresa_propietaria ?? '') }}" label="Empresa Propietaria del Equipo" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_dependencia" value="{{ old('usuario_dependencia', $equipo->usuarioAsignado->dependencia ?? '') }}" label="Dependencia" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_dependencia" value="{{ old('usuario_dependencia', $equipo->usuarioAsignado->dependencia ?? '') }}" label="Dependencia" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_fuente_recurso" value="{{ old('usuario_fuente_recurso', $equipo->usuarioAsignado->fuente_recurso ?? '') }}" label="Fuente de Recurso" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_fuente_recurso" value="{{ old('usuario_fuente_recurso', $equipo->usuarioAsignado->fuente_recurso ?? '') }}" label="Fuente de Recurso" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_empresa_funcionario" value="{{ old('usuario_empresa_funcionario', $equipo->usuarioAsignado->empresa_funcionario ?? '') }}" label="Empresa Funcionario" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_empresa_funcionario" value="{{ old('usuario_empresa_funcionario', $equipo->usuarioAsignado->empresa_funcionario ?? '') }}" label="Empresa Funcionario" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_tipo_vinculacion" value="{{ old('usuario_tipo_vinculacion', $equipo->usuarioAsignado->tipo_vinculacion ?? '') }}" label="Empleado o Contratista" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_tipo_vinculacion" value="{{ old('usuario_tipo_vinculacion', $equipo->usuarioAsignado->tipo_vinculacion ?? '') }}" label="Empleado o Contratista" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-4">
                     <x-ui.input name="usuario_shortname" value="{{ old('usuario_shortname', $equipo->usuarioAsignado->shortname ?? '') }}" label="Shortname" required="false" maxlength="100" containerClass="" />
                 </div>
                 <div class="col-12 col-md-6">
-                      <x-ui.input name="usuario_nombre" value="{{ old('usuario_nombre', $equipo->usuarioAsignado->nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" />
+                      <x-ui.input name="usuario_nombre" value="{{ old('usuario_nombre', $equipo->usuarioAsignado->nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                      <x-ui.input name="usuario_cedula" value="{{ old('usuario_cedula', $equipo->usuarioAsignado->cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" />
+                      <x-ui.input name="usuario_cedula" value="{{ old('usuario_cedula', $equipo->usuarioAsignado->cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_ciudad" value="{{ old('usuario_ciudad', $equipo->usuarioAsignado->ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_ciudad" value="{{ old('usuario_ciudad', $equipo->usuarioAsignado->ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_departamento" value="{{ old('usuario_departamento', $equipo->usuarioAsignado->departamento ?? '') }}" label="Departamento" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_departamento" value="{{ old('usuario_departamento', $equipo->usuarioAsignado->departamento ?? '') }}" label="Departamento" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_cargo" value="{{ old('usuario_cargo', $equipo->usuarioAsignado->cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_cargo" value="{{ old('usuario_cargo', $equipo->usuarioAsignado->cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_area" value="{{ old('usuario_area', $equipo->usuarioAsignado->area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="usuario_area" value="{{ old('usuario_area', $equipo->usuarioAsignado->area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="usuario_piso" value="{{ old('usuario_piso', $equipo->usuarioAsignado->piso ?? '') }}" label="Piso" required="false" maxlength="20" containerClass="" />
+                    <x-ui.input name="usuario_piso" value="{{ old('usuario_piso', $equipo->usuarioAsignado->piso ?? '') }}" label="Piso" required="false" maxlength="20" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_distrito" value="{{ old('usuario_distrito', $equipo->usuarioAsignado->distrito ?? '') }}" label="Distrito" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_distrito" value="{{ old('usuario_distrito', $equipo->usuarioAsignado->distrito ?? '') }}" label="Distrito" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-4">
-                    <x-ui.input name="usuario_seccional" value="{{ old('usuario_seccional', $equipo->usuarioAsignado->seccional ?? '') }}" label="Seccional" required="false" maxlength="150" containerClass="" />
+                    <x-ui.input name="usuario_seccional" value="{{ old('usuario_seccional', $equipo->usuarioAsignado->seccional ?? '') }}" label="Seccional" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
             </div>
         </div>
@@ -248,19 +248,19 @@
                 {{-- EDIT: Mostrar campos editables --}}
                 <div class="row g-3">
                     <div class="col-12 col-md-3">
-                        <x-ui.input name="responsable_cedula" value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" />
+                        <x-ui.input name="responsable_cedula" value="{{ old('responsable_cedula', $equipo->responsable_cedula ?? '') }}" label="Cédula" required="false" maxlength="20" containerClass="" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                     </div>
                     <div class="col-12 col-md-5">
-                        <x-ui.input name="responsable_nombre" value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" />
+                        <x-ui.input name="responsable_nombre" value="{{ old('responsable_nombre', $equipo->responsable_nombre ?? '') }}" label="Nombre" required="false" maxlength="150" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
                     <div class="col-12 col-md-4">
-                        <x-ui.input name="responsable_cargo" value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" />
+                        <x-ui.input name="responsable_cargo" value="{{ old('responsable_cargo', $equipo->responsable_cargo ?? '') }}" label="Cargo" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <x-ui.input name="responsable_ciudad" value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" />
+                        <x-ui.input name="responsable_ciudad" value="{{ old('responsable_ciudad', $equipo->responsable_ciudad ?? '') }}" label="Ciudad" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
                     <div class="col-12 col-md-3">
-                        <x-ui.input name="responsable_area" value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" />
+                        <x-ui.input name="responsable_area" value="{{ old('responsable_area', $equipo->responsable_area ?? '') }}" label="Área" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                     </div>
                     <div class="col-12 col-md-3">
                         <x-ui.input name="responsable_tipo_recurso" value="{{ old('responsable_tipo_recurso', $equipo->responsable_tipo_recurso ?? '') }}" label="Tipo de Recurso" required="false" maxlength="100" containerClass="" />
@@ -297,16 +297,16 @@
         <div class="accordion-body">
             <div class="row g-3">
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_telefono" value="{{ old('periferico_telefono', $equipo->periferico->telefono ?? '') }}" label="Teléfono Fijo" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_telefono" value="{{ old('periferico_telefono', $equipo->periferico->telefono ?? '') }}" label="Teléfono Fijo" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_teclado" value="{{ old('periferico_teclado', $equipo->periferico->teclado ?? '') }}" label="Teclado" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_teclado" value="{{ old('periferico_teclado', $equipo->periferico->teclado ?? '') }}" label="Teclado" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_mouse" value="{{ old('periferico_mouse', $equipo->periferico->mouse ?? '') }}" label="Mouse" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_mouse" value="{{ old('periferico_mouse', $equipo->periferico->mouse ?? '') }}" label="Mouse" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
                 <div class="col-12 col-md-3">
-                    <x-ui.input name="periferico_camara" value="{{ old('periferico_camara', $equipo->periferico->camara ?? '') }}" label="Cámara" required="false" maxlength="100" containerClass="" />
+                    <x-ui.input name="periferico_camara" value="{{ old('periferico_camara', $equipo->periferico->camara ?? '') }}" label="Cámara" required="false" maxlength="100" containerClass="" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
                 </div>
             </div>
         </div>

@@ -3,7 +3,7 @@
 @section('title', 'Auditoría')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-primary"></i>Registro de Auditoría</h4>
 </div>
 
@@ -53,3 +53,4 @@
     {{ $logs->links('pagination::bootstrap-5') }}
 </div>
 @endsection
+

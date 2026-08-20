@@ -43,6 +43,10 @@ class UserController extends Controller
             'role.exists' => 'El rol seleccionado no es válido.',
         ]);
 
+        if ($request->role === 'Administrador' && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->back()->with('error', 'No tienes permisos para asignar el rol de Administrador.')->withInput();
+        }
+
         DB::beginTransaction();
         try {
             $user = User::create([
@@ -96,6 +100,10 @@ class UserController extends Controller
             'role.required' => 'Debe seleccionar un rol.',
             'role.exists' => 'El rol seleccionado no es válido.',
         ]);
+
+        if ($request->role === 'Administrador' && !Auth::user()->hasRole('Administrador')) {
+            return redirect()->back()->with('error', 'No tienes permisos para asignar el rol de Administrador.')->withInput();
+        }
 
         DB::beginTransaction();
         try {

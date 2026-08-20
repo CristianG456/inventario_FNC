@@ -36,9 +36,13 @@ class SincronizarFuncionarios extends Command
             $nombres        = $partes[0] ?? $nombreCompleto;
             $apellidos      = $partes[1] ?? null;
 
+            $identificacionNormalizada = \App\Services\Importadores\CMDBMapperService::normalizeIdentifier($cedula, true) ?? '';
+            $hash = hash_hmac('sha256', $identificacionNormalizada, config('app.key'));
+
             Funcionario::withTrashed()->updateOrCreate(
-                ['identificacion' => $cedula],
+                ['identificacion_hash' => $hash],
                 [
+                    'identificacion'      => $cedula,
                     'nombres'             => $nombres,
                     'apellidos'           => $apellidos,
                     'cargo'               => $usuario->cargo,

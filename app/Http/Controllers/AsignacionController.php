@@ -87,29 +87,38 @@ class AsignacionController extends Controller
             }
         }
 
-        $funcionarios = Funcionario::query()
-            ->where('estado', 'Activo')
-            ->when($termino !== '', function ($q) use ($termino) {
-                $q->where(function ($sub) use ($termino) {
-                    $sub->where('identificacion', 'like', "%{$termino}%")
-                        ->orWhere('nombres', 'like', "%{$termino}%")
-                        ->orWhere('apellidos', 'like', "%{$termino}%")
-                        ->orWhere('cargo', 'like', "%{$termino}%")
-                        ->orWhere('area', 'like', "%{$termino}%");
-                });
-            })
-            ->withCount([
-                'equiposAsignados as activos_count' => function ($query) {
-                    $query->whereHas('equipo.tipoRecurso', function ($q) {
-                        $q->whereRaw('LOWER(nombre) IN (?, ?, ?, ?)', ['equipo escritorio', 'equipo portatil', 'equipo todo en uno', 'equipo micro']);
+        $query = Funcionario::query()
+            ->where('estado', 'Activo');
+
+        if ($termino !== '') {
+            $query->where('area', 'like', "%{$termino}%"); // Solo filtramos por area en DB inicialmente (opcional, pero mejor cargar todo Activo y filtrar para evitar omitir por OR)
+            // Para asegurar que el OR funciona correctamente, quitaremos el where de area y lo haremos todo en memoria
+            $query = Funcionario::query()->where('estado', 'Activo');
+        }
+
+        $funcionarios = $query->withCount([
+                'equiposAsignados as activos_count' => function ($q) {
+                    $q->whereHas('equipo.tipoRecurso', function ($sub) {
+                        $sub->whereRaw('LOWER(nombre) IN (?, ?, ?, ?)', ['equipo escritorio', 'equipo portatil', 'equipo todo en uno', 'equipo micro']);
                     });
                 },
                 'autorizacionesActivos as autorizaciones_disponibles_count' => fn ($q) =>
                     $q->where('estado', AutorizacionActivo::ESTADO_CARGADA),
             ])
-            ->orderBy('nombres')
-            ->limit(200)
             ->get();
+
+        if ($termino !== '') {
+            $terminoLower = strtolower($termino);
+            $funcionarios = $funcionarios->filter(function ($f) use ($terminoLower) {
+                return str_contains(strtolower($f->nombres ?? ''), $terminoLower) ||
+                       str_contains(strtolower($f->apellidos ?? ''), $terminoLower) ||
+                       str_contains(strtolower($f->identificacion ?? ''), $terminoLower) ||
+                       str_contains(strtolower($f->cargo ?? ''), $terminoLower) ||
+                       str_contains(strtolower($f->area ?? ''), $terminoLower);
+            });
+        }
+
+        $funcionarios = $funcionarios->sortBy('nombres')->take(200);
 
         $enriquecidos = $funcionarios->map(function ($f) use ($esEquipoTecnologico, $contexto) {
             $activos = (int) $f->activos_count;
@@ -208,8 +217,14 @@ class AsignacionController extends Controller
 
         $returnTo = (string) $request->input('return_to', '');
 
-        if ($returnTo !== '' && Str::startsWith($returnTo, [url('/equipos'), url('/historial-tecnico')])) {
-            return redirect($returnTo)->with('success', 'Acción registrada correctamente.');
+        if (is_string($returnTo) && $returnTo !== '') {
+            $path = parse_url($returnTo, PHP_URL_PATH);
+            if (is_string($path)) {
+                $path = strtolower($path);
+                if (str_contains($path, '/equipos') || str_contains($path, '/historial-tecnico')) {
+                    return redirect($returnTo)->with('success', 'Acción registrada correctamente.');
+                }
+            }
         }
 
         return redirect()

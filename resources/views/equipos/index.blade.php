@@ -24,7 +24,7 @@
         <label class="form-label fw-medium small mb-1">Buscar</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" name="buscar" id="buscadorEquipos" value="{{ request('buscar') }}"
+            <input type="search" enterkeyhint="search" name="buscar" id="buscadorEquipos" value="{{ request('buscar') }}"
                    class="form-control" placeholder="Marca, tipo, modelo, serial, placa, usuario..." autocomplete="off">
         </div>
     </div>
@@ -89,7 +89,7 @@
                     </tr>
         </x-slot>
                     @forelse($equipos as $equipo)
-                        <tr>
+                        <tr data-show-url="{{ route('equipos.show', $equipo) }}">
                             @php
                                 $renderValor = function($posicion) use ($camposDinamicos, $equipo) {
                                     if(!isset($camposDinamicos)) return '';
@@ -336,11 +336,13 @@
     </x-ui.table>
     @if($equipos->hasPages())
         <x-slot name="footer">
-            <div class="d-flex justify-content-between align-items-center">
-                <small class="text-muted">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                <small class="text-muted text-center text-md-start">
                     Mostrando {{ $equipos->firstItem() }}–{{ $equipos->lastItem() }} de {{ $equipos->total() }} equipos
                 </small>
-                {{ $equipos->links('pagination::bootstrap-5') }}
+                <div class="pagination-compact-mobile">
+                    {{ $equipos->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </x-slot>
     @endif
@@ -1084,8 +1086,15 @@ if (searchInput && formFiltros && tablaContainer) {
             
             // Construir la URL con todos los filtros actuales del formulario
             const formData = new FormData(formFiltros);
-            const params = new URLSearchParams(formData);
-            const url = `${formFiltros.action}?${params.toString()}`;
+            const urlObj = new URL(formFiltros.action);
+            for (const [key, value] of formData.entries()) {
+                if (value) {
+                    urlObj.searchParams.set(key, value);
+                } else {
+                    urlObj.searchParams.delete(key);
+                }
+            }
+            const url = urlObj.toString();
 
             fetch(url, {
                 headers: {
@@ -1123,8 +1132,8 @@ if (searchInput && formFiltros && tablaContainer) {
                 // Restaurar opacidad
                 tablaContainer.style.opacity = '1';
                 
-                // Actualizar la URL del navegador sin recargar (para que al recargar mantenga el filtro)
-                window.history.pushState({}, '', url);
+                // Ya no actualizamos la URL en el navegador porque el usuario solicitó ocultar las rutas
+                // window.history.pushState({}, '', url);
             })
             .catch(err => {
                 console.error(err);
@@ -1152,7 +1161,49 @@ document.addEventListener('DOMContentLoaded', function() {
             if (formFiltros) formFiltros.submit();
         }
     });
+    
+    if (searchInput) {
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchInput.blur();
+            }
+        });
+    }
+
+    // Entrar directamente a Ver (detalle) al tocar la fila en dispositivos móviles
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth < 768) {
+            const tr = e.target.closest('tr[data-show-url]');
+            if (tr && tr.closest('.table-responsive')) {
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.dropdown-menu') || e.target.closest('input')) {
+                    return;
+                }
+                let url = tr.getAttribute('data-show-url');
+                if (url) {
+                    try {
+                        const tabId = sessionStorage.getItem('_tab_id');
+                        if (tabId) {
+                            const u = new URL(url, window.location.origin);
+                            u.searchParams.set('_tab', tabId);
+                            url = u.toString();
+                        }
+                    } catch (err) {}
+                    
+                    // Mostrar un toast para dar feedback inmediato al usuario
+                    if (typeof showToast === 'function') {
+                        showToast('Cargando detalle del equipo...', 'info');
+                    } else {
+                        document.body.style.opacity = '0.7';
+                    }
+                    
+                    window.location.href = url;
+                }
+            }
+        }
+    });
 });
+
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>

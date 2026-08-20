@@ -1,6 +1,8 @@
 # ==============================================================================
 # docker-compose.prod.yml — PRODUCCIÓN (ZimaOS / CasaOS Compatible)
 # ==============================================================================
+name: inventario_equipos
+
 version: "3.8"
 
 services:

@@ -15,6 +15,89 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        <meta name="current-tab-id" content="{{ request('_tab') }}">
+        <script>
+            (function() {
+                const serverTab = document.querySelector('meta[name="current-tab-id"]').content;
+                if (!serverTab) return;
+
+                const clientTab = sessionStorage.getItem('_tab_id');
+
+                if (!clientTab) {
+                    const newTab = Math.random().toString(36).substring(2, 10);
+                    sessionStorage.setItem('_tab_id', newTab);
+                    
+                    let url = new URL(window.location.href);
+                    url.searchParams.set('_tab', newTab);
+                    window.location.replace(url.toString());
+                } else if (clientTab !== serverTab) {
+                    let url = new URL(window.location.href);
+                    url.searchParams.set('_tab', clientTab);
+                    window.location.replace(url.toString());
+                }
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    const forms = document.querySelectorAll('form');
+                    const tabToUse = clientTab || serverTab;
+                    if (tabToUse) {
+                        forms.forEach(f => {
+                            if (!f.querySelector('input[name="_tab"]')) {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = '_tab';
+                                input.value = tabToUse;
+                                f.appendChild(input);
+                            }
+                        });
+
+                        // Interceptar fetch para agregar header X-Tab-Id y X-Requested-With
+                        const originalFetch = window.fetch;
+                        window.fetch = function() {
+                            let [resource, config] = arguments;
+                            if(config === undefined) { config = {}; }
+                            if(config.headers === undefined) { config.headers = {}; }
+                            
+                            if (config.headers instanceof Headers) {
+                                config.headers.append('X-Tab-Id', tabToUse);
+                                config.headers.append('X-Requested-With', 'XMLHttpRequest');
+                            } else {
+                                config.headers['X-Tab-Id'] = tabToUse;
+                                config.headers['X-Requested-With'] = 'XMLHttpRequest';
+                            }
+                            return originalFetch(resource, config);
+                        };
+
+                        // Interceptar navegación por enlaces (<a> tags)
+                        document.addEventListener('click', function(e) {
+                            const link = e.target.closest('a');
+                            if (link && link.href && link.href.startsWith(window.location.origin) && !link.href.includes('javascript:')) {
+                                try {
+                                    let url = new URL(link.href);
+                                    if (!url.searchParams.has('_tab')) {
+                                        url.searchParams.set('_tab', tabToUse);
+                                        link.href = url.toString();
+                                    }
+                                } catch (err) {}
+                            }
+                        });
+
+                        // Interceptar envío de formularios (POST) modificando el action
+                        forms.forEach(f => {
+                            if (f.action && f.action.startsWith(window.location.origin)) {
+                                try {
+                                    let url = new URL(f.action);
+                                    if (!url.searchParams.has('_tab')) {
+                                        url.searchParams.set('_tab', tabToUse);
+                                        f.action = url.toString();
+                                    }
+                                } catch (err) {}
+                            }
+                        });
+                    }
+                });
+            })();
+        </script>
     </head>
     <body class="font-sans text-gray-900 antialiased bg-white">
         <div class="min-h-screen flex flex-col md:flex-row">

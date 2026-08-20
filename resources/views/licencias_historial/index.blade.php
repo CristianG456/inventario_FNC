@@ -3,7 +3,7 @@
 @section('title', 'Historial de Licencias')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Historial de Licencias</h4>
     <a href="{{ route('licencias.index') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Volver al Catálogo
@@ -77,12 +77,12 @@
         </div>
     </div>
     @if($historial->hasPages())
-        <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-            <small class="text-muted">
-                Mostrando {{ $historial->firstItem() }}–{{ $historial->lastItem() }} de {{ $historial->total() }} registros
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $historial->firstItem() }}–{{ $historial->lastItem() }} de {{ $historial->total() }} registros
             </small>
             {{ $historial->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </div>
 @endsection
+
+

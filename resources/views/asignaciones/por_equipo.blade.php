@@ -76,12 +76,11 @@
         @endforelse
     </x-ui.table>
     @if($asignaciones->hasPages())
-        <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-            <small class="text-muted">
-                Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }}
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }}
             </small>
             {{ $asignaciones->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </x-ui.card>
 @endsection
+

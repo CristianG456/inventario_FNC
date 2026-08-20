@@ -78,9 +78,11 @@ class HistorialTecnicoController extends Controller
         $returnTo = $request->query('return_to');
         if (is_string($returnTo) && $returnTo !== '') {
             $path = parse_url($returnTo, PHP_URL_PATH);
-
-            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
-                $volverUrl = $returnTo;
+            if (is_string($path)) {
+                $path = strtolower($path);
+                if (str_contains($path, '/historial-tecnico') || str_contains($path, '/equipos')) {
+                    $volverUrl = $returnTo;
+                }
             }
         }
 
@@ -100,9 +102,11 @@ class HistorialTecnicoController extends Controller
         $returnTo = $request->query('return_to');
         if (is_string($returnTo) && $returnTo !== '') {
             $path = parse_url($returnTo, PHP_URL_PATH);
-
-            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
-                $volverUrl = $returnTo;
+            if (is_string($path)) {
+                $path = strtolower($path);
+                if (str_contains($path, '/historial-tecnico') || str_contains($path, '/equipos')) {
+                    $volverUrl = $returnTo;
+                }
             }
         }
 
@@ -166,8 +170,11 @@ class HistorialTecnicoController extends Controller
         $returnTo = $request->query('return_to');
         if (is_string($returnTo) && $returnTo !== '') {
             $path = parse_url($returnTo, PHP_URL_PATH);
-            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
-                $volverUrl = $returnTo;
+            if (is_string($path)) {
+                $path = strtolower($path);
+                if (str_contains($path, '/historial-tecnico') || str_contains($path, '/equipos')) {
+                    $volverUrl = $returnTo;
+                }
             }
         }
 
@@ -194,8 +201,11 @@ class HistorialTecnicoController extends Controller
         
         if (is_string($returnTo) && $returnTo !== '') {
             $path = parse_url($returnTo, PHP_URL_PATH);
-            if (is_string($path) && Str::startsWith($path, ['/historial-tecnico', '/equipos'])) {
-                $redirectUrl = $returnTo;
+            if (is_string($path)) {
+                $path = strtolower($path);
+                if (str_contains($path, '/historial-tecnico') || str_contains($path, '/equipos')) {
+                    $redirectUrl = $returnTo;
+                }
             }
         }
 

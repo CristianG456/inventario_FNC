@@ -13,7 +13,7 @@
         @csrf
         @method('PUT')
         
-        <x-ui.input name="name" id="name" label="Nombre del Rol" required="true" value="{{ old('name', $role->name) }}" containerClass="mb-4" />
+        <x-ui.input name="name" id="name" label="Nombre del Rol" required="true" value="{{ old('name', $role->name) }}" containerClass="mb-4" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')" />
 
         <div class="mb-4">
             <h5 class="fw-bold mb-3 border-bottom pb-2">Asignar Permisos</h5>

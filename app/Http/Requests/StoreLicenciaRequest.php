@@ -37,7 +37,6 @@ class StoreLicenciaRequest extends FormRequest
                 $rules['correo_asociado'] = 'nullable|email|max:255';
             }
         } else if ($tipo === 'Vitalicia') {
-            // For Vitalicia, cantidad_maxima can default to 1, or be required
             $rules['cantidad_maxima'] = 'nullable|integer|min:1';
             $rules['correo_asociado'] = 'required|email|max:255';
             $rules['requiere_correo'] = 'nullable|boolean';

@@ -34,16 +34,16 @@
                     </div>
                 </div>
             </td>
-            <td>{{ $user->email }}</td>
-            <td>
+            <td class="text-nowrap">{{ $user->email }}</td>
+            <td class="text-nowrap">
                 @if($user->roles->isNotEmpty())
                     <x-ui.badge color="info text-dark rounded-pill px-3">{{ $user->roles->first()->name }}</x-ui.badge>
                 @else
                     <x-ui.badge color="secondary rounded-pill px-3">Sin Rol</x-ui.badge>
                 @endif
             </td>
-            <td class="text-muted small">{{ $user->created_at->format('d/m/Y') }}</td>
-            <td class="text-center">
+            <td class="text-muted small text-nowrap">{{ $user->created_at->format('d/m/Y') }}</td>
+            <td class="text-center text-nowrap">
                 <div class="d-flex gap-1 justify-content-center">
                     @can('roles.editar')
                     @if($user->hasRole('Administrador') && !auth()->user()->hasRole('Administrador'))

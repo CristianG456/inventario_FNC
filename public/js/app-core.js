@@ -189,6 +189,7 @@
         const url = trigger.getAttribute('data-delete-url');
         const nombre = trigger.getAttribute('data-delete-name') || 'este registro';
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const tabId = sessionStorage.getItem('_tab_id') || '';
 
         const requiereConfirmacion = trigger.hasAttribute('data-delete-require-confirm');
 
@@ -223,6 +224,7 @@
                 form.action = url;
                 form.innerHTML = `
                     <input type="hidden" name="_token" value="${csrfToken}">
+                    <input type="hidden" name="_tab" value="${tabId}">
                     <input type="hidden" name="_method" value="DELETE">
                 `;
                 document.body.appendChild(form);

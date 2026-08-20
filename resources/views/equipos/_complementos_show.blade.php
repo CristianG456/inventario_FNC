@@ -59,12 +59,9 @@
                                                 <i class="bi bi-arrow-left-right"></i>
                                             </button>
                                             @can('equipos.eliminar')
-                                            <form action="{{ route('equipos.complementos.destroy', [$equipo, $comp]) }}" method="POST" class="d-inline">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Eliminar" onclick="return confirm('¿Eliminar complemento?')">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" title="Eliminar" data-delete-url="{{ route('equipos.complementos.destroy', [$equipo, $comp]) }}" data-delete-name="el complemento {{ $comp->nombre }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                             @endcan
                                         </td>
                                     @endcan
@@ -94,7 +91,7 @@
                                                     <input type="hidden" name="cantidad" value="1">
                                                     <div class="mb-3">
                                                         <label class="form-label">Marca</label>
-                                                        <input type="text" name="marca" class="form-control" value="{{ $comp->marca }}">
+                                                        <input type="text" name="marca" class="form-control" value="{{ $comp->marca }}" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label">Modelo</label>
@@ -223,7 +220,7 @@
                         <input type="hidden" name="cantidad" value="1">
                         <div class="mb-3">
                             <label class="form-label">Marca</label>
-                            <input type="text" name="marca" class="form-control">
+                            <input type="text" name="marca" class="form-control" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Modelo</label>

@@ -75,14 +75,14 @@
         </x-slot>
         @forelse($licencias as $licencia)
             <tr>
-                <td class="text-muted small">{{ $licencia->id }}</td>
+                <td class="text-muted small text-nowrap">{{ $licencia->id }}</td>
                 <td>
                     <span class="fw-medium">{{ $licencia->nombre }}</span>
                 </td>
-                <td>
+                <td class="text-nowrap">
                     {{ $licencia->tipo_licencia }}
                 </td>
-                <td>
+                <td class="text-nowrap">
                     @if($licencia->tipo_licencia === 'Vitalicia')
                         <span class="text-muted">N/A</span>
                     @else
@@ -91,7 +91,7 @@
                         </x-ui.badge>
                     @endif
                 </td>
-                <td>
+                <td class="text-nowrap">
                     @if($licencia->tipo_licencia === 'Vitalicia')
                         <span class="text-muted">Ilimitado</span>
                     @else
@@ -99,12 +99,12 @@
                         <small class="text-muted">Vence:</small> <strong class="{{ $licencia->fecha_vencimiento && $licencia->fecha_vencimiento->isPast() ? 'text-danger' : '' }}">{{ $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('d/m/Y') : 'N/A' }}</strong>
                     @endif
                 </td>
-                <td>
+                <td class="text-nowrap">
                     <x-ui.badge color="{{ $licencia->estado === 'Activa' ? 'success' : ($licencia->estado === 'Suspendida' ? 'warning' : 'danger') }}">
                         {{ $licencia->estado }}
                     </x-ui.badge>
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <div class="d-flex gap-1 justify-content-center flex-wrap">
                         <x-ui.button href="{{ route('licencias.show', $licencia) }}" outline="true" color="info" size="sm" title="Ver detalle" icon="eye" />
                         @can('licencias.editar')
@@ -126,9 +126,7 @@
         @endforelse
     </x-ui.table>
     @if($licencias->hasPages())
-        <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-            <small class="text-muted">
-                Mostrando {{ $licencias->firstItem() }}–{{ $licencias->lastItem() }} de {{ $licencias->total() }} licencias
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $licencias->firstItem() }}–{{ $licencias->lastItem() }} de {{ $licencias->total() }} licencias
             </small>
             {{ $licencias->links('pagination::bootstrap-5') }}
         </div>
@@ -148,3 +146,4 @@
     }, 10000);
 </script>
 @endpush
+

@@ -129,20 +129,18 @@
     </div>
 </div>
 
-<div class="row g-4">
+<div class="pb-4">
     {{-- Panel Dinámico de Equipos por Tipo --}}
-    <div class="col-12">
-        <x-ui.card noPadding="false" class="h-100 shadow-sm border-0">
-            <x-slot name="header">
-                <div class="bg-white fw-semibold border-0 pt-4 px-4 fs-5" id="dynamic-stats-title">
-                    <i class="bi bi-pie-chart me-2 text-primary"></i>Equipos por Tipo
-                </div>
-            </x-slot>
-            <div id="dynamic-stats-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-                <!-- Javascript inyectará las barras aquí -->
+    <x-ui.card noPadding="false" class="h-100 shadow-sm border-0 mb-4" style="margin-bottom: 2rem !important;">
+        <x-slot name="header">
+            <div class="bg-white fw-semibold border-0 pt-4 px-4 fs-5" id="dynamic-stats-title">
+                <i class="bi bi-pie-chart me-2 text-primary"></i>Activos por Tipo
             </div>
-        </x-ui.card>
-    </div>
+        </x-slot>
+        <div id="dynamic-stats-container" class="px-3 pb-4 pt-2" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 1.5rem;">
+            <!-- Javascript inyectará las barras aquí -->
+        </div>
+    </x-ui.card>
 </div>
 
 @php
@@ -211,8 +209,7 @@
         const data = estadisticas[estado] || [];
         const container = document.getElementById('dynamic-stats-container');
         const titleEl = document.getElementById('dynamic-stats-title');
-        
-        titleEl.innerHTML = `<i class="bi bi-pie-chart me-2 text-primary"></i> Equipos por Tipo: <span class="fw-bold">${titulo}</span>`;
+        titleEl.innerHTML = `<i class="bi bi-pie-chart me-2 text-primary"></i> Activos por Tipo: <span class="fw-bold">${titulo}</span>`;
         
         // Efecto visual al hacer clic en las tarjetas (verificando evento)
         if(typeof event !== 'undefined' && event && event.currentTarget && event.currentTarget.classList) {

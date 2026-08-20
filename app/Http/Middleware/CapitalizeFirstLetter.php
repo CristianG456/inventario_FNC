@@ -27,6 +27,8 @@ class CapitalizeFirstLetter extends TransformsRequest
         'activo_fijo',
         'placa',
         'permissions',
+        '_tab',
+        'return_to',
     ];
 
     /**

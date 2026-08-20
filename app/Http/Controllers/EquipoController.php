@@ -13,6 +13,7 @@ use App\Services\HistorialService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -71,12 +72,14 @@ class EquipoController extends Controller
                 'asignacionResponsabilidadActiva'
             ])
             ->when($buscar !== '', function ($q) use ($buscar) {
-                $termino = '%' . $buscar . '%';
-                $parsedId = null;
-                if (preg_match('/^[a-zA-Z0-9]+-(?:[SP])?0*(\d+)$/i', trim($buscar), $matches)) {
-                    $parsedId = $matches[1];
-                }
+            $palabras = array_filter(explode(' ', trim($buscar)), fn($p) => strlen(trim($p)) > 0);
+            $parsedId = null;
+            if (preg_match('/^[a-zA-Z0-9]+-(?:[SP])?0*(\d+)$/i', trim($buscar), $matches)) {
+                $parsedId = $matches[1];
+            }
 
+            foreach ($palabras as $palabra) {
+                $termino = '%' . $palabra . '%';
                 $q->where(function ($sub) use ($termino, $parsedId) {
                     $sub->where('serial', 'like', $termino)
                         ->orWhere('nombre_equipo', 'like', $termino)
@@ -85,7 +88,9 @@ class EquipoController extends Controller
                         ->orWhere('activo_fijo', 'like', $termino)
                         ->orWhere('placa', 'like', $termino)
                         ->orWhere('estado_operativo', 'like', $termino)
-                        ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino))
+                        ->orWhere('responsable_nombre', 'like', $termino)
+                        ->orWhere('responsable_cedula', 'like', $termino)
+                        ->orWhereHas('usuarioAsignado', fn($u) => $u->where('nombre', 'like', $termino)->orWhere('cedula', 'like', $termino))
                         ->orWhereHas('tipoRecurso', fn($t) => $t->where('nombre', 'like', $termino))
                         ->orWhereHas('asignacionResponsabilidadActiva', function ($ar) use ($termino) {
                             $ar->where('nombre_usuario', 'like', $termino)
@@ -100,6 +105,7 @@ class EquipoController extends Controller
                         $sub->orWhere('equipos.id', $parsedId);
                     }
                 });
+            }
             })
             ->when($request->filled('tipo'), fn($q) => $q->where('tipo_recurso_id', $request->tipo))
             ->when($request->filled('estado'), function ($q) use ($request) {
@@ -507,6 +513,17 @@ class EquipoController extends Controller
             $equipo->usuarioAsignado()->delete();
         }
 
+        $returnTo = (string) $request->input('return_to', '');
+        if (is_string($returnTo) && $returnTo !== '') {
+            $path = parse_url($returnTo, PHP_URL_PATH);
+            if (is_string($path)) {
+                $path = strtolower($path);
+                if (str_contains($path, '/equipos') || str_contains($path, '/historial-tecnico')) {
+                    return redirect($returnTo)->with('success', 'Equipo actualizado correctamente.');
+                }
+            }
+        }
+
         return redirect()->route('equipos.index')
             ->with('success', 'Equipo actualizado correctamente.');
     }
@@ -729,9 +746,13 @@ class EquipoController extends Controller
         $nombres        = $upper($partes[0] ?? $nombreCompleto);
         $apellidos      = $upper($partes[1] ?? null);
 
+        $identificacionNormalizada = \App\Services\Importadores\CMDBMapperService::normalizeIdentifier($cedula, true) ?? '';
+        $hash = hash_hmac('sha256', $identificacionNormalizada, config('app.key'));
+
         $funcionario = Funcionario::withTrashed()->updateOrCreate(
-            ['identificacion' => $cedula],
+            ['identificacion_hash' => $hash],
             [
+                'identificacion'      => $cedula,
                 'nombres'             => $nombres,
                 'apellidos'           => $apellidos,
                 'cargo'               => $upper($request->usuario_cargo),
@@ -799,7 +820,9 @@ class EquipoController extends Controller
             'observaciones' => 'nullable|string|max:500',
         ]);
 
-        $data = $request->all();
+        $data = $request->only([
+            'catalogo_complemento_id', 'estado', 'marca', 'modelo', 'serial', 'observaciones'
+        ]);
         $data['cantidad'] = 1; // Forzar a 1
 
         $complemento = $equipo->complementos()->create($data);
@@ -827,7 +850,9 @@ class EquipoController extends Controller
             'observaciones' => 'nullable|string|max:500',
         ]);
 
-        $complemento->fill($request->all());
+        $complemento->fill($request->only([
+            'estado', 'cantidad', 'marca', 'modelo', 'serial', 'observaciones'
+        ]));
         
         if (in_array($complemento->estado, ['Disponible', 'Dañado'])) {
             $complemento->equipo_id = null;
@@ -913,5 +938,38 @@ class EquipoController extends Controller
         }
 
         return (string) $analistas->first()->name;
+    }
+
+    /**
+     * Búsqueda por placa para el lector de código de barras.
+     * Devuelve JSON con la URL del detalle del equipo encontrado.
+     */
+    public function buscarPorPlaca(Request $request): JsonResponse
+    {
+        $placa = trim((string) $request->query('placa', ''));
+
+        if ($placa === '') {
+            return response()->json(['found' => false, 'message' => 'No se proporcionó una placa o serial.'], 422);
+        }
+
+        // Buscar por placa o por serial
+        $equipo = Equipo::where('placa', $placa)
+                        ->orWhere('serial', $placa)
+                        ->first();
+
+        if (!$equipo) {
+            return response()->json([
+                'found' => false,
+                'placa' => $placa,
+                'message' => 'No encontramos ningún activo con la placa o serial: ' . $placa,
+            ]);
+        }
+
+        return response()->json([
+            'found' => true,
+            'placa' => $equipo->placa,
+            'serial' => $equipo->serial,
+            'url' => route('equipos.show', $equipo->id)
+        ]);
     }
 }

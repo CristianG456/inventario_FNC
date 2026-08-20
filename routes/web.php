@@ -48,10 +48,7 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/inicia', [DashboardController::class, 'index'])->name('inicia')->middleware('permission:dashboard.ver');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:dashboard.ver');
 
-    // Perfil (generado por Breeze)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Rutas de perfil removidas por no integrarse con el módulo unificado de Usuarios
 
     // ====== CAMPOS PERSONALIZADOS ======
     Route::resource('campos-personalizados', \App\Http\Controllers\CampoPersonalizadoController::class)
@@ -62,20 +59,32 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
         ->middleware('permission:campos_personalizados.editar');
 
     // Módulo Usuarios y Asignación de Roles (solo administradores o con permiso)
-    Route::resource('usuarios', UserController::class)->middleware('permission:roles.ver');
+    Route::resource('usuarios', UserController::class)
+        ->middlewareFor(['index', 'show'], 'permission:roles.ver')
+        ->middlewareFor(['create', 'store'], 'permission:roles.crear')
+        ->middlewareFor(['edit', 'update'], 'permission:roles.editar')
+        ->middlewareFor(['destroy'], 'permission:roles.eliminar');
     
     // Módulo de Roles y Permisos (solo administradores o con permiso)
-    Route::resource('roles', RoleController::class)->middleware('permission:roles.ver');
+    Route::resource('roles', RoleController::class)
+        ->middlewareFor(['index', 'show'], 'permission:roles.ver')
+        ->middlewareFor(['create', 'store'], 'permission:roles.crear')
+        ->middlewareFor(['edit', 'update'], 'permission:roles.editar')
+        ->middlewareFor(['destroy'], 'permission:roles.eliminar');
     
     // Módulo de Auditoría
     Route::get('/auditoria', [AuditController::class, 'index'])->name('auditoria.index')->middleware('permission:roles.ver');
 
     // Exportar debe declararse ANTES del resource para evitar conflicto con 'show'
-    Route::get('/equipos/exportar', [EquipoController::class, 'exportar'])->name('equipos.exportar')->middleware('permission:equipos.exportar');
+    Route::get('/equipos/exportar', [EquipoController::class, 'exportar'])
+        ->name('equipos.exportar')
+        ->middleware(['permission:equipos.exportar', 'throttle:10,1']);
 
     // Importación y Exportación de Equipos
     Route::get('/equipos/importar', [EquipoController::class, 'importarForm'])->name('equipos.importar.form')->middleware('permission:equipos.importar');
-    Route::post('/equipos/importar', [EquipoController::class, 'importar'])->name('equipos.importar')->middleware('permission:equipos.importar');
+    Route::post('/equipos/importar', [EquipoController::class, 'importar'])
+        ->name('equipos.importar')
+        ->middleware(['permission:equipos.importar', 'throttle:2,1']);
     Route::get('/equipos/{equipo}/acta', [EquipoController::class, 'descargarActa'])->name('equipos.acta')->middleware('permission:equipos.ver');
 
     // Historial de vida del equipo (ANTES del resource)
@@ -109,6 +118,9 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::get('/tipo-recursos/{tipoRecurso}/complementos-definidos', [EquipoController::class, 'getComplementosPorTipo'])->name('tipo-recursos.complementos-definidos')->middleware('permission:equipos.ver');
     Route::post('/catalogo-complementos', [TipoRecursoController::class, 'storeCatalogoComplemento'])->name('catalogo-complementos.store')->middleware('permission:equipos.crear');
     Route::put('/catalogo-complementos/{catalogoComplemento}', [TipoRecursoController::class, 'updateCatalogoComplemento'])->name('catalogo-complementos.update')->middleware('permission:equipos.crear');
+
+    // ── Lector de código de barras (búsqueda por placa) ──
+    Route::get('/equipos-buscar-placa', [EquipoController::class, 'buscarPorPlaca'])->name('equipos.buscar-placa')->middleware('permission:equipos.ver');
 
     // ── Asignaciones ──────────────────────────────────────────────────────────
     Route::get('/asignaciones', [AsignacionController::class, 'index'])
@@ -171,12 +183,17 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::resource('tipo-recursos', TipoRecursoController::class)->middleware('permission:configuracion.editar');
 
     // ── Checklists ────────────────────────────────────────────────────────────
-    Route::resource('checklists', ChecklistController::class)->middleware('permission:checklist.ver');
+    Route::resource('checklists', ChecklistController::class)
+        ->middlewareFor(['index', 'show'], 'permission:checklist.ver')
+        ->middlewareFor(['create', 'store'], 'permission:checklist.crear')
+        ->middlewareFor(['edit', 'update'], 'permission:checklist.editar')
+        ->middlewareFor(['destroy'], 'permission:checklist.eliminar');
 
     // ── Funcionarios ──────────────────────────────────────────────────────────
     Route::resource('funcionarios', FuncionarioController::class)
         ->only(['index', 'create', 'store', 'show'])
-        ->middleware('permission:usuarios.ver');
+        ->middlewareFor(['index', 'show'], 'permission:usuarios.ver')
+        ->middlewareFor(['create', 'store'], 'permission:usuarios.crear');
     Route::get('/funcionarios/{funcionario}/edit', [FuncionarioController::class, 'edit'])
         ->name('funcionarios.edit')
         ->middleware('permission:usuarios.editar');
@@ -200,7 +217,11 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
     Route::put('/tickets/{ticket}/solucion', [TicketController::class, 'updateSolucion'])->name('tickets.solucion')->middleware('permission:mesaayuda.editar');
     Route::post('/tickets/{ticket}/evidencia', [TicketController::class, 'uploadEvidencia'])->name('tickets.evidencia')->middleware('permission:mesaayuda.editar');
     Route::get('/tickets/{ticket}/evidencia/{index}/descargar', [TicketController::class, 'descargarEvidencia'])->name('tickets.evidencia.descargar')->middleware('permission:mesaayuda.ver');
-    Route::resource('tickets', TicketController::class)->middleware('permission:mesaayuda.ver');
+    Route::resource('tickets', TicketController::class)
+        ->middlewareFor(['index', 'show'], 'permission:mesaayuda.ver')
+        ->middlewareFor(['create', 'store'], 'permission:mesaayuda.crear')
+        ->middlewareFor(['edit', 'update'], 'permission:mesaayuda.editar')
+        ->middlewareFor(['destroy'], 'permission:mesaayuda.eliminar');
 
     // ── Reportes ──────────────────────────────────────────────────────────────
     Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index')->middleware('permission:dashboard.ver');
@@ -212,9 +233,15 @@ Route::middleware(['auth', 'verified', 'prevent-back-history', 'force-password-c
 
     // ── Licencias ─────────────────────────────────────────────────────────────
     Route::get('/licencias/reportes', [LicenciaController::class, 'reportes'])->name('licencias.reportes')->middleware('permission:licencias.ver');
-    Route::get('/licencias/exportar', [LicenciaController::class, 'exportar'])->name('licencias.exportar')->middleware('permission:licencias.exportar');
+    Route::get('/licencias/exportar', [LicenciaController::class, 'exportar'])
+        ->name('licencias.exportar')
+        ->middleware(['permission:licencias.exportar', 'throttle:10,1']);
     Route::get('/licencias/historial', [LicenciaHistorialController::class, 'index'])->name('licencias.historial')->middleware('permission:licencias.ver');
-    Route::resource('licencias', LicenciaController::class)->middleware('permission:licencias.ver');
+    Route::resource('licencias', LicenciaController::class)
+        ->middlewareFor(['index', 'show'], 'permission:licencias.ver')
+        ->middlewareFor(['create', 'store'], 'permission:licencias.crear')
+        ->middlewareFor(['edit', 'update'], 'permission:licencias.editar')
+        ->middlewareFor(['destroy'], 'permission:licencias.eliminar');
     Route::resource('licencias.seriales', LicenciaSerialController::class)->only(['store', 'update', 'destroy'])->middleware('permission:licencias.editar');
     Route::resource('licencia-asignaciones', LicenciaAsignacionController::class)
         ->parameters(['licencia-asignaciones' => 'licencia_asignacion'])

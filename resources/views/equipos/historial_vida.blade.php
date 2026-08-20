@@ -3,7 +3,7 @@
 @section('title', 'Historial de Vida — ' . $equipo->nombre_equipo)
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
         <h4 class="fw-bold mb-0">
             <i class="bi bi-clock-history me-2 text-primary"></i>
@@ -20,102 +20,80 @@
 
 
 
-{{-- Timeline --}}
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-3">
-        <i class="bi bi-clock-history text-primary"></i>
-        <strong>Línea de Tiempo Completa</strong>
-        <span class="badge bg-secondary ms-auto">{{ $eventos->count() }} eventos</span>
+{{-- Historial en Tabla --}}
+<x-ui.card noPadding="true">
+    <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
+        <h5 class="card-title mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>Línea de Tiempo Completa</h5>
+        <span class="badge bg-secondary">{{ $eventos->count() }} eventos</span>
     </div>
-    <div class="card-body">
-        @if($eventos->isEmpty())
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                No hay eventos registrados para este equipo.
-            </div>
-        @else
-        <div class="timeline-container">
+    <x-ui.table>
+        <x-slot name="head">
+            <tr>
+                <th class="ps-4">Fecha</th>
+                <th>Tipo de Evento</th>
+                <th>Detalles</th>
+                <th>Involucrados</th>
+                <th class="text-end pe-4">Acciones</th>
+            </tr>
+        </x-slot>
+        <tbody>
             @foreach($eventos as $index => $evento)
             @php
                 $fecha = is_string($evento['fecha']) ? \Carbon\Carbon::parse($evento['fecha']) : $evento['fecha'];
             @endphp
-            <div class="timeline-item d-flex gap-3 mb-4 position-relative">
-                {{-- Línea vertical --}}
-                @if(!$loop->last)
-                <div class="timeline-line"></div>
-                @endif
+            <tr>
+                <td class="ps-4">
+                    <span class="fw-medium">{{ $fecha->format('d/m/Y') }}</span>
+                    @if($evento['tipo'] === 'administrativo' || $evento['tipo'] === 'asignacion')
+                        <br><small class="text-muted">{{ $fecha->format('h:i A') }}</small>
+                    @endif
+                </td>
+                <td>
+                    @if($evento['tipo'] === 'administrativo' && $evento['subtipo'] === 'cambio_responsable')
+                        <span class="badge bg-info text-dark">
+                            <i class="bi bi-person-badge me-1"></i>{{ $evento['titulo'] }}
+                        </span>
+                    @else
+                        <span class="badge bg-{{ $evento['color'] }}">
+                            <i class="bi {{ $evento['icono'] }} me-1"></i>{{ ucfirst($evento['tipo']) }}
+                        </span>
+                    @endif
+                </td>
+                <td class="text-wrap" style="min-width: 250px;">
+                    @if(!($evento['tipo'] === 'administrativo' && $evento['subtipo'] === 'cambio_responsable'))
+                        <strong>{{ $evento['titulo'] }}</strong>
+                    @endif
+                    
+                    @if($evento['descripcion'])
+                        <div class="text-secondary small mt-1">{{ $evento['descripcion'] }}</div>
+                    @endif
 
-                {{-- Icono --}}
-                <div class="flex-shrink-0 position-relative z-1">
-                    <div class="rounded-circle bg-{{ $evento['color'] }} bg-opacity-15 border border-{{ $evento['color'] }} d-flex align-items-center justify-content-center shadow-sm timeline-icon-box">
-                        <i class="bi {{ $evento['icono'] }} text-{{ $evento['color'] }}"></i>
-                    </div>
-                </div>
-
-                {{-- Contenido --}}
-                <div class="flex-grow-1">
-                    <div class="card border-{{ $evento['color'] }} border-opacity-25 shadow-sm">
-                        <div class="card-body py-3 px-3">
-                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-1 gap-2">
-                                <div>
-                                    @if($evento['tipo'] === 'administrativo' && $evento['subtipo'] === 'cambio_responsable')
-                                        <span class="badge bg-info bg-opacity-75 me-2 border border-info">
-                                            <i class="bi bi-person-badge me-1"></i>{{ $evento['titulo'] }}
-                                        </span>
-                                    @else
-                                        <span class="badge bg-{{ $evento['color'] }} bg-opacity-75 me-2">
-                                            {{ ucfirst($evento['tipo']) }}
-                                        </span>
-                                        <strong class="fs-6">{{ $evento['titulo'] }}</strong>
-                                    @endif
-                                </div>
-                                <small class="text-muted ms-sm-2">
-                                    <i class="bi bi-calendar2 me-1"></i>
-                                    {{ $fecha->format('d/m/Y') }}
-                                    @if($evento['tipo'] === 'administrativo' || $evento['tipo'] === 'asignacion')
-                                        {{ $fecha->format('H:i') }}
-                                    @endif
-                                </small>
-                            </div>
-
-                            @if($evento['descripcion'])
-                            <p class="mb-1 text-secondary small">{{ $evento['descripcion'] }}</p>
-                            @endif
-
-                            @if($evento['responsable'])
-                            <small class="text-muted">
-                                <i class="bi bi-person me-1"></i>{{ $evento['responsable'] }}
-                            </small>
-                            @endif
-
-                            {{-- Detalle adicional según tipo --}}
-                            @if($evento['tipo'] === 'asignacion' && $evento['modelo']->motivo)
-                            <div class="mt-1">
-                                <small class="text-muted"><i class="bi bi-chat-left-text me-1"></i>{{ $evento['modelo']->motivo }}</small>
-                            </div>
-                            @endif
-
-                            {{-- Enlace al detalle --}}
-                            <div class="mt-2">
-                                @if($evento['tipo'] === 'asignacion')
-                                    <a href="{{ route('asignaciones.show', $evento['modelo']->id) }}"
-                                       class="btn btn-sm btn-outline-{{ $evento['color'] }}">
-                                        <i class="bi bi-eye me-1"></i>Ver detalle
-                                    </a>
-                                @elseif($evento['tipo'] === 'tecnico')
-                                    <a href="{{ route('historial-tecnico.show', $evento['modelo']->id) }}"
-                                       class="btn btn-sm btn-outline-{{ $evento['color'] }}">
-                                        <i class="bi bi-eye me-1"></i>Ver detalle
-                                    </a>
-                                @endif
-                            </div>
+                    @if($evento['tipo'] === 'asignacion' && $evento['modelo']->motivo)
+                        <div class="mt-1 small text-muted">
+                            <i class="bi bi-chat-left-text me-1"></i>{{ $evento['modelo']->motivo }}
                         </div>
+                    @endif
+                </td>
+                <td>
+                    @if($evento['responsable'])
+                    <div class="small">
+                        <i class="bi bi-person text-muted me-1"></i>{{ $evento['responsable'] }}
                     </div>
-                </div>
-            </div>
+                    @else
+                        <span class="text-muted small">—</span>
+                    @endif
+                </td>
+                <td class="text-end pe-4">
+                    @if($evento['tipo'] === 'asignacion')
+                        <x-ui.button href="{{ route('asignaciones.show', $evento['modelo']->id) }}" color="light" size="sm" class="rounded-circle" title="Ver detalle" icon="eye" />
+                    @elseif($evento['tipo'] === 'tecnico')
+                        <x-ui.button href="{{ route('historial-tecnico.show', $evento['modelo']->id) }}" color="light" size="sm" class="rounded-circle" title="Ver detalle" icon="eye" />
+                    @endif
+                </td>
+            </tr>
             @endforeach
-        </div>
-        @endif
-    </div>
-</div>
+        </tbody>
+    </x-ui.table>
+</x-ui.card>
 @endsection
+

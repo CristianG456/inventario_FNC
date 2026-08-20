@@ -21,7 +21,7 @@
 @endpush
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 flex-wrap gap-2">
     <h4 class="fw-bold mb-0"><i class="bi bi-ui-checks-grid me-2 text-primary"></i>Campos Personalizados</h4>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCampo" onclick="openCreateModal()">
         <i class="bi bi-plus-lg me-1"></i>Nuevo Campo
@@ -32,7 +32,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="camposTable">
-                <thead class="table-light">
+                <thead class="table-light text-nowrap">
                     <tr>
                         <th width="50"></th>
                         <th>Módulo</th>
@@ -144,7 +144,7 @@
                         
                         <div class="col-12 col-md-12">
                             <label class="form-label">Nombre del Campo *</label>
-                            <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Centro de Costos" value="{{ old('nombre') }}">
+                            <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Centro de Costos" value="{{ old('nombre') }}" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
                         </div>
                         
                         <div class="col-12 col-md-12 opciones-wrapper">
@@ -490,3 +490,4 @@
     });
 </script>
 @endpush
+

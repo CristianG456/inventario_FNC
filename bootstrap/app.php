@@ -21,9 +21,24 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // Agregar middleware global para capitalizar la primera letra
         $middleware->append(\App\Http\Middleware\CapitalizeFirstLetter::class);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\TabContextMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
             return response()->view('errors.403', ['exception' => $e], 403);
+        });
+
+        // Asegurar que cuando un usuario no autenticado es redirigido al login, no pierda el _tab
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            $tab = $request->input('_tab') ?: $request->query('_tab');
+            $url = route('login');
+            if ($tab) {
+                $separator = str_contains($url, '?') ? '&' : '?';
+                $url .= $separator . '_tab=' . $tab;
+            }
+            return redirect()->guest($url);
         });
     })->create();

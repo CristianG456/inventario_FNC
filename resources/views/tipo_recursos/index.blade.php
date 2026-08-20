@@ -28,13 +28,13 @@
             <tr>
                 <td class="text-muted small">{{ $tipo->id }}</td>
                 <td class="fw-medium">{{ $tipo->nombre }}</td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <x-ui.badge color="info text-white rounded-pill">{{ $tipo->complementosDefinidos->count() }}</x-ui.badge>
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <x-ui.badge color="primary rounded-pill">{{ $tipo->equipos_count }}</x-ui.badge>
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <div class="btn-group btn-group-sm">
                         <x-ui.button href="{{ route('tipo-recursos.edit', $tipo) }}" outline="true" color="warning" icon="pencil" title="Editar" />
                         <x-ui.button type="button" outline="true" color="danger" icon="trash" title="Eliminar"
@@ -70,11 +70,11 @@
         <div class="row g-2 align-items-end">
             <div class="col-md-4">
                 <label class="form-label small">Complemento</label>
-                <input type="text" name="nombre" id="nombreCatalogo" class="form-control form-control-sm" required placeholder="Ej: Cargador, Batería...">
+                <input type="text" name="nombre" id="nombreCatalogo" class="form-control form-control-sm" required placeholder="Ej: Cargador, Batería..." oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
             </div>
             <div class="col-md-4">
                 <label class="form-label small">Compatible con</label>
-                <select name="tipo_recursos_ids[]" id="tipoRecursosCatalogo" class="form-select form-select-sm" multiple required style="height: 60px;">
+                <select name="tipo_recursos_ids[]" id="tipoRecursosCatalogo" class="form-select form-select-sm" multiple style="height: 60px;">
                     @foreach(\App\Models\TipoRecurso::orderBy('nombre')->get() as $tr)
                         <option value="{{ $tr->id }}">{{ $tr->nombre }}</option>
                     @endforeach
@@ -130,28 +130,28 @@
                         <span class="text-danger small">Ninguno</span>
                     @endif
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     @if($comp->requiere_serial)
                         <x-ui.badge color="success">Sí</x-ui.badge>
                     @else
                         <x-ui.badge color="secondary">No</x-ui.badge>
                     @endif
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     @if($comp->usa_estado)
                         <x-ui.badge color="success">Sí</x-ui.badge>
                     @else
                         <x-ui.badge color="secondary">No</x-ui.badge>
                     @endif
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     @if($comp->activo)
                         <x-ui.badge color="primary">Sí</x-ui.badge>
                     @else
                         <x-ui.badge color="danger">No</x-ui.badge>
                     @endif
                 </td>
-                <td class="text-center">
+                <td class="text-center text-nowrap">
                     <x-ui.button type="button" size="sm" outline="true" color="warning" icon="pencil" 
                         onclick="editCatalogo({{ $comp->id }}, '{{ $comp->nombre }}', {{ json_encode($comp->tipoRecursos->pluck('id')) }}, {{ $comp->requiere_serial ? 1 : 0 }}, {{ $comp->usa_estado ? 1 : 0 }}, {{ $comp->activo ? 1 : 0 }})" />
                 </td>

@@ -3,17 +3,13 @@
 @section('title', 'Actas Firmadas')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Actas Firmadas</h4>
-    <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-success" onclick="submitZipForm();">
-            <i class="bi bi-file-earmark-zip me-1"></i>Descargar ZIP
-        </button>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
-            <i class="bi bi-upload me-1"></i>Subir Acta Firmada
-        </button>
-    </div>
-</div>
+<x-ui.toolbar 
+    title="Actas Firmadas" 
+    icon="file-earmark-pdf text-danger" 
+>
+    <x-ui.button type="button" color="success" outline="true" class="text-nowrap" icon="file-earmark-zip" onclick="submitZipForm();" text="Descargar ZIP" />
+    <x-ui.button type="button" color="primary" class="text-nowrap" data-bs-toggle="modal" data-bs-target="#uploadModal" icon="upload" text="Subir Acta Firmada" />
+</x-ui.toolbar>
 
 <!-- Filtros -->
 <div class="card mb-4 border-0 shadow-sm">
@@ -41,7 +37,7 @@
                 @csrf
             </form>
             <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="table-light text-nowrap">
                         <tr>
                             <th style="width: 40px;" class="text-center">
                                 <input class="form-check-input select-all-actas" type="checkbox" id="selectAllActas">
@@ -59,11 +55,11 @@
                             <td class="text-center">
                                 <input class="form-check-input acta-checkbox" type="checkbox" name="actas_ids[]" value="{{ $acta->id }}">
                             </td>
-                            <td class="fw-bold">{{ $acta->numero_acta }}</td>
-                            <td>{{ $acta->fecha_documento->format('d/m/Y') }}</td>
-                            <td>{{ $acta->user->name ?? 'Sistema' }}</td>
+                            <td class="fw-bold text-nowrap">{{ $acta->numero_acta }}</td>
+                            <td class="text-nowrap">{{ $acta->fecha_documento->format('d/m/Y') }}</td>
+                            <td class="text-nowrap">{{ $acta->user->name ?? 'Sistema' }}</td>
                             <td><small class="text-muted">{{ Str::limit($acta->observaciones, 50) }}</small></td>
-                            <td class="text-center">
+                            <td class="text-center text-nowrap">
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ route('actas-firmadas.show-file', $acta->id) }}" target="_blank" class="btn btn-outline-success" title="Ver Acta">
                                         <i class="bi bi-eye"></i>
@@ -221,3 +217,4 @@
     }
 </script>
 @endpush
+

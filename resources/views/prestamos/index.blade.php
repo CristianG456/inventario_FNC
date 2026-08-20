@@ -4,14 +4,12 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 mb-0 text-gray-800"><i class="bi bi-calendar2-range me-2 text-primary"></i>Préstamos de Activos</h2>
-        @can('equipos.crear')
-            <a href="{{ route('prestamos.create') }}" class="btn btn-primary shadow-sm">
-                <i class="bi bi-plus-lg me-1"></i> Registrar Préstamo
-            </a>
-        @endcan
-    </div>
+    <x-ui.toolbar 
+        title="Préstamos de Activos" 
+        icon="calendar2-range" 
+        createRoute="{{ auth()->user()->can('equipos.crear') ? route('prestamos.create') : null }}" 
+        createText="Registrar Préstamo" 
+    />
 
     <!-- Filtros y Búsqueda -->
     <div class="card shadow-sm border-0 mb-4">
@@ -51,7 +49,7 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="table-light text-nowrap">
                         <tr>
                             <th>ID</th>
                             <th>Activo</th>
@@ -65,8 +63,8 @@
                     <tbody>
                         @forelse($prestamos as $prestamo)
                             <tr>
-                                <td class="text-muted fw-medium">#{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}</td>
-                                <td>
+                                <td class="text-muted fw-medium text-nowrap">#{{ str_pad($prestamo->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                <td class="text-nowrap">
                                     @if($prestamo->equipo)
                                         <a href="{{ route('equipos.show', $prestamo->equipo) }}" class="fw-semibold text-decoration-none">
                                             {{ $prestamo->equipo->placa_visual }}
@@ -80,8 +78,8 @@
                                     <div class="fw-medium">{{ $prestamo->persona_nombre }}</div>
                                     <div class="small text-muted">{{ $prestamo->persona_documento }}</div>
                                 </td>
-                                <td>{{ $prestamo->fecha_inicio->format('d/m/Y H:i') }}</td>
-                                <td>
+                                <td class="text-nowrap">{{ $prestamo->fecha_inicio->format('d/m/Y H:i') }}</td>
+                                <td class="text-nowrap">
                                     {{ $prestamo->fecha_devolucion_prevista->format('d/m/Y H:i') }}
                                     @if(in_array($prestamo->estado, ['Activo', 'Pendiente']))
                                         @php
@@ -99,10 +97,10 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="text-nowrap">
                                     <span class="badge bg-{{ $prestamo->estado_badge }} px-2 py-1">{{ $prestamo->estado }}</span>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <a href="{{ route('prestamos.show', $prestamo) }}" class="btn btn-sm btn-outline-primary" title="Ver detalle">
                                         <i class="bi bi-eye"></i>
                                     </a>

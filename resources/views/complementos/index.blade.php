@@ -57,8 +57,8 @@
         
         @forelse($complementos as $comp)
             <tr>
-                <td class="text-muted small">{{ $comp->id }}</td>
-                <td class="fw-medium">
+                <td class="text-muted small text-nowrap">{{ $comp->id }}</td>
+                <td class="fw-medium text-nowrap">
                     {{ $comp->nombre }}
                     @if($comp->cantidad > 1)
                         <x-ui.badge color="secondary" class="ms-1">x{{ $comp->cantidad }}</x-ui.badge>
@@ -71,12 +71,12 @@
                         <span class="text-danger small">No definido</span>
                     @endif
                 </td>
-                <td>
+                <td class="text-nowrap">
                     {{ $comp->marca ?: 'N/A' }} <br>
                     <span class="text-muted small">{{ $comp->modelo ?: 'N/A' }}</span>
                 </td>
-                <td class="fw-medium font-monospace small">{{ $comp->serial ?: 'SIN SERIAL' }}</td>
-                <td>
+                <td class="fw-medium font-monospace small text-nowrap">{{ $comp->serial ?: 'SIN SERIAL' }}</td>
+                <td class="text-nowrap">
                     @if(empty($comp->equipo_id) || $comp->estado == 'Disponible')
                         <x-ui.badge color="success rounded-pill">Disponible</x-ui.badge>
                     @elseif($comp->estado == 'Dañado' || $comp->estado == 'Malo')
@@ -87,7 +87,7 @@
                         <x-ui.badge color="primary rounded-pill">{{ $comp->estado ?: 'Bueno' }}</x-ui.badge>
                     @endif
                 </td>
-                <td>
+                <td class="text-nowrap">
                     @if($comp->equipo)
                         <a href="{{ route('equipos.show', $comp->equipo->id) }}" class="text-decoration-none fw-semibold">
                             {{ $comp->equipo->placa ?: 'S/P' }}
@@ -97,8 +97,8 @@
                         <span class="text-muted fst-italic">Sin asignar</span>
                     @endif
                 </td>
-                <td class="text-muted small">{{ $comp->fecha_registro ? $comp->fecha_registro->format('Y-m-d') : $comp->created_at->format('Y-m-d') }}</td>
-                <td>
+                <td class="text-muted small text-nowrap">{{ $comp->fecha_registro ? $comp->fecha_registro->format('Y-m-d') : $comp->created_at->format('Y-m-d') }}</td>
+                <td class="text-nowrap">
                     <a href="{{ route('equipos.complementos.historial_individual', $comp->id) }}" class="btn btn-sm btn-outline-info" title="Ver Historial">
                         <i class="bi bi-clock-history"></i> Historial
                     </a>

@@ -43,8 +43,8 @@ class LicenciaAsignacionController extends Controller
             ->get();
         $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion')
             ->where('estado', 'activo')
-            ->orderBy('nombres')
-            ->get();
+            ->get()
+            ->sortBy('nombres');
         
         return view('licencias_asignaciones.create', compact('licencias', 'equipos', 'funcionarios'));
     }
@@ -144,8 +144,8 @@ class LicenciaAsignacionController extends Controller
             ->get();
         $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion')
             ->where('estado', 'activo')
-            ->orderBy('nombres')
-            ->get();
+            ->get()
+            ->sortBy('nombres');
 
         return view('licencias_asignaciones.edit', compact('licencia_asignacion', 'licencias', 'equipos', 'funcionarios'));
     }

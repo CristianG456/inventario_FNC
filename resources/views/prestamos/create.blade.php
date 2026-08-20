@@ -8,7 +8,7 @@
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 @endpush
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h2 class="h3 mb-0 text-gray-800"><i class="bi bi-plus-circle me-2 text-primary"></i>Registrar Nuevo Préstamo</h2>
         <a href="{{ route('prestamos.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Volver a Préstamos</a>
     </div>
@@ -59,12 +59,12 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Nombre de la Persona que Recibe <span class="text-danger">*</span></label>
-                        <input type="text" name="persona_nombre" class="form-control" required value="{{ old('persona_nombre') }}" placeholder="Ej: Juan Pérez">
+                        <input type="text" name="persona_nombre" class="form-control" required value="{{ old('persona_nombre') }}" placeholder="Ej: Juan Pérez" oninput="this.value = this.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')">
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Documento / Identificación</label>
-                        <input type="text" name="persona_documento" class="form-control" value="{{ old('persona_documento') }}" placeholder="Opcional">
+                        <input type="text" name="persona_documento" class="form-control" value="{{ old('persona_documento') }}" placeholder="Opcional" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
 
                     <div class="col-md-4">
@@ -114,3 +114,4 @@
 </script>
 @endpush
 @endsection
+

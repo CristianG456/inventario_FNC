@@ -11,6 +11,91 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     @vite(['resources/css/app.css'])
     @stack('styles')
+    
+    <meta name="current-tab-id" content="{{ request('_tab') }}">
+    <script>
+        (function() {
+            const serverTab = document.querySelector('meta[name="current-tab-id"]').content;
+            if (!serverTab) return;
+
+            const clientTab = sessionStorage.getItem('_tab_id');
+
+            if (!clientTab) {
+                // Pestaña nueva o duplicada de otra forma donde no se copió el sessionStorage
+                const newTab = Math.random().toString(36).substring(2, 10);
+                sessionStorage.setItem('_tab_id', newTab);
+                
+                let url = new URL(window.location.href);
+                url.searchParams.set('_tab', newTab);
+                window.location.replace(url.toString());
+            } else if (clientTab !== serverTab) {
+                // Inconsistencia: La URL dice una cosa (ej. copiada de otra pestaña) y el almacenamiento dice otra
+                let url = new URL(window.location.href);
+                url.searchParams.set('_tab', clientTab);
+                window.location.replace(url.toString());
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const forms = document.querySelectorAll('form');
+                const tabToUse = clientTab || serverTab;
+                if (tabToUse) {
+                    forms.forEach(f => {
+                        if (!f.querySelector('input[name="_tab"]')) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = '_tab';
+                            input.value = tabToUse;
+                            f.appendChild(input);
+                        }
+                    });
+
+                    // Interceptar fetch para agregar header X-Tab-Id y X-Requested-With
+                    const originalFetch = window.fetch;
+                    window.fetch = function() {
+                        let [resource, config] = arguments;
+                        if(config === undefined) { config = {}; }
+                        if(config.headers === undefined) { config.headers = {}; }
+                        
+                        if (config.headers instanceof Headers) {
+                            config.headers.append('X-Tab-Id', tabToUse);
+                            config.headers.append('X-Requested-With', 'XMLHttpRequest');
+                        } else {
+                            config.headers['X-Tab-Id'] = tabToUse;
+                            config.headers['X-Requested-With'] = 'XMLHttpRequest';
+                        }
+                        return originalFetch(resource, config);
+                    };
+
+                    // Interceptar navegación por enlaces (<a> tags)
+                    document.addEventListener('click', function(e) {
+                        const link = e.target.closest('a');
+                        if (link && link.href && link.href.startsWith(window.location.origin) && !link.href.includes('javascript:')) {
+                            try {
+                                let url = new URL(link.href);
+                                if (!url.searchParams.has('_tab')) {
+                                    url.searchParams.set('_tab', tabToUse);
+                                    link.href = url.toString();
+                                }
+                            } catch (err) {}
+                        }
+                    });
+
+                    // Interceptar envío de formularios (POST) modificando el action
+                    forms.forEach(f => {
+                        if (f.action && f.action.startsWith(window.location.origin)) {
+                            try {
+                                let url = new URL(f.action);
+                                if (!url.searchParams.has('_tab')) {
+                                    url.searchParams.set('_tab', tabToUse);
+                                    f.action = url.toString();
+                                }
+                            } catch (err) {}
+                        }
+                    });
+                }
+            });
+        })();
+    </script>
 </head>
 <body>
 
@@ -62,7 +147,7 @@
             <i class="bi bi-list"></i>
         </button>
         <h6 class="mb-0 fw-semibold text-muted">@yield('title', 'Inventario')</h6>
-        <span class="text-muted small"><i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}</span>
+        <span class="text-muted small d-none d-md-inline"><i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}</span>
     </div>
 
     <div class="content-area">

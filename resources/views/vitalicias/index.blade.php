@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
         <h4 class="fw-bold mb-0"><i class="bi bi-award me-2 text-primary"></i>Gestión de Licencias Vitalicias</h4>
         @can('vitalicias.crear')
         <a href="{{ route('vitalicias.create') }}" class="btn btn-primary">
@@ -48,3 +48,4 @@
     </div>
 </div>
 @endsection
+

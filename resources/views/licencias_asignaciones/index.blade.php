@@ -60,7 +60,7 @@
                 <tbody>
                     @forelse($asignaciones as $asignacion)
                         <tr>
-                            <td class="text-muted small">{{ $asignacion->id }}</td>
+                            <td class="text-muted small text-nowrap">{{ $asignacion->id }}</td>
                             <td>
                                 @if($asignacion->licencia)
                                     <a href="{{ route('licencias.show', $asignacion->licencia) }}" class="fw-medium text-decoration-none">
@@ -92,7 +92,7 @@
                                     {{ $asignacion->estado }}
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center text-nowrap">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
                                     <a href="{{ route('licencia-asignaciones.edit', $asignacion) }}" class="btn btn-sm btn-outline-warning" title="Editar">
                                         <i class="bi bi-pencil"></i>
@@ -118,12 +118,11 @@
         </div>
     </div>
     @if($asignaciones->hasPages())
-        <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-            <small class="text-muted">
-                Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }} asignaciones
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-3 border-top"><small class="text-muted"> Mostrando {{ $asignaciones->firstItem() }}–{{ $asignaciones->lastItem() }} de {{ $asignaciones->total() }} asignaciones
             </small>
             {{ $asignaciones->links('pagination::bootstrap-5') }}
         </div>
     @endif
 </div>
 @endsection
+

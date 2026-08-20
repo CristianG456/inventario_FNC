@@ -3,7 +3,7 @@
 @section('title', 'Editar Asignación de Licencia')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <h4 class="fw-bold mb-0">
         <i class="bi bi-pencil-square text-primary me-2"></i>Editar Asignación
     </h4>
@@ -64,7 +64,7 @@
                 
                 <div class="col-md-12">
                     <label class="form-label fw-medium">Correo de Activación</label>
-                    <input type="email" name="correo_activacion" class="form-control @error('correo_activacion') is-invalid @enderror" value="{{ old('correo_activacion', $licencia_asignacion->correo_activacion) }}" placeholder="Correo al que fue entregada (si aplica)">
+                    <input type="email" name="correo_activacion" class="form-control @error('correo_activacion') is-invalid @enderror" value="{{ old('correo_activacion', $licencia_asignacion->correo_activacion) }}" placeholder="Correo al que fue entregada (si aplica)" oninput="this.value = this.value.replace(/[^a-zA-Z0-9@._-]/g, '')" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
                     <div class="form-text">Si la licencia se activó con un correo específico, ingréselo aquí.</div>
                     @error('correo_activacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
@@ -170,3 +170,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
+

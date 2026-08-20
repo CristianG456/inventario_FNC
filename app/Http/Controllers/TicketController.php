@@ -16,20 +16,47 @@ class TicketController extends Controller
         $query = Ticket::with(['funcionario', 'responsable']);
 
         if ($request->filled('buscar')) {
-            $buscar = $request->buscar;
-            $query->where('titulo', 'like', "%{$buscar}%")
-                  ->orWhere('id', $buscar)
-                  ->orWhereHas('funcionario', function($q) use ($buscar) {
-                      $q->where('nombres', 'like', "%{$buscar}%")
-                        ->orWhere('identificacion', 'like', "%{$buscar}%");
-                  });
+            $buscar = strtolower($request->buscar);
+            $query->where(function($q) use ($buscar) {
+                $q->where('titulo', 'like', "%{$buscar}%")
+                  ->orWhere('id', $buscar);
+            });
+            // La búsqueda por funcionario cifrado se hará después en PHP
         }
 
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
 
-        $tickets = $query->orderByDesc('created_at')->paginate(15);
+        // Si estamos buscando, necesitamos filtrar en memoria para los campos cifrados del Funcionario
+        if ($request->filled('buscar')) {
+            $buscar = strtolower($request->buscar);
+            // Quitamos la paginación a nivel de base de datos momentáneamente para filtrar TODO
+            $todos = $query->orderByDesc('created_at')->get();
+            $filtrados = $todos->filter(function($t) use ($buscar) {
+                // Ya la BD filtró por titulo o id, pero como era OR, revisamos si coincide aquí también
+                // o si coincide en el funcionario cifrado
+                if (str_contains(strtolower($t->titulo), $buscar) || (string)$t->id === $buscar) return true;
+                
+                if ($t->funcionario) {
+                    if (str_contains(strtolower($t->funcionario->nombres ?? ''), $buscar)) return true;
+                    if (str_contains(strtolower($t->funcionario->identificacion ?? ''), $buscar)) return true;
+                }
+                return false;
+            });
+            
+            $page = request()->get('page', 1);
+            $perPage = 15;
+            $tickets = new \Illuminate\Pagination\LengthAwarePaginator(
+                $filtrados->slice(($page - 1) * $perPage, $perPage)->values(),
+                $filtrados->count(),
+                $perPage,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
+        } else {
+            $tickets = $query->orderByDesc('created_at')->paginate(15);
+        }
         
         // Métricas para el Dashboard
         $totalTickets = Ticket::count();
@@ -47,9 +74,9 @@ class TicketController extends Controller
     {
         $funcionarios = Funcionario::select('id', 'nombres', 'apellidos', 'identificacion')
             ->where('estado', 'activo')
-            ->orderBy('nombres')
-            ->limit(500)
-            ->get();
+            ->get()
+            ->sortBy('nombres')
+            ->take(500);
         return view('tickets.create', compact('funcionarios'));
     }
 
@@ -252,7 +279,7 @@ class TicketController extends Controller
     {
         $request->validate([
             'archivos' => 'required|array',
-            'archivos.*' => 'file|max:5120' // Max 5MB per file
+            'archivos.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx,txt,zip|max:5120' // Max 5MB per file
         ]);
 
         $archivos = $ticket->archivos ?? [];
